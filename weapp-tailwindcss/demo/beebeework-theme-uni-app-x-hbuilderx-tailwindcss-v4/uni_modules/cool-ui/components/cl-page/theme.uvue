@@ -1,0 +1,45 @@
+<template>
+	<cl-float-view :size="40" :left="20" :bottom="20" :gap="20" v-if="config.showDarkButton">
+		<view class="theme-set" @tap="toggleTheme()">
+			<view class="theme-set__inner" :class="{ 'is-dark': isDark }">
+				<view class="theme-set__icon" v-for="item in list" :key="item">
+					<cl-icon :name="item" color="white" :size="18"></cl-icon>
+				</view>
+			</view>
+		</view>
+	</cl-float-view>
+</template>
+
+<script setup lang="ts">
+import { config } from "@/config";
+import { isDark, toggleTheme } from "@/.cool";
+
+defineOptions({
+	name: "cl-page-theme"
+});
+
+const list = ["moon-fill", "sun-fill"];
+</script>
+
+<style lang="scss" scoped>
+.theme-set {
+	@apply flex flex-col items-center justify-center rounded-full h-full w-full;
+	@apply bg-teal-500/10;
+
+	&__inner {
+		@apply flex flex-col duration-300;
+		transform: translateY(20px);
+		transition-property: transform;
+
+		&.is-dark {
+			transform: translateY(-20px);
+		}
+	}
+
+	&__icon {
+		@apply flex items-center justify-center;
+		height: 40px;
+		width: 40px;
+	}
+}
+</style>

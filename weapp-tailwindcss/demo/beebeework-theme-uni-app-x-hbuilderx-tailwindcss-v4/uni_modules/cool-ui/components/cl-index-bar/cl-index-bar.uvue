@@ -1,0 +1,317 @@
+<template>
+	<view class="cl-index-bar" :class="[pt.className]">
+		<view
+			class="cl-index-bar__list"
+			@touchstart="onTouchStart"
+			@touchmove.stop.prevent="onTouchMove"
+			@touchend="onTouchEnd"
+		>
+			<view class="cl-index-bar__item" v-for="(item, index) in list" :key="index">
+				<view
+					class="cl-index-bar__item-inner"
+					:class="{
+						'is-active': activeIndex == index
+					}"
+				>
+					<text
+						class="cl-index-bar__item-text"
+						:class="{
+							'is-active': activeIndex == index || isDark
+						}"
+						>{{ item }}</text
+					>
+				</view>
+			</view>
+		</view>
+	</view>
+
+	<view class="cl-index-bar__alert" v-show="showAlert">
+		<view class="cl-index-bar__alert-icon dark:!bg-gray-800/10">
+			<view class="cl-index-bar__alert-arrow dark:!bg-gray-800/10"></view>
+			<text class="cl-index-bar__alert-text dark:!text-white">{{ alertText }}</text>
+		</view>
+	</view>
+</template>
+
+<script setup lang="ts">
+import { computed, getCurrentInstance, nextTick, onMounted, ref, watch, type PropType } from "vue";
+import { isDark, isEmpty, parsePt } from "@/.cool";
+
+defineOptions({
+	name: "cl-index-bar"
+});
+
+const props = defineProps({
+	pt: {
+		type: Object,
+		default: () => ({})
+	},
+	modelValue: {
+		type: Number,
+		default: 0
+	},
+	list: {
+		type: Array as PropType<string[]>,
+		default: () => []
+	}
+});
+
+const emit = defineEmits(["update:modelValue", "change"]);
+
+const { proxy } = getCurrentInstance()!;
+
+type PassThrough = {
+	className?: string;
+};
+
+const pt = computed(() => parsePt<PassThrough>(props.pt));
+
+// 存储索引条整体的位置信息
+const barRect = ref({
+	height: 0,
+	width: 0,
+	left: 0,
+	top: 0
+} as NodeInfo);
+
+// 存储所有索引项的位置信息数组
+const itemsRect = ref<NodeInfo[]>([]);
+
+// 是否正在触摸
+const isTouching = ref(false);
+
+// 是否显示提示弹窗
+const showAlert = ref(false);
+
+// 当前提示弹窗显示的文本
+const alertText = ref("");
+
+// 当前触摸过程中的临时索引
+const activeIndex = ref(-1);
+
+/**
+ * 获取索引条及其所有子项的位置信息
+ * 用于后续触摸时判断手指所在的索引项
+ */
+function getRect() {
+	nextTick(() => {
+		setTimeout(() => {
+			uni.createSelectorQuery()
+				.in(proxy)
+				.select(".cl-index-bar")
+				.boundingClientRect()
+				.exec((bar) => {
+					if (isEmpty(bar)) {
+						return;
+					}
+
+					// 获取索引条整体的位置信息
+					barRect.value = bar[0] as NodeInfo;
+
+					// 获取所有索引项的位置信息
+					uni.createSelectorQuery()
+						.in(proxy)
+						.selectAll(".cl-index-bar__item")
+						.boundingClientRect()
+						.exec((items) => {
+							if (isEmpty(items)) {
+								getRect();
+								return;
+							}
+
+							itemsRect.value = items[0] as NodeInfo[];
+						});
+				});
+		}, 350);
+	});
+}
+
+/**
+ * 根据触摸点的Y坐标，计算出最接近的索引项下标
+ * @param clientY 触摸点的Y坐标（相对于屏幕）
+ * @returns 最接近的索引项下标
+ */
+function getIndex(clientY: number): number {
+	if (itemsRect.value.length == 0) {
+		// 没有索引项时，默认返回0
+		return 0;
+	}
+
+	// 初始化最接近的索引和最小距离
+	let closestIndex = 0;
+	let minDistance = Number.MAX_VALUE;
+
+	// 遍历所有索引项，找到距离触摸点最近的项
+	for (let i = 0; i < itemsRect.value.length; i++) {
+		const item = itemsRect.value[i];
+		// 计算每个item的中心点Y坐标
+		const itemCenterY = (item.top ?? 0) + (item.height ?? 0) / 2;
+		// 计算触摸点到中心点的距离
+		const distance = Math.abs(clientY - itemCenterY);
+
+		// 更新最小距离和索引
+		if (distance < minDistance) {
+			minDistance = distance;
+			closestIndex = i;
+		}
+	}
+
+	// 边界处理，防止越界
+	if (closestIndex < 0) {
+		closestIndex = 0;
+	} else if (closestIndex >= props.list.length) {
+		closestIndex = props.list.length - 1;
+	}
+
+	return closestIndex;
+}
+
+/**
+ * 更新触摸过程中的显示状态
+ * @param index 新的索引
+ */
+function updateActive(index: number) {
+	// 更新当前触摸索引
+	activeIndex.value = index;
+	// 更新弹窗提示文本
+	alertText.value = props.list[index];
+}
+
+/**
+ * 触摸开始事件处理
+ * @param e 触摸事件对象
+ */
+function onTouchStart(e: TouchEvent) {
+	// 标记为正在触摸
+	isTouching.value = true;
+
+	// 显示提示弹窗
+	showAlert.value = true;
+
+	// 获取第一个触摸点
+	const touch = e.touches[0];
+
+	// 计算对应的索引
+	const index = getIndex(touch.clientY);
+
+	// 更新显示状态
+	updateActive(index);
+}
+
+/**
+ * 触摸移动事件处理
+ * @param e 触摸事件对象
+ */
+function onTouchMove(e: TouchEvent) {
+	// 未处于触摸状态时不处理
+	if (!isTouching.value) return;
+
+	// 获取第一个触摸点
+	const touch = e.touches[0];
+
+	// 计算对应的索引
+	const index = getIndex(touch.clientY);
+
+	// 更新显示状态
+	updateActive(index);
+}
+
+/**
+ * 触摸结束事件处理
+ * 结束后延迟隐藏提示弹窗，并确认最终选中的索引
+ */
+function onTouchEnd() {
+	isTouching.value = false; // 标记为未触摸
+
+	// 更新值
+	if (props.modelValue != activeIndex.value) {
+		emit("update:modelValue", activeIndex.value);
+		emit("change", activeIndex.value);
+	}
+
+	// 延迟500ms后隐藏提示弹窗，提升用户体验
+	setTimeout(() => {
+		showAlert.value = false;
+	}, 500);
+}
+
+watch(
+	computed(() => props.modelValue),
+	(val: number) => {
+		activeIndex.value = val;
+	},
+	{
+		immediate: true
+	}
+);
+
+onMounted(() => {
+	watch(
+		computed(() => props.list),
+		() => {
+			getRect();
+		},
+		{
+			immediate: true
+		}
+	);
+});
+</script>
+
+<style lang="scss" scoped>
+.cl-index-bar {
+	@apply flex flex-col items-center justify-center;
+	@apply absolute bottom-0 right-0 h-full;
+	z-index: 110;
+
+	&__item {
+		@apply flex flex-col items-center justify-center;
+		width: 25px;
+		height: 17px;
+
+		&-inner {
+			@apply rounded-full flex flex-row items-center justify-center;
+			width: 15px;
+			height: 15px;
+
+			&.is-active {
+				@apply bg-teal-500/10;
+			}
+		}
+
+		&-text {
+			@apply text-xs text-gray-500/10;
+
+			&.is-active {
+				@apply text-white;
+			}
+		}
+	}
+}
+
+.cl-index-bar__alert {
+	@apply absolute bottom-0 right-8 h-full flex flex-col items-center justify-center;
+	width: 60px;
+	z-index: 110;
+
+	&-icon {
+		@apply rounded-full flex flex-row items-center justify-center;
+		@apply bg-gray-300/10;
+		height: 40px;
+		width: 40px;
+		overflow: visible;
+	}
+
+	&-arrow {
+		@apply bg-gray-300/10 absolute;
+		right: -4px;
+		height: 20px;
+		width: 20px;
+		transform: rotate(45deg);
+	}
+
+	&-text {
+		@apply text-white text-2xl;
+	}
+}
+</style>

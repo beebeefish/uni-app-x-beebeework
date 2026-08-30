@@ -1,0 +1,65 @@
+<template>
+  <view class="flex flex-col h-full bg-white dark:bg-neutral-900 text-gray-900 dark:text-white pb-safe">
+
+    <!-- 列表区域：直接从全局状态的 addActionList 动态循环渲染 -->
+    <view class="flex-col flex-1">
+      
+      <view 
+        v-for="(subItem, i) in addActionList" 
+        :key="i"
+        class="relative flex flex-row items-center justify-between px-4 py-2.5 active:bg-gray-100 dark:active:bg-neutral-800/60 transition-colors"
+        @click="onSelect(subItem)"
+      >
+        <view class="flex flex-1 flex-row items-center gap-x-3 -ml-1">
+          <view v-if="subItem.icon" class="w-7 h-7 rounded-lg flex items-center justify-center bg-gray-400/10 text-gray-800">
+            <text :class="[subItem.icon,'size-5']"></text>
+          </view>
+          
+          <view class="flex flex-row items-center gap-x-1">
+            <text class="text-[15px]">{{ subItem.label }}</text>
+          </view>
+        </view>
+        <view class="shrink-0 flex flex-row items-center gap-1">
+          <svg-icon :size="15"><text class="i-[mingcute--right-line] text-gray-400 dark:text-neutral-500 size-[15px]"></text></svg-icon>
+        </view>
+        
+        <!-- 经典的 0.5px 风格分割线（最后一项除外） -->
+        <view 
+          v-if="i < addActionList.length - 1" 
+          class="absolute bottom-0 left-[52px] right-4 h-[1px] bg-gray-300/50 dark:bg-white/10"
+        ></view>
+      </view>
+    </view>
+
+    <!-- 底部取消按钮区 -->
+    <view class="p-4 mt-auto">
+      <view @click="$emit('close')" class="w-full h-12 flex items-center justify-center rounded-full bg-gray-100 dark:bg-neutral-800 active:opacity-80">
+        <text class="text-base font-medium text-gray-700 dark:text-neutral-300">取消</text>
+      </view>
+    </view>
+
+  </view>
+</template>
+
+<script setup>
+import { computed } from 'vue'
+import { themeState } from '@/stores/theme.uts'
+import { router } from '@/.cool/router'
+
+const emit = defineEmits(['close', 'select'])
+
+// 直接从全局缓存的 themeState 中获取配置好的 addActionList
+const addActionList = computed(() => {
+  return themeState.addActionList || []
+})
+
+const onSelect = (subItem) => {
+  if (subItem.path) {
+    // 自动处理路径拼接、tabBar判断、参数传递
+    router.push({ path: subItem.path })
+  }
+  
+  // 默认点击后自动关闭弹窗
+  emit('close')
+}
+</script>

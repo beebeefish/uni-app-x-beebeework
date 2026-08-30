@@ -1,0 +1,65 @@
+// composables/usePagination.uts
+import { ref } from 'vue'
+
+type FetchFunction = (params: { page: number; per_page: number; [key: string]: any }) => Promise<any>
+
+export function usePagination(fetchFn: FetchFunction, defaultParams: UTSJSONObject = {}) {
+  const list = ref<any[]>([])
+  const page = ref(1)
+  const perPage = ref(10)
+  const loading = ref(false)
+  const hasMore = ref(true)
+
+  // 获取数据的核心逻辑
+  const getData = async () => {
+    if (loading.value || !hasMore.value) return
+
+    try {
+      loading.value = true
+      
+      // 合并分页参数与额外自定义参数（如 type: 'product' 等）
+      const params = Object.assign({
+        page: page.value,
+        per_page: perPage.value
+      }, defaultParams)
+
+      const res = await fetchFn(params)
+
+      if (res != null && Array.isArray(res)) {
+        if (res.length < perPage.value) {
+          hasMore.value = false
+        }
+        // 拼接新数据
+        list.value.push(...res)
+        page.value++
+      }
+    } catch (e) {
+      console.error('分页加载失败:', e)
+    } finally {
+      loading.value = false
+    }
+  }
+
+  // 初始化重置
+  const initLoad = async () => {
+    page.value = 1
+    hasMore.value = true
+    list.value = []
+    await getData()
+  }
+
+  // 上拉加载更多触发器
+  const loadMore = () => {
+    if (hasMore.value && !loading.value) {
+      getData()
+    }
+  }
+
+  return {
+    list,
+    loading,
+    hasMore,
+    initLoad,
+    loadMore
+  }
+}

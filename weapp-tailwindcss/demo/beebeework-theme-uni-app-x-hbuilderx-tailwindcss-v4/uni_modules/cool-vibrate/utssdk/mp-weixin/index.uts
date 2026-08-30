@@ -1,0 +1,13 @@
+/**
+ * 震动
+ * @param {number} duration 震动时间单位ms,ios微信失效
+ */
+export function vibrate(duration: number) {
+	wx.vibrateShort({
+		type: "medium",
+		success() {},
+		fail(error) {
+			console.error("微信:震动失败");
+		}
+	});
+}

@@ -1,0 +1,767 @@
+/**
+ * kex-rich-text · uni-app x UTS 解析器
+ * 净化 HTML、补全相对路径、轻量 Markdown
+ */
+
+export type KexRtParseOptions = {
+	domain : string
+	sanitize : boolean
+	scrollTable : boolean
+	tagStyleCss : string
+	allowIframe : boolean
+}
+
+export type KexRtSanitizeResult = {
+	html : string
+	title : string
+}
+
+/** 小程序端拆分 a 标签：系统 rich-text 不支持子节点点击 */
+export type KexRtHtmlSeg = {
+	kind : string
+	html : string
+	href : string
+	text : string
+}
+
+export function isDangerUrl(url : string) : boolean {
+	const u = url.trim().toLowerCase()
+	if (u.indexOf('javascript:') == 0) return true
+	if (u.indexOf('vbscript:') == 0) return true
+	if (u.indexOf('data:text/html') == 0) return true
+	return false
+}
+
+export function joinUrl(url : string, domain : string) : string {
+	if (url.length == 0) return ''
+	if (isDangerUrl(url)) return ''
+	if (url.charAt(0) == '/') {
+		if (url.length > 1 && url.charAt(1) == '/') {
+			let proto = 'https'
+			const p = domain.indexOf('://')
+			if (p > 0) proto = domain.substring(0, p)
+			return proto + ':' + url
+		}
+		return domain.length > 0 ? domain + url : url
+	}
+	if (url.indexOf('data:') < 0 && url.indexOf('://') < 0 && domain.length > 0) {
+		return domain + '/' + url
+	}
+	return url
+}
+
+/** 抽出并移除第一个 &lt;title&gt; 文本 */
+export function extractTitle(html : string) : KexRtSanitizeResult {
+	const empty = { html: html, title: '' } as KexRtSanitizeResult
+	if (html.length == 0) return empty
+	const open = indexOfIgnoreCase(html, '<title', 0)
+	if (open < 0) return empty
+	const gt = html.indexOf('>', open)
+	if (gt < 0) return empty
+	const close = indexOfIgnoreCase(html, '</title>', gt)
+	if (close < 0) return empty
+	const title = html.substring(gt + 1, close).trim()
+	const out = html.substring(0, open) + html.substring(close + 8)
+	return { html: out, title: title } as KexRtSanitizeResult
+}
+
+export function sanitizeHtml(html : string, options : KexRtParseOptions) : KexRtSanitizeResult {
+	if (html.length == 0) {
+		return { html: '', title: '' } as KexRtSanitizeResult
+	}
+	let out = html
+	const extracted = extractTitle(out)
+	out = extracted.html
+	const title = extracted.title
+
+	out = stripTagBlock(out, 'script')
+	out = stripTagBlock(out, 'style')
+	if (!options.allowIframe) {
+		out = stripTagBlock(out, 'iframe')
+	}
+	out = stripTagBlock(out, 'object')
+	out = stripTagBlock(out, 'embed')
+	out = stripTagBlock(out, 'form')
+
+	out = convertStrikeToS(out)
+	out = convertFontTags(out)
+
+	if (options.sanitize) {
+		out = stripEventAttrs(out)
+		out = stripJsProtocol(out)
+	}
+	if (options.domain.length > 0) {
+		out = rewriteSrcHref(out, options.domain)
+	}
+	if (options.scrollTable) {
+		out = wrapScrollTables(out)
+	}
+	if (options.tagStyleCss.length > 0) {
+		// 把 tagStyleCss 解析后注入到对应标签，而不是包一层 div
+		out = injectTagStyles(out, options.tagStyleCss)
+	}
+	return { html: out, title: title } as KexRtSanitizeResult
+}
+
+/**
+ * 将 HTML 按 &lt;a&gt; 拆成片段，供微信等小程序用可点击节点渲染链接。
+ * kind=html → 交给 rich-text；kind=a → 外层监听 click。
+ */
+export function splitHtmlByAnchors(html : string) : KexRtHtmlSeg[] {
+	const segs : KexRtHtmlSeg[] = []
+	if (html.length == 0) return segs
+	const lower = html.toLowerCase()
+	let i = 0
+	while (i < html.length) {
+		const open = findAnchorOpen(lower, i)
+		if (open < 0) {
+			segs.push({
+				kind: 'html',
+				html: html.substring(i),
+				href: '',
+				text: ''
+			} as KexRtHtmlSeg)
+			break
+		}
+		if (open > i) {
+			segs.push({
+				kind: 'html',
+				html: html.substring(i, open),
+				href: '',
+				text: ''
+			} as KexRtHtmlSeg)
+		}
+		const gt = html.indexOf('>', open)
+		if (gt < 0) {
+			segs.push({
+				kind: 'html',
+				html: html.substring(open),
+				href: '',
+				text: ''
+			} as KexRtHtmlSeg)
+			break
+		}
+		const openTag = html.substring(open, gt + 1)
+		// 自闭合 <a ... />
+		const trimmed = openTag.trim()
+		if (trimmed.length >= 2 && trimmed.charAt(trimmed.length - 2) == '/') {
+			i = gt + 1
+			continue
+		}
+		const href = readAttr(openTag, 'href')
+		const close = indexOfIgnoreCase(html, '</a>', gt + 1)
+		if (close < 0) {
+			segs.push({
+				kind: 'html',
+				html: html.substring(open),
+				href: '',
+				text: ''
+			} as KexRtHtmlSeg)
+			break
+		}
+		const inner = html.substring(gt + 1, close)
+		const text = htmlToText(inner)
+		segs.push({
+			kind: 'a',
+			html: inner,
+			href: href,
+			text: text.length > 0 ? text : href
+		} as KexRtHtmlSeg)
+		i = close + 4
+	}
+	return segs
+}
+
+function findAnchorOpen(lowerHtml : string, from : number) : number {
+	let start = from
+	while (true) {
+		const i = lowerHtml.indexOf('<a', start)
+		if (i < 0) return -1
+		if (i + 2 >= lowerHtml.length) return -1
+		const c = lowerHtml.charAt(i + 2)
+		if (c == '>' || c == ' ' || c == '\t' || c == '\n' || c == '\r' || c == '/') {
+			return i
+		}
+		start = i + 2
+	}
+}
+
+/** 去掉 HTML 标签，得到纯文本 */
+export function htmlToText(html : string) : string {
+	if (html.length == 0) return ''
+	let out = ''
+	let i = 0
+	while (i < html.length) {
+		const lt = html.indexOf('<', i)
+		if (lt < 0) {
+			out += html.substring(i)
+			break
+		}
+		out += html.substring(i, lt)
+		const gt = html.indexOf('>', lt)
+		if (gt < 0) break
+		i = gt + 1
+	}
+	return out
+		.replaceAll('&nbsp;', ' ')
+		.replaceAll('&amp;', '&')
+		.replaceAll('&lt;', '<')
+		.replaceAll('&gt;', '>')
+		.replaceAll('&quot;', '"')
+		.replaceAll('&#39;', "'")
+		.trim()
+}
+
+/** strike → s */
+function convertStrikeToS(html : string) : string {
+	let out = html
+	while (true) {
+		const i = indexOfIgnoreCase(out, '</strike>', 0)
+		if (i < 0) break
+		out = out.substring(0, i) + '</s>' + out.substring(i + 9)
+	}
+	let from = 0
+	let built = ''
+	while (from < out.length) {
+		const i = indexOfIgnoreCase(out, '<strike', from)
+		if (i < 0) {
+			built += out.substring(from)
+			break
+		}
+		built += out.substring(from, i)
+		const next = i + 7
+		if (next < out.length) {
+			const c = out.charAt(next)
+			if (c == '>' || c == ' ' || c == '/' || c == '\t' || c == '\n' || c == '\r') {
+				built += '<s'
+				from = next
+				continue
+			}
+		}
+		built += out.substring(i, next)
+		from = next
+	}
+	return built
+}
+
+/**
+ * font 标签 color/face/size → style（简单属性扫描）
+ * 例：&lt;font color="red" size="3"&gt; → &lt;font style="color:red;font-size:medium"&gt;
+ */
+function convertFontTags(html : string) : string {
+	let out = ''
+	let i = 0
+	while (i < html.length) {
+		const idx = indexOfIgnoreCase(html, '<font', i)
+		if (idx < 0) {
+			out += html.substring(i)
+			break
+		}
+		out += html.substring(i, idx)
+		const gt = html.indexOf('>', idx)
+		if (gt < 0) {
+			out += html.substring(idx)
+			break
+		}
+		const tag = html.substring(idx, gt + 1)
+		out += fontTagToStyled(tag)
+		i = gt + 1
+	}
+	return out
+}
+
+function fontTagToStyled(tag : string) : string {
+	// 自闭合或开标签
+	const isClose = tag.length > 1 && tag.charAt(1) == '/'
+	if (isClose) return tag
+	const color = readAttr(tag, 'color')
+	const face = readAttr(tag, 'face')
+	const size = readAttr(tag, 'size')
+	if (color.length == 0 && face.length == 0 && size.length == 0) return tag
+
+	let styleExtra = ''
+	if (color.length > 0) styleExtra += 'color:' + color + ';'
+	if (face.length > 0) styleExtra += 'font-family:' + face + ';'
+	if (size.length > 0) {
+		const n = parseInt(size)
+		if (!isNaN(n)) {
+			let s = n
+			if (s < 1) s = 1
+			if (s > 7) s = 7
+			const sizes = ['x-small', 'small', 'medium', 'large', 'x-large', 'xx-large', 'xxx-large']
+			styleExtra += 'font-size:' + sizes[s - 1] + ';'
+		}
+	}
+
+	let cleaned = stripAttr(tag, 'color')
+	cleaned = stripAttr(cleaned, 'face')
+	cleaned = stripAttr(cleaned, 'size')
+	const existing = readAttr(cleaned, 'style')
+	const merged = existing + styleExtra
+	if (existing.length > 0) {
+		cleaned = stripAttr(cleaned, 'style')
+	}
+	// 插入 style=
+	const insertAt = cleaned.length > 1 && cleaned.charAt(cleaned.length - 2) == '/'
+		? cleaned.length - 2
+		: cleaned.length - 1
+	return cleaned.substring(0, insertAt) + ' style="' + merged + '"' + cleaned.substring(insertAt)
+}
+
+function readAttr(tag : string, name : string) : string {
+	const lower = tag.toLowerCase()
+	const key = name.toLowerCase() + '='
+	const i = lower.indexOf(key)
+	if (i < 0) return ''
+	let p = i + key.length
+	while (p < tag.length && (tag.charAt(p) == ' ' || tag.charAt(p) == '\t')) p++
+	if (p >= tag.length) return ''
+	const q = tag.charAt(p)
+	if (q == '"' || q == "'") {
+		const end = tag.indexOf(q, p + 1)
+		if (end < 0) return ''
+		return tag.substring(p + 1, end)
+	}
+	let end = p
+	while (end < tag.length && tag.charAt(end) != ' ' && tag.charAt(end) != '>' && tag.charAt(end) != '/') end++
+	return tag.substring(p, end)
+}
+
+function stripAttr(tag : string, name : string) : string {
+	const lower = tag.toLowerCase()
+	const key = ' ' + name.toLowerCase()
+	const i = lower.indexOf(key)
+	if (i < 0) return tag
+	let p = i + 1
+	while (p < tag.length) {
+		const c = tag.charAt(p)
+		if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '-' || c == '_') p++
+		else break
+	}
+	while (p < tag.length && (tag.charAt(p) == ' ' || tag.charAt(p) == '\t')) p++
+	if (p < tag.length && tag.charAt(p) == '=') {
+		p++
+		while (p < tag.length && (tag.charAt(p) == ' ' || tag.charAt(p) == '\t')) p++
+		if (p < tag.length && (tag.charAt(p) == '"' || tag.charAt(p) == "'")) {
+			const q = tag.charAt(p)
+			const end = tag.indexOf(q, p + 1)
+			p = end < 0 ? tag.length : end + 1
+		} else {
+			while (p < tag.length && tag.charAt(p) != ' ' && tag.charAt(p) != '>' && tag.charAt(p) != '/') p++
+		}
+	}
+	return tag.substring(0, i) + tag.substring(p)
+}
+
+/** 将每个 &lt;table&gt;...&lt;/table&gt; 外包横向滚动容器 */
+function wrapScrollTables(html : string) : string {
+	let out = ''
+	let i = 0
+	const wrapOpen = '<div style="overflow-x:auto;width:100%">'
+	const wrapClose = '</div>'
+	while (i < html.length) {
+		const start = indexOfIgnoreCase(html, '<table', i)
+		if (start < 0) {
+			out += html.substring(i)
+			break
+		}
+		out += html.substring(i, start)
+		const close = indexOfIgnoreCase(html, '</table>', start)
+		if (close < 0) {
+			out += wrapOpen + html.substring(start) + wrapClose
+			break
+		}
+		const end = close + 8
+		out += wrapOpen + html.substring(start, end) + wrapClose
+		i = end
+	}
+	return out
+}
+
+function stripTagBlock(html : string, tag : string) : string {
+	let out = html
+	const open = '<' + tag
+	const close = '</' + tag + '>'
+	while (true) {
+		const i = indexOfIgnoreCase(out, open, 0)
+		if (i < 0) break
+		const j = indexOfIgnoreCase(out, close, i)
+		if (j < 0) {
+			out = out.substring(0, i)
+			break
+		}
+		out = out.substring(0, i) + out.substring(j + close.length)
+	}
+	// 自闭合残留
+	while (true) {
+		const i = indexOfIgnoreCase(out, open, 0)
+		if (i < 0) break
+		const gt = out.indexOf('>', i)
+		if (gt < 0) break
+		out = out.substring(0, i) + out.substring(gt + 1)
+	}
+	return out
+}
+
+function indexOfIgnoreCase(s : string, needle : string, from : number) : number {
+	return s.toLowerCase().indexOf(needle.toLowerCase(), from)
+}
+
+function stripEventAttrs(html : string) : string {
+	// 去掉 onxxx="..." / onxxx='...' / onxxx=...
+	let out = ''
+	let i = 0
+	while (i < html.length) {
+		const lower = html.toLowerCase()
+		const on = lower.indexOf(' on', i)
+		if (on < 0) {
+			out += html.substring(i)
+			break
+		}
+		out += html.substring(i, on)
+		let p = on + 3
+		while (p < html.length) {
+			const c = html.charAt(p)
+			if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')) p++
+			else break
+		}
+		while (p < html.length && (html.charAt(p) == ' ' || html.charAt(p) == '\t')) p++
+		if (p < html.length && html.charAt(p) == '=') {
+			p++
+			while (p < html.length && (html.charAt(p) == ' ' || html.charAt(p) == '\t')) p++
+			if (p < html.length && (html.charAt(p) == '"' || html.charAt(p) == "'")) {
+				const q = html.charAt(p)
+				p++
+				const end = html.indexOf(q, p)
+				p = end < 0 ? html.length : end + 1
+			} else {
+				while (p < html.length && html.charAt(p) != ' ' && html.charAt(p) != '>') p++
+			}
+			i = p
+		} else {
+			out += html.substring(on, on + 3)
+			i = on + 3
+		}
+	}
+	return out
+}
+
+function stripJsProtocol(html : string) : string {
+	let out = html
+	const keys = ['href=', 'src=']
+	for (let k = 0; k < keys.length; k++) {
+		let from = 0
+		let built = ''
+		while (from < out.length) {
+			const i = out.toLowerCase().indexOf(keys[k], from)
+			if (i < 0) {
+				built += out.substring(from)
+				break
+			}
+			built += out.substring(from, i + keys[k].length)
+			let p = i + keys[k].length
+			while (p < out.length && out.charAt(p) == ' ') p++
+			if (p >= out.length) {
+				from = p
+				break
+			}
+			const q = out.charAt(p)
+			if (q == '"' || q == "'") {
+				const end = out.indexOf(q, p + 1)
+				if (end < 0) {
+					built += out.substring(p)
+					from = out.length
+					break
+				}
+				const val = out.substring(p + 1, end)
+				if (isDangerUrl(val)) {
+					built += q + q
+				} else {
+					built += out.substring(p, end + 1)
+				}
+				from = end + 1
+			} else {
+				built += out.charAt(p)
+				from = p + 1
+			}
+		}
+		out = built
+	}
+	return out
+}
+
+function rewriteSrcHref(html : string, domain : string) : string {
+	let result = ''
+	let i = 0
+	while (i < html.length) {
+		const idx = indexOfAttr(html, i)
+		if (idx < 0) {
+			result += html.substring(i)
+			break
+		}
+		result += html.substring(i, idx)
+		const eq = html.indexOf('=', idx)
+		if (eq < 0) {
+			result += html.substring(idx)
+			break
+		}
+		const q = html.charAt(eq + 1)
+		if (q != '"' && q != "'") {
+			result += html.substring(idx, eq + 1)
+			i = eq + 1
+			continue
+		}
+		const end = html.indexOf(q, eq + 2)
+		if (end < 0) {
+			result += html.substring(idx)
+			break
+		}
+		const raw = html.substring(eq + 2, end)
+		const fixed = joinUrl(raw, domain)
+		result += html.substring(idx, eq + 2) + fixed + q
+		i = end + 1
+	}
+	return result.length > 0 ? result : html
+}
+
+function indexOfAttr(s : string, from : number) : number {
+	const lower = s.toLowerCase()
+	const a = lower.indexOf('src=', from)
+	const b = lower.indexOf('href=', from)
+	if (a < 0) return b
+	if (b < 0) return a
+	return a < b ? a : b
+}
+
+export function markdownToHtmlLite(src : string) : string {
+	if (src.length == 0) return ''
+	const text = src.replaceAll('\r\n', '\n').replaceAll('\r', '\n')
+	const lines = text.split('\n')
+	const out : string[] = []
+	for (let i = 0; i < lines.length; i++) {
+		const line = lines[i]
+		if (line.length == 0) continue
+		if (line.indexOf('```') == 0) {
+			let code = ''
+			i++
+			while (i < lines.length && lines[i].indexOf('```') != 0) {
+				code += (code.length > 0 ? '\n' : '') + lines[i]
+				i++
+			}
+			out.push('<pre><code>' + escapeHtml(code) + '</code></pre>')
+			continue
+		}
+		if (line.indexOf('### ') == 0) {
+			out.push('<h3>' + inlineLite(line.substring(4)) + '</h3>')
+		} else if (line.indexOf('## ') == 0) {
+			out.push('<h2>' + inlineLite(line.substring(3)) + '</h2>')
+		} else if (line.indexOf('# ') == 0) {
+			out.push('<h1>' + inlineLite(line.substring(2)) + '</h1>')
+		} else if (line.indexOf('- ') == 0 || line.indexOf('* ') == 0) {
+			out.push('<p>• ' + inlineLite(line.substring(2)) + '</p>')
+		} else if (line.indexOf('> ') == 0) {
+			out.push(
+				'<p style="border-left:4px solid #ccc;padding-left:8px;color:#666">' +
+					inlineLite(line.substring(2)) +
+					'</p>'
+			)
+		} else {
+			out.push('<p>' + inlineLite(line) + '</p>')
+		}
+	}
+	return out.join('')
+}
+
+function inlineLite(s : string) : string {
+	let t = escapeHtml(s)
+	// 图片 ![alt](url)
+	t = replaceMdImage(t)
+	t = replaceMdLink(t)
+	t = replaceWrapped(t, '`', '<span style="font-family:monospace;background:#f4f4f5">', '</span>')
+	t = replaceWrapped(t, '**', '<strong>', '</strong>')
+	t = replaceWrapped(t, '*', '<i>', '</i>')
+	return t
+}
+
+function replaceMdImage(s : string) : string {
+	let out = ''
+	let i = 0
+	while (i < s.length) {
+		const a = s.indexOf('![', i)
+		if (a < 0) {
+			out += s.substring(i)
+			break
+		}
+		const b = s.indexOf('](', a)
+		const c = b >= 0 ? s.indexOf(')', b + 2) : -1
+		if (b < 0 || c < 0) {
+			out += s.substring(i, a + 2)
+			i = a + 2
+			continue
+		}
+		out += s.substring(i, a)
+		const alt = s.substring(a + 2, b)
+		const url = s.substring(b + 2, c)
+		out += '<img alt="' + alt + '" src="' + url + '"/>'
+		i = c + 1
+	}
+	return out
+}
+
+function replaceMdLink(s : string) : string {
+	let out = ''
+	let i = 0
+	while (i < s.length) {
+		const a = s.indexOf('[', i)
+		if (a < 0) {
+			out += s.substring(i)
+			break
+		}
+		if (a > 0 && s.charAt(a - 1) == '!') {
+			out += s.substring(i, a + 1)
+			i = a + 1
+			continue
+		}
+		const b = s.indexOf('](', a)
+		const c = b >= 0 ? s.indexOf(')', b + 2) : -1
+		if (b < 0 || c < 0) {
+			out += s.substring(i, a + 1)
+			i = a + 1
+			continue
+		}
+		out += s.substring(i, a)
+		const text = s.substring(a + 1, b)
+		const url = s.substring(b + 2, c)
+		out += '<a href="' + url + '">' + text + '</a>'
+		i = c + 1
+	}
+	return out
+}
+
+function replaceWrapped(s : string, mark : string, open : string, close : string) : string {
+	let out = ''
+	let i = 0
+	const mlen = mark.length
+	while (i < s.length) {
+		const a = s.indexOf(mark, i)
+		if (a < 0) {
+			out += s.substring(i)
+			break
+		}
+		const b = s.indexOf(mark, a + mlen)
+		if (b < 0) {
+			out += s.substring(i)
+			break
+		}
+		out += s.substring(i, a) + open + s.substring(a + mlen, b) + close
+		i = b + mlen
+	}
+	return out
+}
+
+function escapeHtml(s : string) : string {
+	return s
+		.replaceAll('&', '&amp;')
+		.replaceAll('<', '&lt;')
+		.replaceAll('>', '&gt;')
+		.replaceAll('"', '&quot;')
+}
+
+// ========== 新增：tagStyleCss 解析注入 ==========
+
+/**
+ * 将 tagStyleCss 解析并注入到对应 HTML 标签的 style 属性中
+ * 格式: tag:css;tag:css;...
+ */
+function injectTagStyles(html: string, tagStyleCss: string): string {
+	if (tagStyleCss.length == 0) return html
+	
+	const knownTags = [
+		'p','h1','h2','h3','h4','h5','h6',
+		'ul','ol','li','blockquote','pre','code',
+		'table','th','td','hr','img','video','a',
+		'div','span','strong','em','s','b','i','u',
+		'figure','figcaption','br'
+	]
+	const tagStyles: Record<string, string> = {}
+	const parts = tagStyleCss.split(';')
+	let currentTag = ''
+	
+	for (let i = 0; i < parts.length; i++) {
+		const part = parts[i].trim()
+		if (part.length == 0) continue
+		
+		const colonIdx = part.indexOf(':')
+		if (colonIdx <= 0) continue
+		
+		const candidate = part.substring(0, colonIdx).trim().toLowerCase()
+		const cssPart = part.substring(colonIdx + 1).trim()
+		
+		// 判断 candidate 是否是已知 tag
+		let isKnownTag = false
+		for (let k = 0; k < knownTags.length; k++) {
+			if (knownTags[k] == candidate) {
+				isKnownTag = true
+				break
+			}
+		}
+		
+		if (isKnownTag) {
+			currentTag = candidate
+			tagStyles[currentTag] = cssPart
+		} else if (currentTag.length > 0) {
+			// 不是 tag，是上一个 tag 的下一个 CSS 属性
+			tagStyles[currentTag] += ';' + part
+		}
+	}
+	
+	let out = html
+	const tags = Object.keys(tagStyles)
+	for (let i = 0; i < tags.length; i++) {
+		const tag = tags[i]
+		const style = tagStyles[tag]
+		out = injectStyleToTag(out, tag, style)
+	}
+	return out
+}
+
+function injectStyleToTag(html: string, tag: string, style: string): string {
+	const open = '<' + tag
+	let out = ''
+	let i = 0
+	while (i < html.length) {
+		const idx = indexOfIgnoreCase(html, open, i)
+		if (idx < 0) {
+			out += html.substring(i)
+			break
+		}
+		// 确认是开标签（<p>、<p 、<p/），而不是 <pre> 里的 <p
+		if (idx + open.length < html.length) {
+			const nextChar = html.charAt(idx + open.length)
+			if (nextChar == '>' || nextChar == ' ' || nextChar == '\t' || nextChar == '\n' || nextChar == '\r' || nextChar == '/') {
+				const gt = html.indexOf('>', idx)
+				if (gt < 0) {
+					out += html.substring(i)
+					break
+				}
+				const tagStr = html.substring(idx, gt + 1)
+				const newTag = appendStyleToTag(tagStr, style)
+				out += html.substring(i, idx) + newTag
+				i = gt + 1
+				continue
+			}
+		}
+		out += html.substring(i, idx + open.length)
+		i = idx + open.length
+	}
+	return out
+}
+
+function appendStyleToTag(tag: string, style: string): string {
+	const existing = readAttr(tag, 'style')
+	const merged = existing.length > 0 ? existing + ';' + style : style
+	const cleaned = stripAttr(tag, 'style')
+	const isSelfClose = cleaned.length > 2 && cleaned.charAt(cleaned.length - 2) == '/'
+	const insertAt = isSelfClose ? cleaned.length - 2 : cleaned.length - 1
+	return cleaned.substring(0, insertAt) + ' style="' + merged + '"' + cleaned.substring(insertAt)
+}

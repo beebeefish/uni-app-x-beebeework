@@ -1,0 +1,120 @@
+.wrapper {
+  position: relative;
+  min-height: 220px;
+  padding: 64px 12px 12px;
+  overflow: hidden;
+  background: var(--ifm-code-background);
+  border: 1px solid var(--ifm-toc-border-color);
+  border-radius: 12px;
+}
+
+.toolbar {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  z-index: 1;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 6px 10px;
+  font-size: 12px;
+  pointer-events: auto;
+  background: color-mix(in srgb, var(--ifm-code-background) 85%, transparent);
+  border-radius: 10px;
+  box-shadow: 0 8px 20px rgb(0 0 0 / 8%);
+  backdrop-filter: blur(8px);
+}
+
+.toolGroup {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.toolGroup + .toolGroup {
+  padding-left: 8px;
+  border-left: 1px solid var(--ifm-color-emphasis-200);
+}
+
+.toolButton {
+  padding: 4px 10px;
+  color: var(--ifm-font-color-base);
+  text-decoration: none;
+  cursor: pointer;
+  background: var(--ifm-background-surface-color);
+  border: 1px solid var(--ifm-color-emphasis-300);
+  border-radius: 6px;
+  transition:
+    background-color 120ms ease,
+    border-color 120ms ease;
+}
+
+.toolButton:hover {
+  background: var(--ifm-hover-overlay);
+  border-color: var(--ifm-color-emphasis-400);
+}
+
+.toolButton:active {
+  background: var(--ifm-color-emphasis-200);
+}
+
+.scaleText {
+  min-width: 46px;
+  color: var(--ifm-font-color-secondary);
+  text-align: center;
+}
+
+.diagram {
+  position: relative;
+  min-height: 240px;
+  margin-top: 4px;
+  overflow: auto;
+  border-radius: 8px;
+}
+
+.skeleton {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    var(--ifm-color-emphasis-100) 0%,
+    var(--ifm-color-emphasis-50) 45%,
+    var(--ifm-color-emphasis-100) 90%
+  );
+  background-size: 200% 100%;
+  border-radius: 8px;
+  opacity: 0.6;
+  animation: mermaidSkeleton 1.2s ease-in-out infinite;
+}
+
+.content {
+  display: inline-block;
+  min-height: 120px;
+  /* 默认可见，避免极端情况下因 ready 状态未切换而一直透明 */
+  opacity: 1;
+  transform-origin: 0 0;
+  will-change: transform;
+}
+
+.contentReady {
+  opacity: 1;
+}
+
+.content svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+  user-select: none;
+}
+
+@keyframes mermaidSkeleton {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  100% {
+    background-position: 120% 50%;
+  }
+}

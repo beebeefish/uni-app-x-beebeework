@@ -1,0 +1,274 @@
+---
+id: tailwind-core
+title: Tailwind 设计理念
+description: Tailwind 本质是把设计 token 压成原子类，再让组件接口重新长出语义
+sidebar_position: 3
+keywords:
+  - tailwindcss
+  - 教程
+  - 原子化
+  - Tailwind
+  - 设计理念
+  - tailwind core
+  - weapp-tailwindcss
+  - 小程序
+  - 微信小程序
+  - uni-app
+  - taro
+  - rax
+  - mpx
+---
+
+import TailwindTopicHero from '@site/src/components/docs/TailwindTopicHero'
+
+<TailwindTopicHero topicId="tailwindcss/tailwind-core" title="Tailwind 设计理念" />
+
+## Tailwind 本质是什么
+
+- 可以把 Tailwind 理解成一条“压缩再展开”的流水线。
+- 它会把很多常见视觉决策映射成可复用的 utility classes，例如颜色、间距、圆角、字号等。
+- 然后在组件层重新把这些原子类组织起来，长成 `Button`、`Badge`、`Card` 这样的可读接口。
+- 所以 Tailwind 真正解决的，不只是“少写 CSS”，而是让样式约束、类名组合和组件封装更容易对齐。
+
+### 先记住这一句话
+
+> 在团队工程化里，Tailwind 最有价值的地方通常不是“少写 CSS”，而是更容易建立约束、复用和审阅机制。
+
+### 这一页建议怎么读
+
+- 如果你是第一次看 Tailwind，重点看“入口、中段、出口”这 3 个部分，先把整体链路建立起来。
+- 如果你已经在项目里使用 Tailwind，重点看“出口：组件重新长出语义”，因为大多数可维护性问题都出在这里。
+
+:::info 资料参考
+- [Tailwind CSS: Utility-first](https://tailwindcss.com/docs/utility-first)
+- [Tailwind CSS: Detecting classes in source files](https://tailwindcss.com/docs/detecting-classes-in-source-files)
+- [UnoCSS Guide](https://unocss.dev/guide/)
+:::
+
+**Demo（整体串联）**
+
+```ts
+// tailwind.config.ts
+export default {
+  content: ['./src/**/*.{tsx,jsx,html}'],
+  theme: {
+    extend: {
+      colors: { brand: { 50: '#f1f5ff', 500: '#3b82f6' } },
+      spacing: { 3.5: '0.875rem' },
+      borderRadius: { pill: '999px' },
+    },
+  },
+  plugins: [require('@tailwindcss/typography')],
+}
+```
+
+```tsx
+// src/components/Button.tsx
+import { tv } from 'tailwind-variants'
+
+const button = tv({
+  base: 'inline-flex items-center justify-center font-medium transition-colors',
+  variants: {
+    tone: {
+      primary: 'bg-brand-500 text-white hover:bg-brand-500/90',
+      ghost: 'bg-transparent text-brand-500 hover:bg-brand-50',
+    },
+    size: { md: 'h-10 px-4 rounded-pill', lg: 'h-11 px-5 rounded-pill text-base' },
+  },
+  defaultVariants: { tone: 'primary', size: 'md' },
+})
+
+export function Button({ tone, size, className, ...props }) {
+  return <button {...props} className={button({ tone, size, class: className })} />
+}
+```
+
+## 入口：设计语义的单一来源
+
+- 在团队实践里，最好先把设计值收敛成 token，再写类名。这一步看起来慢，实际上是在给后面所有组件减负。
+- class 里优先引用 token，而不是直接写裸值。这样换品牌、换主题、做暗色模式时，改的是一层映射，不是全项目搜字符串。
+- 团队要重点约束的不是“有没有用 Tailwind”，而是“是不是每个人都在随手发明新值”。
+
+换句话说，这里的“入口”更适合作为推荐工程实践来理解，而不是 Tailwind 唯一正确的使用方式。
+
+> 说明：Tailwind 官方既支持通过 theme、design tokens 与自定义 utilities 建立约束，也保留 arbitrary values、自定义 CSS 等逃生口；这里给出的写法是偏团队工程化的推荐路径。
+
+**Demo：token 定义**
+
+```ts
+// tailwind.config.ts 片段
+export default {
+  theme: {
+    extend: {
+      colors: {
+        brand: { 50: 'var(--brand-50)', 500: 'var(--brand-500)' },
+      },
+      spacing: { 3.5: 'var(--space-3_5)' },
+      borderRadius: { pill: 'var(--radius-pill)' },
+    },
+  },
+}
+```
+
+```css
+/* src/styles/theme.css */
+:root {
+  --brand-50: #eef2ff;
+  --brand-500: #4f46e5;
+  --space-3_5: 0.875rem;
+  --radius-pill: 999px;
+}
+```
+
+## 中段：Tailwind 的生成逻辑
+
+这一层可以拆成两部分看：一部分是 Tailwind 怎样生成类，另一部分是团队怎样给这些类加边界。
+
+### 生成机制
+
+- **JIT + content**：Tailwind 只会生成它扫描到的类，所以 `content` 写得越准，最终 CSS 越干净。很多包体问题，不是 Tailwind 本身慢，而是扫描范围太宽或者动态类太随意。
+- **`@layer`**：它决定了 `base / components / utilities` 的覆盖顺序。`@apply` 可以用，但更适合做稳定复用，不适合偷偷塞业务逻辑。
+- **插件**：适合把你们已经稳定下来的设计规则翻译成类，不适合把临时需求塞成新的语法糖。
+
+### 约束机制
+
+- **Variants / 关系类**：`md:`、`hover:`、`group-`、`peer-`、`aria-`、`data-` 这些能力很强，但强能力最容易被滥用。关系链一深，可读性会迅速下降。
+- **tokens 与命名边界**：类可以很灵活，但团队最好不要让每个组件都在发明新值。否则 JIT 很快，代码仍然会很乱。
+- **组件工厂**：当同一组 class 被反复组合时，就应该开始考虑 `cva`、`tailwind-variants` 或你们自己的 recipe 层。
+
+如果你发现项目里的 class 变得越来越长、越来越难改，通常不是因为原子化本身有问题，而是中段缺少边界。
+
+## 常见误解
+
+- 不要把这一页理解成“Tailwind 官方要求你必须先做 token，再写类名”。这是偏团队工程化的推荐路径，不是官方唯一正确答案。
+- 不要把 `@apply`、plugins、variants、组件工厂混成同一层东西。前两者更偏生成机制，后两者更偏团队封装策略。
+- 不要把 Tailwind 理解成“类越少越好”或“绝不能写自定义 CSS”。真正重要的是边界清晰，而不是形式纯度。
+
+**Demo：content 精准 + 局部 @layer**
+
+```ts
+// tailwind.config.ts 片段
+export default {
+  content: ['./src/app/**/*.{tsx,jsx}', './src/pages/**/*.{tsx,jsx}'],
+  plugins: [],
+}
+```
+
+```css
+/* src/styles/components.css */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .card {
+    @apply rounded-xl border border-slate-200 bg-white shadow-sm;
+  }
+  .card-title {
+    @apply text-lg font-semibold text-slate-900;
+  }
+}
+```
+
+```tsx
+// src/app/Card.tsx
+export function Card({ title, children }) {
+  return (
+    <div className="card">
+      <h3 className="card-title">{title}</h3>
+      <div className="text-sm text-slate-600">{children}</div>
+    </div>
+  )
+}
+```
+
+**Demo：关系类和状态类**
+
+```tsx
+// src/components/Nav.tsx
+export function Nav() {
+  return (
+    <nav className="flex items-center gap-4">
+      <button className="relative group px-3 py-2 text-sm font-medium text-slate-600 hover:text-slate-900">
+        Home
+        <span className="absolute inset-x-3 -bottom-1 block h-0.5 scale-x-0 bg-brand-500 transition group-hover:scale-x-100" />
+      </button>
+      <button className="px-3 py-2 text-sm text-slate-600 data-[active=true]:text-brand-600 data-[active=true]:font-semibold">
+        Docs
+      </button>
+    </nav>
+  )
+}
+```
+
+**Demo：自定义插件扩展一个工具类**
+
+```ts
+// tailwind.config.ts 片段
+import plugin from 'tailwindcss/plugin'
+
+export default {
+  // ...
+  plugins: [
+    plugin(({ matchUtilities, theme }) => {
+      matchUtilities(
+        {
+          'grid-auto-fill': (value) => ({
+            gridTemplateColumns: `repeat(auto-fill, minmax(${value}, 1fr))`,
+          }),
+        },
+        { values: theme('spacing') },
+      )
+    }),
+  ],
+}
+```
+
+```tsx
+// 使用自定义工具类
+<div className="grid gap-4 grid-auto-fill-48">
+  {/* 自动填充列，最小 12rem */}
+</div>
+```
+
+## 出口：组件重新长出语义
+
+- 这是最容易被忽略、但最决定可维护性的阶段。
+- 原子类在模板里很好试验，但项目一旦变大，真正决定代码质量的，是你有没有把这些类重新组织成稳定组件接口。
+- 推荐把尺寸、色板、状态、slot 这类变化集中到 `cva` 或 `tailwind-variants` 里，而不是让业务组件到处拼。
+- 再配合 `tailwind-merge` 收尾，才能让“组件默认样式”和“调用方覆盖样式”同时成立，并且行为可预测。
+
+可以把这一步理解成：前面把样式拆小了，到了这里必须再把它们重新装回“人能读懂”的结构。
+
+### 什么时候说明你已经走偏了
+
+- 一个按钮组件有十几个布尔参数，但没有集中变体定义。
+- 业务组件里反复出现大段重复 class，只是改了 1 到 2 个值。
+- 调用方一传 `className`，你就不确定最终到底会生效哪条样式。
+
+**Demo：用 tailwind-variants 简化 variants**
+
+```tsx
+// src/components/Badge.tsx
+import { tv } from 'tailwind-variants'
+
+const badge = tv({
+  base: 'inline-flex items-center gap-1 rounded-full font-medium',
+  variants: {
+    tone: {
+      success: 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-100',
+      warning: 'bg-amber-50 text-amber-700 ring-1 ring-amber-100',
+    },
+    size: { sm: 'px-2 py-1 text-xs', md: 'px-3 py-1.5 text-sm' },
+  },
+  defaultVariants: { tone: 'success', size: 'sm' },
+})
+
+export function Badge({ tone, size, className, ...props }) {
+  return <span {...props} className={badge({ tone, size, class: className })} />
+}
+```
+
+> 延伸阅读：
+> - [Tailwind vs UnoCSS 对比](./tailwind-vs-unocss)
+> - [tailwind-merge、cva、tailwind-variants 精要](./merge-and-variants)

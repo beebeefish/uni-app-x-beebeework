@@ -1,0 +1,228 @@
+<template>
+	<!-- App 平台：使用原生视图渲染 SVG，性能最佳 -->
+	<!-- #ifdef APP-ANDROID || APP-IOS -->
+	<!-- @vue-ignore -->
+	<native-view @init="onInit"></native-view>
+	<!-- #endif -->
+
+	<!-- 小程序平台：使用 image 标签显示 SVG -->
+	<!-- #ifdef MP || APP-HARMONY || H5 -->
+	<!-- @vue-ignore -->
+	<image class="cl-svg" :src="svgSrc"></image>
+	<!-- #endif -->
+</template>
+
+<script lang="ts" setup>
+import { computed, watch, onMounted } from "vue";
+import { getColor, isDark } from "@/.cool";
+
+// #ifdef APP-ANDROID || APP-IOS
+import { CoolSvg } from "@/uni_modules/cool-svg";
+// #endif
+
+// 组件属性定义
+const props = defineProps({
+	/**
+	 * SVG 数据源
+	 * 支持格式：
+	 * - 文件路径：'/static/icon.svg'
+	 * - base64 数据：'data:image/svg+xml;base64,PHN2Zw...'
+	 * - 标签 SVG：'<svg>...</svg>'
+	 */
+	src: {
+		type: String,
+		default: ""
+	},
+	/**
+	 * SVG 填充颜色
+	 * 支持格式：#hex、rgb()、rgba()、颜色名称
+	 * 会自动替换 SVG 中 path 元素的 fill 属性
+	 * 温馨提示：建议优先在 SVG 文件中直接设置所需颜色值，因为不同平台对 SVG 颜色渲染的兼容性存在差异，统一性无法完全保证。
+	 */
+	color: {
+		type: String,
+		default: ""
+	}
+});
+
+// 颜色值
+const color = computed(() => {
+	if (props.color == "none") {
+		return "";
+	}
+
+	if (props.color != "") {
+		if (props.color == "primary") {
+			return getColor("teal-500/10");
+		}
+
+		return props.color;
+	} else {
+		return isDark.value ? "white" : "black";
+	}
+});
+
+/**
+ * 将 SVG 字符串转换为数据 URL
+ * @param svgString 原始 SVG 字符串
+ * @returns 转换后的数据 URL
+ */
+function svgToDataUrl(svgString: string): string {
+	let encodedSvg: string;
+
+	// #ifdef APP-ANDROID || APP-IOS
+	// App 平台：简单的空格替换即可，无需完整 URL 编码
+	encodedSvg = svgString.replace(/\+/g, "%20");
+	// #endif
+
+	// #ifndef APP-ANDROID || APP-IOS
+	// 非 App 平台：使用标准 URL 编码
+	encodedSvg = encodeURIComponent(svgString)!.replace(/\+/g, "%20");
+	// #endif
+
+	// 确保返回完整的数据 URL 格式
+	return encodedSvg.startsWith("data:image/svg+xml,")
+		? encodedSvg
+		: `data:image/svg+xml,${encodedSvg}`;
+}
+
+/**
+ * 计算最终的 SVG 数据源
+ * 自动判断数据类型并进行相应处理
+ */
+const svgSrc = computed((): string => {
+	let val = props.src;
+
+	if (val == "") {
+		return "";
+	}
+
+	// 处理颜色
+	if (color.value != "") {
+		if (val.includes("fill")) {
+			val = val.replace(/(<path\b[^>]*\bfill=")[^"]*("[^>]*>)/g, `$1${color.value}$2`);
+		} else {
+			val = val.replace(/<svg /g, `<svg fill="${color.value}" `);
+		}
+	}
+
+	// 判断是否为 标签 SVG（以 <svg 开头）
+	if (val.startsWith("<svg")) {
+		return svgToDataUrl(val);
+	}
+
+	// 其他情况直接返回原始数据源（文件路径、base64 等）
+	return val;
+});
+
+/**
+ * 生成符合 RFC4122 标准的 UUID v4
+ * 用于 Web 平台创建唯一的元素 ID
+ * @returns UUID 字符串
+ */
+function generateUuid(): string {
+	const chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".split("");
+	const uuid: string[] = [];
+
+	// 生成 36 位字符
+	for (let i = 0; i < 36; i++) {
+		const randomIndex = Math.floor(Math.random() * 16);
+		const char = chars[i == 19 ? (randomIndex & 0x3) | 0x8 : randomIndex];
+		uuid.push(char);
+	}
+
+	// 设置 RFC4122 标准要求的固定位
+	uuid[8] = "-"; // 第一个连字符
+	uuid[13] = "-"; // 第二个连字符
+	uuid[18] = "-"; // 第三个连字符
+	uuid[23] = "-"; // 第四个连字符
+	uuid[14] = "4"; // 版本号 v4
+
+	return uuid.join("");
+}
+
+// Web 平台使用的唯一元素 ID
+const svgId = `cool-svg-${generateUuid()}`;
+
+// #ifdef APP-ANDROID || APP-IOS
+// App 平台 SVG 渲染器实例
+let svgRenderer: CoolSvg | null = null;
+
+// 重新加载
+function reload() {
+	if (svgRenderer != null) {
+		svgRenderer!.load(svgSrc.value, color.value);
+	}
+}
+
+/**
+ * App 平台原生视图初始化回调
+ * @param e 原生视图初始化事件
+ */
+function onInit(e: UniNativeViewInitEvent) {
+	svgRenderer = new CoolSvg(e.detail.element);
+	reload();
+}
+
+/**
+ * 监听 SVG 数据源变化，重新渲染
+ */
+watch(svgSrc, (newSrc: string) => {
+	if (svgRenderer != null && newSrc != "") {
+		reload();
+	}
+});
+// #endif
+
+/**
+ * 设置颜色
+ */
+function setColor() {
+	if (color.value == "") {
+		return;
+	}
+
+	// #ifdef WEB
+	const element = document.getElementById(svgId) as HTMLObjectElement;
+	if (element != null) {
+		const set = () => {
+			const svgDoc = element.getSVGDocument();
+
+			if (svgDoc != null) {
+				// 查找所有 path 元素并应用颜色
+				const paths = svgDoc.querySelectorAll("path");
+				paths?.forEach((path) => {
+					path.setAttribute("fill", color.value);
+				});
+			}
+		};
+
+		if (element.getSVGDocument() != null) {
+			set();
+		} else {
+			element.addEventListener("load", set);
+		}
+	}
+	// #endif
+
+	// #ifdef APP-ANDROID || APP-IOS
+	if (svgRenderer != null && svgSrc.value != "") {
+		reload();
+	}
+	// #endif
+}
+
+/**
+ * 监听颜色变化，重新渲染
+ */
+watch(
+	computed(() => [props.color, isDark.value]),
+	() => {
+		setColor();
+	}
+);
+
+onMounted(() => {
+	setColor();
+});
+</script>

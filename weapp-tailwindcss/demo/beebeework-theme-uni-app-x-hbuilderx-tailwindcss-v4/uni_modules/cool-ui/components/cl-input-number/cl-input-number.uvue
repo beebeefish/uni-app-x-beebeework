@@ -1,0 +1,336 @@
+<template>
+	<view
+		class="cl-input-number"
+		:class="[
+			{
+				'cl-input-number--disabled': isDisabled
+			},
+			pt.className
+		]"
+		:style="{
+			height: getUnit(size)
+		}"
+	>
+		<view
+			class="cl-input-number__minus"
+			:class="[
+				{
+					'is-disabled': !isMinus
+				},
+				pt.op?.className,
+				pt.op?.minus?.className
+			]"
+			hover-class="!bg-gray-200/10"
+			:hover-stay-time="250"
+			:style="{
+				height: getUnit(size),
+				width: getUnit(size)
+			}"
+			@touchstart="onMinus"
+			@touchend="longPress.stop"
+			@touchcancel="longPress.stop"
+		>
+			<cl-icon
+				name="subtract-line"
+				:size="pt.op?.icon?.size ?? 16"
+				:color="pt.op?.icon?.color ?? 'info'"
+				:pt="{
+					className: pt.op?.icon?.className
+				}"
+			></cl-icon>
+		</view>
+
+		<view class="cl-input-number__value">
+			<cl-input
+				:model-value="`${value}`"
+				:type="inputType"
+				:disabled="isDisabled"
+				:clearable="false"
+				:readonly="inputable == false"
+				:placeholder="placeholder"
+				:hold-keyboard="false"
+				:pt="{
+					className: `!h-full w-[50px] ${pt.value?.className}`,
+					inner: {
+						className: `text-center ${pt.value?.input?.className}`
+					}
+				}"
+				@blur="onBlur"
+			></cl-input>
+		</view>
+
+		<view
+			class="cl-input-number__plus"
+			:class="[
+				{
+					'is-disabled': !isPlus
+				},
+				pt.op?.className,
+				pt.op?.plus?.className
+			]"
+			hover-class="!bg-teal-600/10"
+			:hover-stay-time="250"
+			:style="{
+				height: getUnit(size),
+				width: getUnit(size)
+			}"
+			@touchstart="onPlus"
+			@touchend="longPress.stop"
+			@touchcancel="longPress.stop"
+		>
+			<cl-icon
+				name="add-line"
+				:size="pt.op?.icon?.size ?? 16"
+				:color="pt.op?.icon?.color ?? 'white'"
+				:pt="{
+					className: pt.op?.icon?.className
+				}"
+			></cl-icon>
+		</view>
+	</view>
+</template>
+
+<script lang="ts" setup>
+import { computed, nextTick, ref, watch, type PropType } from "vue";
+import type { PassThroughProps } from "../../types";
+import type { ClIconProps } from "../cl-icon/props";
+import { useLongPress, parsePt, getUnit } from "@/.cool";
+import { useForm } from "../../hooks";
+
+defineOptions({
+	name: "cl-input-number"
+});
+
+// 定义组件属性
+const props = defineProps({
+	modelValue: {
+		type: Number,
+		default: 0
+	},
+	// 透传样式配置
+	pt: {
+		type: Object,
+		default: () => ({})
+	},
+	// 占位符 - 输入框为空时显示的提示文本
+	placeholder: {
+		type: String,
+		default: ""
+	},
+	// 步进值 - 点击加减按钮时改变的数值
+	step: {
+		type: Number,
+		default: 1
+	},
+	// 最大值 - 允许输入的最大数值
+	max: {
+		type: Number,
+		default: 100
+	},
+	// 最小值 - 允许输入的最小数值
+	min: {
+		type: Number,
+		default: 0
+	},
+	// 输入框类型 - digit表示带小数点的数字键盘,number表示纯数字键盘
+	inputType: {
+		type: String as PropType<"digit" | "number">,
+		default: "number"
+	},
+	// 是否可输入 - 控制是否允许手动输入数值
+	inputable: {
+		type: Boolean,
+		default: true
+	},
+	// 是否禁用 - 禁用后无法输入和点击加减按钮
+	disabled: {
+		type: Boolean,
+		default: false
+	},
+	// 组件大小 - 控制加减按钮的尺寸,支持数字或字符串形式
+	size: {
+		type: [Number, String] as PropType<number | string>,
+		default: 24
+	}
+});
+
+// 定义组件事件
+const emit = defineEmits(["update:modelValue", "change"]);
+
+// 长按操作
+const longPress = useLongPress();
+
+// cl-form 上下文
+const { disabled } = useForm();
+
+// 是否禁用
+const isDisabled = computed(() => {
+	return disabled.value || props.disabled;
+});
+
+// 数值样式
+type ValuePassThrough = {
+	className?: string;
+	input?: PassThroughProps;
+};
+
+// 操作按钮样式
+type OpPassThrough = {
+	className?: string;
+	minus?: PassThroughProps;
+	plus?: PassThroughProps;
+	icon?: ClIconProps;
+};
+
+// 定义透传样式类型
+type PassThrough = {
+	className?: string;
+	value?: ValuePassThrough;
+	op?: OpPassThrough;
+};
+
+// 解析透传样式配置
+const pt = computed(() => parsePt<PassThrough>(props.pt));
+
+// 绑定值
+const value = ref(props.modelValue);
+
+// 是否可以继续增加数值
+const isPlus = computed(() => !isDisabled.value && value.value < props.max);
+
+// 是否可以继续减少数值
+const isMinus = computed(() => !isDisabled.value && value.value > props.min);
+
+/**
+ * 更新数值并触发事件
+ * 确保数值在最大值和最小值范围内
+ */
+function update() {
+	nextTick(() => {
+		let val = value.value;
+
+		// 处理小于最小值的情况
+		if (val < props.min) {
+			val = props.min;
+		}
+
+		// 处理大于最大值的情况
+		if (val > props.max) {
+			val = props.max;
+		}
+
+		// 处理最小值大于最大值的异常情况
+		if (props.min > props.max) {
+			val = props.max;
+		}
+
+		// 小数点后两位
+		if (props.inputType == "digit") {
+			val = parseFloat(val.toFixed(2));
+		}
+
+		// 更新值，确保值是数字
+		value.value = val;
+
+		// 如果值发生变化，则触发事件
+		if (val != props.modelValue) {
+			emit("update:modelValue", val);
+			emit("change", val);
+		}
+	});
+}
+
+/**
+ * 点击加号按钮处理函数 (支持长按)
+ * 在非禁用状态下增加step值
+ */
+function onPlus() {
+	if (isDisabled.value || !isPlus.value) return;
+
+	longPress.start(() => {
+		if (isPlus.value) {
+			const val = props.max - value.value;
+			value.value += val > props.step ? props.step : val;
+			update();
+		}
+	});
+}
+
+/**
+ * 点击减号按钮处理函数 (支持长按)
+ * 在非禁用状态下减少step值
+ */
+function onMinus() {
+	if (isDisabled.value || !isMinus.value) return;
+
+	longPress.start(() => {
+		if (isMinus.value) {
+			const val = value.value - props.min;
+			value.value -= val > props.step ? props.step : val;
+			update();
+		}
+	});
+}
+
+/**
+ * 输入框失去焦点处理函数
+ * @param val 输入的字符串值
+ */
+function onBlur(e: UniInputBlurEvent) {
+	if (e.detail.value == "") {
+		value.value = 0;
+	} else {
+		value.value = parseFloat(e.detail.value);
+	}
+
+	update();
+}
+
+// 监听绑定值变化
+watch(
+	computed(() => props.modelValue),
+	(val: number) => {
+		value.value = val;
+		update();
+	},
+	{
+		immediate: true
+	}
+);
+
+// 监听最大值变化,确保当前值不超过新的最大值
+watch(
+	computed(() => props.max),
+	update
+);
+
+// 监听最小值变化,确保当前值不小于新的最小值
+watch(
+	computed(() => props.min),
+	update
+);
+</script>
+
+<style lang="scss" scoped>
+.cl-input-number {
+	@apply flex flex-row items-center;
+
+	&__plus,
+	&__minus {
+		@apply flex items-center justify-center rounded-lg bg-gray-100/10;
+
+		&.is-disabled {
+			@apply opacity-50;
+		}
+	}
+
+	&__plus {
+		@apply bg-teal-500/10;
+	}
+
+	&__value {
+		@apply flex flex-row items-center justify-center h-full;
+		margin: 0 6px;
+	}
+}
+</style>

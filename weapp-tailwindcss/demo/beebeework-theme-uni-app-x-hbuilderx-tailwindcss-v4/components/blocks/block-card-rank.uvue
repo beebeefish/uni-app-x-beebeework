@@ -1,0 +1,144 @@
+<template>
+  <view class="-mx-4 flex flex-col gap-1 mb-4">
+    <!-- 1. 卡片头部 -->
+    <view class="flex flex-col w-full px-4">
+      <h3 class="text-lg font-bold text-gray-900 dark:text-white tracking-tight truncate flex flex-row items-center gap-2">
+        <text>{{ normalizedItem.title }}</text>
+        <svg-icon :size="20"><text class="i-[mingcute--right-line] text-gray-400 dark:text-neutral-500 size-[20px]"></text></svg-icon>
+      </h3>
+      <p class="text-xs text-gray-500 dark:text-gray-400 truncate mt-0.5">
+        {{ normalizedItem.description }}
+      </p>
+    </view>
+
+    <!-- 2. 横向滚动榜单列表 -->
+    <scroll-view 
+      type="custom" 
+      scroll-x="true"
+      class="w-full flex flex-row justify-between flex-nowrap h-[220px] relative"
+      :show-scrollbar="false" 
+      :scroll-left="scrollLeft"
+      :scroll-with-animation="!isSwiping"
+      @scroll="onScroll"
+    >
+      <view 
+        v-for="(item, index) in normalizedItem.rankdata" 
+        :key="index"
+        :class="[
+          'flex flex-col justify-between w-[90%] flex-shrink-0 last:mr-4 h-[220px]',
+          index === 0 ? 'ml-4' : ''
+        ]"
+      >
+        <view 
+          v-for="(subItem, subIndex) in item" 
+          :key="subIndex"
+          @click="!isSwiping && $emit('item-click', normalizedItem)"
+          class="flex flex-row items-center gap-3 py-2.5 relative"
+          :class="{ 'pointer-events-none': isSwiping }"
+        >
+          <!-- ========== 图片区域：话题榜不显示 ========== -->
+          <view 
+            v-if="rankType !== 'topic'"
+            class="size-13 flex items-center justify-center bg-white border border-gray-300/50 overflow-hidden flex-shrink-0"
+            :class="isImageType ? 'rounded-lg' : 'rounded-full'"
+          >
+            <image 
+              mode="aspectFill"
+              :src="subItem.user?.avatar" 
+              class="size-12 object-cover flex-shrink-0"
+              :class="isImageType ? '' : 'rounded-full'"
+              alt="img"
+            />
+          </view>
+
+          <!-- 排名序号 + 文字 -->
+          <view class="flex flex-row gap-1.5 flex-1 min-w-0">
+            <view class="w-5 flex flex-row items-center justify-center text-center font-bold text-sm text-gray-700 dark:text-gray-300">
+              {{ subItem.data?.rank }}
+            </view>
+            <view class="flex flex-col flex-1 min-w-0">
+              <span class="text-sm text-gray-800 dark:text-gray-200 truncate">
+                {{ subItem.user?.name }}
+              </span>
+              <span class="text-[10px] text-gray-400 dark:text-gray-500 flex flex-row items-center gap-1">
+              <text class="text-gray-500 dark:text-gray-400">
+                {{ subItem.data?.label }}: {{ formatNumber(subItem.data?.points) }}</text>
+                <text class="font-bold text-gray-600 dark:text-gray-400" v-if="subItem.data?.extra"> · {{ subItem.data.extra }}</text>
+              
+              </span>
+            </view>
+          </view>
+
+          <!-- 分割线：话题榜无图片，分割线左对齐 -->
+          <view 
+            v-if="subIndex !== item.length - 1" 
+            class="absolute bottom-0 h-[1px] bg-gray-300/50 dark:bg-white/10"
+            :class="rankType === 'topic' ? 'left-[28px] right-4' : 'left-[64px] right-4'"
+          ></view>
+        </view>
+      </view>
+    </scroll-view>
+  </view>
+</template>
+
+<script setup>
+import { computed, ref, watch, nextTick } from 'vue'
+
+const props = defineProps({
+  item: { type: Object, required: true },
+  isSwiping: { type: Boolean, default: false }
+})
+
+defineEmits(['item-click', 'avatar-click'])
+
+
+const rankType = computed(() => props.item.ranktype || 'user')
+
+// 作品和商品用圆角矩形封面，达人/金币用圆形头像
+const isImageType = computed(() => ['work', 'product'].includes(rankType.value))
+
+const normalizedItem = computed(() => {
+  const raw = props.item
+  return {
+    id: raw.id,
+    title: raw.title?.rendered || raw.displayTitle || '无标题榜单',
+    description: raw.description || '暂无榜单描述信息',
+    cover: raw.cover || '',
+    categories: raw.categories || [],
+    rankdata: chunkArray(raw.rankdata || [], 3),
+    meta: raw.meta || { views: 0, likes: 0 }
+  }
+})
+
+function chunkArray(array, size) {
+  const result = []
+  for (let i = 0; i < array.length; i += size) {
+    result.push(array.slice(i, i + size))
+  }
+  return result
+}
+
+function formatNumber(num) {
+  if (!num && num !== 0) return '0'
+  if (num >= 10000) return (num / 10000).toFixed(1) + 'w'
+  if (num >= 1000) return (num / 1000).toFixed(1) + 'k'
+  return num.toString()
+}
+
+const scrollLeft = ref(0)
+let currentScrollX = 0
+
+// 记录用户手动滚动时的位置
+const onScroll = (e) => {
+	currentScrollX = e.detail.scrollLeft
+}
+
+// 💡 核心联动：只要父级切换了分类（props.item 变了）
+watch(() => props.item, () => {
+	// 先瞬间设为一个极小值（或者 0.1），再归零，强制触发 Skyline 的滚动重置
+	scrollLeft.value = currentScrollX > 0 ? 0.1 : 0
+	nextTick(() => {
+		scrollLeft.value = 0
+	})
+}, { deep: true })
+</script>

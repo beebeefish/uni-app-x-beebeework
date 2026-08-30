@@ -1,0 +1,9 @@
+{
+  "deploymentTarget": "9",
+  "dependencies-pods": [
+  	{
+  		"name": "SVGKit",
+  		"version": "2.1.0"
+  	}
+  ]
+}

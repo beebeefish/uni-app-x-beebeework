@@ -1,0 +1,109 @@
+---
+toc_max_heading_level: 4
+title: CSS 单位转化
+description: 配置 px2rpx 和 unitsToPx，处理小程序、多端和 uni-app x 场景里的单位转换。
+keywords:
+  - 快速开始
+  - 安装
+  - 配置
+  - CSS
+  - 单位转化
+  - quick start
+  - css unit transform
+  - weapp-tailwindcss
+  - tailwindcss
+  - 小程序
+  - 微信小程序
+  - uni-app
+  - taro
+  - rax
+  - mpx
+---
+
+# CSS 单位转化
+
+最常见的情况是 `rem` 转 `rpx`，直接在 `WeappTailwindcss` 里开 `rem2rpx` 就行：
+
+```js
+WeappTailwindcss({
+  rem2rpx: true,
+})
+```
+
+`true` 表示 `1rem = 32rpx`。这页只讲另外两种情况：`px` 转 `rpx`，以及多单位转 `px`。
+
+## px 转 rpx
+
+从 `weapp-tailwindcss@4.3.0` 开始，插件内置了 [`postcss-pxtransform`](https://www.npmjs.com/package/postcss-pxtransform)。需要 `px` 转 `rpx` 时，直接开 `px2rpx`：
+
+```js
+// vite
+import { WeappTailwindcss } from 'weapp-tailwindcss/vite'
+
+WeappTailwindcss({
+  px2rpx: true,
+})
+```
+
+```js
+// webpack
+const { WeappTailwindcss } = require('weapp-tailwindcss/webpack')
+
+new WeappTailwindcss({
+  px2rpx: true,
+})
+```
+
+`true` 会按 `1:1` 转换，比如 `10px` 输出成 `10rpx`。
+
+如果你的设计稿是 375 宽，希望 `10px` 输出为 `20rpx`，传对象：
+
+```js
+WeappTailwindcss({
+  px2rpx: {
+    designWidth: 375,
+    deviceRatio: {
+      375: 2,
+    },
+  },
+})
+```
+
+更多参数看 [`postcss-pxtransform`](https://www.npmjs.com/package/postcss-pxtransform)。不要为了单位转换再把 Tailwind CSS 官方 PostCSS 插件注册进来，小程序样式生成仍然由 `weapp-tailwindcss` 接管。
+
+## 多单位转 px
+
+`uni-app x` 等场景更适合输出 `px`。这时可以启用 `unitsToPx`，把 `rem`、`em`、`vw`、`vh`、`vmin`、`vmax`、`rpx` 等单位转成 `px`。
+
+```js
+// vite
+import { WeappTailwindcss } from 'weapp-tailwindcss/vite'
+
+WeappTailwindcss({
+  unitsToPx: true,
+})
+```
+
+默认换算里：
+
+- `1rem` 输出为 `16px`
+- `2rpx` 输出为 `1px`
+
+需要自定义时传对象：
+
+```js
+const { WeappTailwindcss } = require('weapp-tailwindcss/webpack')
+
+new WeappTailwindcss({
+  unitsToPx: {
+    unitPrecision: 2,
+    unitMap: {
+      rem: 16,
+      rpx: 0.5,
+      vw: 3.75,
+    },
+  },
+})
+```
+
+如果最终想输出 `px`，不要同时开启 `px2rpx` 或 `rem2rpx`。`unitsToPx` 会先转成 `px`，后续还会继续被转成 `rpx`。

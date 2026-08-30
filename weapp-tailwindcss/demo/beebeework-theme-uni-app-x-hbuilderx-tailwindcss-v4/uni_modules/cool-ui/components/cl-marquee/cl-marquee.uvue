@@ -1,0 +1,289 @@
+<template>
+	<view ref="marqueeRef" class="cl-marquee" :class="[pt.className]">
+		<view
+			class="cl-marquee__list"
+			:class="[
+				pt.list?.className,
+				{
+					'is-vertical': direction == 'vertical',
+					'is-horizontal': direction == 'horizontal'
+				}
+			]"
+			:style="listStyle"
+		>
+			<!-- 渲染两份图片列表实现无缝滚动 -->
+			<view
+				class="cl-marquee__item"
+				v-for="(item, index) in duplicatedList"
+				:key="`${item.url}-${index}`"
+				:class="[pt.item?.className]"
+				:style="itemStyle"
+			>
+				<slot name="item" :item="item" :index="item.originalIndex">
+					<image
+						:src="item.url"
+						mode="aspectFill"
+						class="cl-marquee__image"
+						:class="[pt.image?.className]"
+					></image>
+				</slot>
+			</view>
+		</view>
+	</view>
+</template>
+
+<script setup lang="ts">
+import { computed, ref, onMounted, onUnmounted, type PropType, watch } from "vue";
+import { AnimationEngine, createAnimation, getUnit, parsePt } from "@/.cool";
+import type { PassThroughProps } from "../../types";
+
+type MarqueeItem = {
+	url: string;
+	originalIndex: number;
+};
+
+defineOptions({
+	name: "cl-marquee"
+});
+
+defineSlots<{
+	item(props: { item: MarqueeItem; index: number }): any;
+}>();
+
+const props = defineProps({
+	// 透传属性
+	pt: {
+		type: Object,
+		default: () => ({})
+	},
+	// 图片列表
+	list: {
+		type: Array as PropType<string[]>,
+		default: () => []
+	},
+	// 滚动方向
+	direction: {
+		type: String as PropType<"horizontal" | "vertical">,
+		default: "horizontal"
+	},
+	// 一次滚动的持续时间
+	duration: {
+		type: Number,
+		default: 5000
+	},
+	// 图片高度
+	itemHeight: {
+		type: Number,
+		default: 100
+	},
+	// 图片宽度 (仅横向滚动时生效，纵向为100%)
+	itemWidth: {
+		type: Number,
+		default: 150
+	},
+	// 间距
+	gap: {
+		type: Number,
+		default: 10
+	}
+});
+
+// 透传属性类型定义
+type PassThrough = {
+	className?: string;
+	list?: PassThroughProps;
+	item?: PassThroughProps;
+	image?: PassThroughProps;
+};
+
+const pt = computed(() => parsePt<PassThrough>(props.pt));
+
+/** 跑马灯引用 */
+const marqueeRef = ref<UniElement | null>(null);
+
+/** 当前偏移量 */
+const currentOffset = ref(0);
+
+/** 重复的图片列表（用于无缝滚动） */
+const duplicatedList = computed<MarqueeItem[]>(() => {
+	if (props.list.length == 0) return [];
+
+	const originalItems = props.list.map(
+		(url, index) =>
+			({
+				url,
+				originalIndex: index
+			}) as MarqueeItem
+	);
+
+	// 复制一份用于无缝滚动
+	const duplicatedItems = props.list.map(
+		(url, index) =>
+			({
+				url,
+				originalIndex: index
+			}) as MarqueeItem
+	);
+
+	return [...originalItems, ...duplicatedItems] as MarqueeItem[];
+});
+
+/** 容器样式 */
+const listStyle = computed(() => {
+	const isVertical = props.direction == "vertical";
+
+	const style = {
+		transform: isVertical
+			? `translateY(${getUnit(currentOffset.value)})`
+			: `translateX(${getUnit(currentOffset.value)})`
+	};
+
+	// #ifdef APP
+	if (props.direction == "vertical") {
+		style["height"] = getUnit((props.itemHeight + props.gap) * duplicatedList.value.length);
+	} else {
+		style["width"] = getUnit((props.itemWidth + props.gap) * duplicatedList.value.length);
+	}
+	// #endif
+
+	return style;
+});
+
+/** 图片项样式 */
+const itemStyle = computed(() => {
+	const style = {};
+
+	if (props.direction == "vertical") {
+		style["height"] = getUnit(props.itemHeight);
+		style["marginBottom"] = getUnit(props.gap);
+	} else {
+		style["width"] = getUnit(props.itemWidth);
+		style["marginRight"] = getUnit(props.gap);
+	}
+
+	return style;
+});
+
+/** 单个项目的尺寸（包含间距） */
+const itemSize = computed(() => {
+	const size = props.direction == "vertical" ? props.itemHeight : props.itemWidth;
+	return size + props.gap;
+});
+
+/** 总的滚动距离 */
+const totalScrollDistance = computed(() => {
+	return props.list.length * itemSize.value;
+});
+
+/** 动画实例 */
+let animation: AnimationEngine | null = null;
+
+/**
+ * 开始动画
+ */
+function start() {
+	if (props.list.length <= 1) return;
+
+	animation = createAnimation(marqueeRef.value, {
+		duration: props.duration,
+		timingFunction: "linear",
+		loop: -1,
+		frame: (progress: number) => {
+			currentOffset.value = -progress * totalScrollDistance.value;
+		}
+	});
+
+	animation!.play();
+}
+
+/**
+ * 播放动画
+ */
+function play() {
+	if (animation != null) {
+		animation!.play();
+	}
+}
+
+/**
+ * 暂停动画
+ */
+function pause() {
+	if (animation != null) {
+		animation!.pause();
+	}
+}
+
+/**
+ * 停止动画
+ */
+function stop() {
+	if (animation != null) {
+		animation!.stop();
+	}
+}
+
+/**
+ * 重置动画
+ */
+function reset() {
+	currentOffset.value = 0;
+
+	if (animation != null) {
+		animation!.stop();
+		animation!.reset();
+	}
+}
+
+onMounted(() => {
+	setTimeout(() => {
+		start();
+	}, 300);
+
+	watch(
+		computed(() => [props.duration, props.itemHeight, props.itemWidth, props.gap, props.list]),
+		() => {
+			reset();
+			start();
+		}
+	);
+});
+
+onUnmounted(() => {
+	stop();
+});
+
+defineExpose({
+	start,
+	stop,
+	reset,
+	pause,
+	play
+});
+</script>
+
+<style lang="scss" scoped>
+.cl-marquee {
+	@apply relative;
+
+	&__list {
+		@apply flex h-full overflow-visible;
+
+		&.is-horizontal {
+			@apply flex-row;
+		}
+
+		&.is-vertical {
+			@apply flex-col;
+		}
+	}
+
+	&__item {
+		@apply relative h-full;
+	}
+
+	&__image {
+		@apply w-full h-full rounded-xl;
+	}
+}
+</style>

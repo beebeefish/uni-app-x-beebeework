@@ -1,0 +1,27 @@
+<template>
+<view class="px-4">
+  <view class="flex flex-row justify-center items-center gap-3 w-fit flex-nowrap mx-auto pb-3">
+    <view 
+    v-for="(item, index) in actionsBtn" 
+    :key="index" 
+     @click="onMenuClick(item.name)" 
+     class="whitespace-nowrap flex flex-row items-center rounded-full text-sm h-10 px-4 secondary-btn">
+      {{item.name}}
+    </view>
+  </view>
+</view>
+</template>
+
+<script setup>
+import { computed } from 'vue'
+
+const props = defineProps({
+  data: { type: Object, default: () => ({}) }
+})
+
+const actionsBtn = computed(() => props.data?.actionsBtn || [])
+
+const onMenuClick = (title) => {
+  uni.showToast({ title: `点击了: ${title}`, icon: 'none' })
+}
+</script>

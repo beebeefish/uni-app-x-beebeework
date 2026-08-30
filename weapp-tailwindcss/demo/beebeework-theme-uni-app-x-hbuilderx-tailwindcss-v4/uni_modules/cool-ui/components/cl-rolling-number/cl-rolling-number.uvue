@@ -1,0 +1,225 @@
+<template>
+	<cl-text
+		:color="pt.color ?? color ?? ''"
+		:size="pt.size ?? size"
+		:pt="{
+			className: parseClass(['cl-rolling-number', pt.className])
+		}"
+		>{{ displayNumber }}</cl-text
+	>
+</template>
+
+<script setup lang="ts">
+import { ref, watch, onMounted, computed } from "vue";
+import { parseClass, parsePt } from "@/.cool";
+
+const props = defineProps({
+	// 透传样式对象
+	pt: {
+		type: Object,
+		default: () => ({})
+	},
+	// 目标数字
+	value: {
+		type: Number,
+		default: 0
+	},
+	// 动画持续时间（毫秒）
+	duration: {
+		type: Number,
+		default: 1000
+	},
+	// 显示的小数位数
+	decimals: {
+		type: Number,
+		default: 0
+	},
+	// 字体大小
+	size: {
+		type: Number,
+		default: 14
+	},
+	// 字体颜色
+	color: {
+		type: String,
+		default: null
+	}
+});
+
+// 定义透传类型，仅支持className
+type PassThrough = {
+	className?: string;
+	color?: string;
+	size?: number;
+};
+
+// 计算pt样式，便于组件内使用
+const pt = computed(() => parsePt<PassThrough>(props.pt));
+
+// 当前动画显示的数字
+const currentNumber = ref<number>(0);
+
+// 当前格式化后显示的字符串
+const displayNumber = ref<string>("0");
+
+// requestAnimationFrame动画ID，用于取消动画
+let animationId: number = 0;
+
+// setTimeout定时器ID，用于兼容模式
+let timerId: number = 0;
+
+// 动画起始值
+let startValue: number = 0;
+
+// 动画目标值
+let targetValue: number = 0;
+
+// 动画起始时间戳
+let startTime: number = 0;
+
+// 缓动函数，ease out cubic，动画更自然
+function easeOut(t: number): number {
+	return 1 - Math.pow(1 - t, 3);
+}
+
+// 格式化数字，保留指定小数位
+function formatNumber(num: number): string {
+	if (props.decimals == 0) {
+		return Math.round(num).toString();
+	}
+	return num.toFixed(props.decimals);
+}
+
+// 动画主循环，每帧更新currentNumber和displayNumber
+function animate(timestamp: number): void {
+	// 首帧记录动画起始时间
+	if (startTime == 0) {
+		startTime = timestamp;
+	}
+
+	// 计算已用时间
+	const elapsed = timestamp - startTime;
+	// 计算动画进度，最大为1
+	const progress = Math.min(elapsed / props.duration, 1);
+
+	// 应用缓动函数
+	const easedProgress = easeOut(progress);
+
+	// 计算当前动画值
+	const currentValue = startValue + (targetValue - startValue) * easedProgress;
+	currentNumber.value = currentValue;
+	displayNumber.value = formatNumber(currentValue);
+
+	// 动画未结束，继续下一帧
+	if (progress < 1) {
+		animationId = requestAnimationFrame((t) => animate(t));
+	} else {
+		// 动画结束，确保显示最终值
+		currentNumber.value = targetValue;
+		displayNumber.value = formatNumber(targetValue);
+		animationId = 0;
+	}
+}
+
+/**
+ * 基于setTimeout的兼容动画实现
+ * 适用于不支持requestAnimationFrame的环境
+ */
+function animateWithTimeout(): void {
+	const frameRate = 60; // 60fps
+	const frameDuration = 1000 / frameRate; // 每帧时间间隔
+	const totalFrames = Math.ceil(props.duration / frameDuration); // 总帧数
+	let currentFrame = 0;
+
+	function loop(): void {
+		currentFrame++;
+
+		// 计算动画进度，最大为1
+		const progress = Math.min(currentFrame / totalFrames, 1);
+
+		// 应用缓动函数
+		const easedProgress = easeOut(progress);
+
+		// 计算当前动画值
+		const currentValue = startValue + (targetValue - startValue) * easedProgress;
+		currentNumber.value = currentValue;
+		displayNumber.value = formatNumber(currentValue);
+
+		// 动画未结束，继续下一帧
+		if (progress < 1) {
+			// @ts-ignore
+			timerId = setTimeout(() => loop(), frameDuration);
+		} else {
+			// 动画结束，确保显示最终值
+			currentNumber.value = targetValue;
+			displayNumber.value = formatNumber(targetValue);
+			timerId = 0;
+		}
+	}
+
+	loop();
+}
+
+// 外部调用，停止动画
+function stop() {
+	if (animationId != 0) {
+		cancelAnimationFrame(animationId);
+		animationId = 0;
+	}
+
+	if (timerId != 0) {
+		clearTimeout(timerId);
+		timerId = 0;
+	}
+}
+
+/**
+ * 启动动画，从from到to
+ * @param from 起始值
+ * @param to 目标值
+ */
+function startAnimation(from: number, to: number): void {
+	// 若有未完成动画，先取消
+	stop();
+
+	startValue = from;
+	targetValue = to;
+	startTime = 0;
+
+	// #ifdef MP
+	animateWithTimeout();
+	// #endif
+
+	// #ifndef MP
+	// 启动动画
+	animationId = requestAnimationFrame(animate);
+	// #endif
+}
+
+// 外部调用，重头开始动画
+function start() {
+	startAnimation(0, props.value);
+}
+
+// 监听value变化，自动启动动画
+watch(
+	computed(() => props.value),
+	(newValue: number, oldValue: number) => {
+		// 只有值变化时才启动动画
+		if (newValue != oldValue) {
+			startAnimation(currentNumber.value, newValue);
+		}
+	},
+	{ immediate: false }
+);
+
+// 组件挂载时，初始化动画
+onMounted(() => {
+	start();
+});
+
+defineExpose({
+	start,
+	stop
+});
+</script>

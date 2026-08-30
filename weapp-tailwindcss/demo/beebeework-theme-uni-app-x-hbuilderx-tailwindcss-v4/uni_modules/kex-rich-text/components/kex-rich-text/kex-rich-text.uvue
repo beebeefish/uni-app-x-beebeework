@@ -1,0 +1,218 @@
+<template>
+	<!--
+		uni-app x 入口组件
+		微信等小程序：系统 rich-text 不支持子节点 itemclick，a 标签需拆出可点击节点
+		App / Web：继续用 rich-text + @itemclick
+	-->
+	<view class="kex-rt-x" :style="containerStyle">
+		<!-- #ifdef MP -->
+		<block v-for="(seg, idx) in mpSegs" :key="idx">
+			<rich-text v-if="seg.kind == 'html'" :nodes="seg.html" :selectable="selectable"></rich-text>
+			<text v-else class="kex-rt-a" @click="onMpAnchorTap(seg)">{{ seg.text }}</text>
+		</block>
+		<!-- #endif -->
+		<!-- #ifndef MP -->
+		<rich-text :nodes="safeNodes" :selectable="selectable" @itemclick="onItemClick"></rich-text>
+		<!-- #endif -->
+	</view>
+</template>
+
+<script setup lang="uts">
+	import {
+		sanitizeHtml,
+		markdownToHtmlLite,
+		htmlToText,
+		splitHtmlByAnchors,
+		KexRtParseOptions,
+		KexRtSanitizeResult,
+		KexRtHtmlSeg
+	} from './parser.uts'
+
+	const props = defineProps({
+		content: { type: String, default: '' },
+		containerStyle: { type: String, default: '' },
+		domain: { type: String, default: '' },
+		copyLink: { type: Boolean, default: true },
+		previewImg: { type: Boolean, default: true },
+		selectable: { type: Boolean, default: false },
+		markdown: { type: Boolean, default: false },
+		sanitize: { type: Boolean, default: true },
+		scrollTable: { type: Boolean, default: true },
+		setTitle: { type: Boolean, default: true },
+		useAnchor: { type: Boolean, default: false },
+		/** 系统 rich-text 侧能力有限，保留声明便于双端同 API */
+		lazyLoad: { type: Boolean, default: false },
+		tagStyleCss: { type: String, default: '' },
+		allowIframe: { type: Boolean, default: false }
+	})
+
+	const emit = defineEmits(['load', 'ready', 'imgtap', 'linktap', 'play', 'error'])
+
+	const safeNodes = ref('')
+	const imgList = ref([] as string[])
+	// #ifdef MP
+	const mpSegs = ref([] as KexRtHtmlSeg[])
+	// #endif
+
+	function rebuild(src : string) {
+		let raw = src
+		if (props.markdown) {
+			raw = markdownToHtmlLite(raw)
+		}
+		const opt = {
+			domain: props.domain,
+			sanitize: props.sanitize,
+			scrollTable: props.scrollTable,
+			tagStyleCss: props.tagStyleCss,
+			allowIframe: props.allowIframe
+		} as KexRtParseOptions
+		const result = sanitizeHtml(raw, opt) as KexRtSanitizeResult
+		safeNodes.value = result.html
+		// #ifdef MP
+		mpSegs.value = splitHtmlByAnchors(result.html)
+		// #endif
+		imgList.value = collectImgSrcs(result.html)
+		if (props.setTitle && result.title.length > 0) {
+			uni.setNavigationBarTitle({ title: result.title })
+		}
+		emit('load')
+		emit('ready', {} as UTSJSONObject)
+	}
+
+	function setContent(html : string) {
+		rebuild(html)
+	}
+
+	function getText() : string {
+		return htmlToText(safeNodes.value)
+	}
+
+	/** 系统 rich-text 无媒体句柄，占位实现 */
+	function pauseMedia() {}
+
+	function collectImgSrcs(html : string) : string[] {
+		const list : string[] = []
+		let from = 0
+		while (true) {
+			const i = html.toLowerCase().indexOf('<img', from)
+			if (i < 0) break
+			const srcKey = html.toLowerCase().indexOf('src=', i)
+			if (srcKey < 0 || srcKey > i + 200) {
+				from = i + 4
+				continue
+			}
+			const q = html.charAt(srcKey + 4)
+			if (q != '"' && q != "'") {
+				from = i + 4
+				continue
+			}
+			const end = html.indexOf(q, srcKey + 5)
+			if (end < 0) break
+			list.push(html.substring(srcKey + 5, end))
+			from = end + 1
+		}
+		return list
+	}
+
+	function tryScrollAnchor(id : string) {
+		if (!props.useAnchor || id.length == 0) return
+		// 尽力：部分端支持 selector；失败则静默
+		uni.pageScrollTo({
+			selector: '#' + id,
+			duration: 300,
+			fail: () => {}
+		})
+	}
+
+	function handleHref(href : string, innerText : string) {
+		if (href.length == 0) return
+		const payload = { href: href, innerText: innerText } as UTSJSONObject
+		emit('linktap', payload)
+		if (href.charAt(0) == '#') {
+			tryScrollAnchor(href.substring(1))
+			return
+		}
+		if (href.indexOf('://') >= 0) {
+			if (props.copyLink) {
+				uni.setClipboardData({
+					data: href,
+					success: () => {
+						uni.showToast({ title: '链接已复制', icon: 'none' })
+					}
+				})
+			}
+		} else {
+			uni.navigateTo({
+				url: href,
+				fail: () => {
+					uni.switchTab({
+						url: href,
+						fail: () => {
+							emit('error', { source: 'link', href: href } as UTSJSONObject)
+						}
+					})
+				}
+			})
+		}
+	}
+
+	watch(
+		() : string => props.content,
+		(v : string) => {
+			rebuild(v)
+		}
+	)
+
+	onMounted(() => {
+		rebuild(props.content)
+	})
+
+	function onItemClick(e : UniRichTextItemClickEvent) {
+		const detail = e.detail
+		const src = detail.src
+		const href = detail.href
+		if (src != null && src.length > 0) {
+			emit('imgtap', { src: src } as UTSJSONObject)
+			if (props.previewImg) {
+				const urls = imgList.value.length > 0 ? imgList.value : ([src] as string[])
+				uni.previewImage({
+					current: src,
+					urls: urls,
+					fail: () => {
+						emit('error', { source: 'img', src: src } as UTSJSONObject)
+					}
+				})
+			}
+			return
+		}
+		if (href != null && href.length > 0) {
+			handleHref(href, '')
+		}
+	}
+
+	// #ifdef MP
+	function onMpAnchorTap(seg : KexRtHtmlSeg) {
+		handleHref(seg.href, seg.text)
+	}
+	// #endif
+
+	defineExpose({
+		setContent,
+		getText,
+		getContent: getText,
+		pauseMedia,
+		navigateTo: tryScrollAnchor,
+		imgList
+	})
+</script>
+
+<style>
+	.kex-rt-x {
+		width: 100%;
+		line-height: 1.7;
+	}
+	.kex-rt-a {
+		color: #1d4ed8;
+		text-decoration: underline;
+	}
+</style>

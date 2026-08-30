@@ -1,0 +1,171 @@
+<template>
+	<view class="cl-progress" :class="[pt.className]">
+		<view
+			class="cl-progress__outer"
+			:class="[
+				{
+					'!bg-zinc-700/10': isDark && props.unColor == null
+				},
+				pt.outer?.className
+			]"
+			:style="outerStyle"
+		>
+			<view
+				class="cl-progress__inner"
+				:class="[pt.inner?.className]"
+				:style="innerStyle"
+			></view>
+		</view>
+
+		<slot name="text">
+			<cl-rolling-number
+				:value="value"
+				:pt="{
+					className: parseClass(['w-[50px] text-center', pt.text?.className])
+				}"
+				unit="%"
+				v-if="showText"
+			>
+			</cl-rolling-number>
+		</slot>
+	</view>
+</template>
+
+<script lang="ts" setup>
+import { computed, getCurrentInstance, onMounted, ref, watch } from "vue";
+import { isDark, parseClass, parsePt, getUnit } from "@/.cool";
+import type { PassThroughProps } from "../../types";
+
+defineOptions({
+	name: "cl-progress"
+});
+
+const props = defineProps({
+	// 透传样式配置
+	pt: {
+		type: Object,
+		default: () => ({})
+	},
+	// 数值
+	value: {
+		type: Number,
+		default: 0
+	},
+	// 线条宽度
+	strokeWidth: {
+		type: Number,
+		default: 6
+	},
+	// 是否显示文本
+	showText: {
+		type: Boolean,
+		default: true
+	},
+	// 线条颜色
+	color: {
+		type: String,
+		default: null
+	},
+	// 底色
+	unColor: {
+		type: String,
+		default: null
+	}
+});
+
+const { proxy } = getCurrentInstance()!;
+
+// 透传样式类型定义
+type PassThrough = {
+	className?: string;
+	outer?: PassThroughProps;
+	inner?: PassThroughProps;
+	text?: PassThroughProps;
+};
+
+// 解析透传样式配置
+const pt = computed(() => parsePt<PassThrough>(props.pt));
+
+// 当前值
+const value = ref(0);
+
+// 进度条宽度
+const width = ref(0);
+
+// 外层样式
+const outerStyle = computed(() => {
+	const style = {};
+
+	style["height"] = getUnit(props.strokeWidth);
+
+	if (props.unColor != null) {
+		style["backgroundColor"] = props.unColor!;
+	}
+
+	return style;
+});
+
+// 内层样式
+const innerStyle = computed(() => {
+	const style = {};
+
+	style["width"] = `${(value.value / 100) * width.value}px`;
+
+	if (props.color != null) {
+		style["backgroundColor"] = props.color!;
+	}
+
+	return style;
+});
+
+// 获取进度条宽度
+function getWidth() {
+	uni.createSelectorQuery()
+		.in(proxy)
+		.select(".cl-progress__outer")
+		.boundingClientRect((node) => {
+			width.value = (node as NodeInfo).width ?? 0;
+		})
+		.exec();
+}
+
+onMounted(() => {
+	watch(
+		computed(() => props.value),
+		(val: number) => {
+			getWidth();
+
+			setTimeout(() => {
+				if (val > 100) {
+					value.value = 100;
+				} else if (val < 0) {
+					value.value = 0;
+				} else {
+					value.value = val;
+				}
+			}, 10);
+		},
+		{
+			immediate: true
+		}
+	);
+});
+</script>
+
+<style lang="scss" scoped>
+.cl-progress {
+	@apply flex flex-row items-center w-full rounded-md;
+
+	&__outer {
+		@apply bg-gray-100/10 relative rounded-md;
+		flex: 1;
+	}
+
+	&__inner {
+		@apply h-full absolute top-0 left-0 z-10 rounded-md;
+		@apply bg-teal-500/10;
+		transition-property: width;
+		transition-duration: 0.5s;
+	}
+}
+</style>

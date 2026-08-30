@@ -1,0 +1,456 @@
+<template>
+	<view
+		class="cl-list-item"
+		:class="[
+			{
+				'cl-list-item--disabled': disabled
+			},
+			pt.className
+		]"
+		@touchstart="onTouchStart"
+		@touchend="onTouchEnd"
+		@touchmove="onTouchMove"
+		@touchcancel="onTouchCancel"
+	>
+		<view
+			class="cl-list-item__wrapper"
+			:class="[
+				{
+					'is-transition': !isHover,
+					[isDark ? 'bg-gray-800/10' : 'bg-white']: true,
+					[isDark ? '!bg-zinc-700/10' : '!bg-gray-50/10']: hoverable && isHover
+				},
+				pt.wrapper?.className
+			]"
+			:style="{
+				transform: `translateX(${swipe.offsetX}px)`
+			}"
+			@tap="onTap"
+		>
+			<view class="cl-list-item__inner" :class="[pt.inner?.className]">
+				<slot name="icon">
+					<cl-icon
+						v-if="icon != ''"
+						:name="icon"
+						:size="pt.icon?.size ?? 20"
+						:color="pt.icon?.color"
+						:pt="{
+							className: `mr-3 ${pt.icon?.className}`
+						}"
+					></cl-icon>
+				</slot>
+
+				<slot name="image">
+					<cl-image
+						v-if="image != ''"
+						:width="pt.image?.width ?? 36"
+						:height="pt.image?.height ?? 36"
+						:src="image"
+						:pt="{
+							className: `mr-3 rounded-full ${pt.image?.className}`
+						}"
+					></cl-image>
+				</slot>
+
+				<cl-text
+					v-if="label != ''"
+					:size="pt.label?.size"
+					:color="pt.label?.color"
+					:pt="{
+						className: parseClass([
+							'cl-list-item__label whitespace-nowrap overflow-visible',
+							[justify == 'start', 'w-24'],
+							pt.label?.className
+						])
+					}"
+				>
+					{{ label }}
+				</cl-text>
+
+				<view
+					class="cl-list-item__content"
+					:class="[
+						{
+							'justify-start': justify == 'start',
+							'justify-center': justify == 'center',
+							'justify-end': justify == 'end'
+						},
+						pt.content?.className
+					]"
+				>
+					<slot></slot>
+				</view>
+
+				<cl-icon
+					name="arrow-right-s-line"
+					:size="18"
+					:pt="{
+						className: parseClass([
+							'text-gray-400/10 ml-1 duration-200',
+							{
+								'rotate-90': isCollapse
+							}
+						])
+					}"
+					v-if="arrow"
+				></cl-icon>
+			</view>
+
+			<view
+				:class="['cl-list-item__swipe', `cl-list-item__swipe-${swipe.direction}`]"
+				v-if="swipeable"
+			>
+				<slot name="swipe-left"></slot>
+				<slot name="swipe-right"></slot>
+			</view>
+		</view>
+
+		<cl-collapse
+			v-model="isCollapse"
+			:pt="{
+				className: parseClass(['p-3', pt.collapse?.className])
+			}"
+		>
+			<slot name="collapse"></slot>
+		</cl-collapse>
+	</view>
+</template>
+
+<script lang="ts" setup>
+import {
+	computed,
+	getCurrentInstance,
+	onMounted,
+	reactive,
+	ref,
+	useSlots,
+	type PropType
+} from "vue";
+import { isAppIOS, isDark, isHarmony, parseClass, parsePt } from "@/.cool";
+import type { Justify, PassThroughProps } from "../../types";
+import type { ClIconProps } from "../cl-icon/props";
+import type { ClImageProps } from "../cl-image/props";
+import { useTouch } from "../../hooks";
+import type { ClTextProps } from "../cl-text/props";
+
+defineOptions({
+	name: "cl-list-item"
+});
+
+// 定义组件属性
+const props = defineProps({
+	// 透传样式配置
+	pt: {
+		type: Object,
+		default: () => ({})
+	},
+	// 图标名称
+	icon: {
+		type: String,
+		default: ""
+	},
+	// 图标名称
+	image: {
+		type: String,
+		default: ""
+	},
+	// 标签文本
+	label: {
+		type: String,
+		default: ""
+	},
+	// 内容对齐方式
+	justify: {
+		type: String as PropType<Justify>,
+		default: "end"
+	},
+	// 是否显示箭头
+	arrow: {
+		type: Boolean,
+		default: false
+	},
+	// 是否可滑动
+	swipeable: {
+		type: Boolean,
+		default: false
+	},
+	// 是否显示点击态
+	hoverable: {
+		type: Boolean,
+		default: false
+	},
+	// 是否禁用
+	disabled: {
+		type: Boolean,
+		default: false
+	},
+	// 是否显示折叠
+	collapse: {
+		type: Boolean,
+		default: false
+	}
+});
+
+const { proxy } = getCurrentInstance()!;
+const slots = useSlots();
+const touch = useTouch();
+
+// 透传样式类型定义
+type PassThrough = {
+	className?: string; // 根元素类名
+	wrapper?: PassThroughProps; // 包裹容器样式
+	inner?: PassThroughProps; // 内部容器样式
+	label?: ClTextProps; // 标签文本样式
+	content?: PassThroughProps; // 内容区域样式
+	icon?: ClIconProps; // 图标样式
+	image?: ClImageProps; // 图片样式
+	collapse?: PassThroughProps; // 折叠内容样式
+};
+
+// 计算透传样式
+const pt = computed(() => parsePt<PassThrough>(props.pt));
+
+// 滑动状态类型定义
+type Swipe = {
+	width: number; // 滑动区域宽度
+	maxX: number; // 最大滑动距离
+	startX: number; // 开始触摸位置
+	endX: number; // 结束触摸位置
+	offsetX: number; // 当前偏移量
+	direction: "right" | "left"; // 滑动方向 - right表示向右滑动显示左侧内容,left表示向左滑动显示右侧内容
+	moveDirection: "right" | "left"; // 移动方向 - 实时记录手指滑动方向
+};
+
+// 滑动状态数据
+const swipe = reactive<Swipe>({
+	width: 0, // 滑动区域宽度,通过查询获取
+	maxX: 0, // 最大可滑动距离
+	startX: 0, // 开始触摸的X坐标
+	endX: 0, // 结束触摸的X坐标
+	offsetX: 0, // X轴偏移量
+	direction: "left", // 默认向左滑动
+	moveDirection: "left" // 默认向左移动
+});
+
+/**
+ * 初始化滑动状态
+ * 根据插槽判断滑动方向并获取滑动区域宽度
+ */
+function initSwipe() {
+	if (!props.swipeable) return;
+
+	// 根据是否有左侧插槽判断滑动方向
+	swipe.direction = slots["swipe-left"] != null ? "right" : "left";
+
+	// 获取滑动区域宽度
+	uni.createSelectorQuery()
+		.in(proxy)
+		.select(".cl-list-item__swipe")
+		.boundingClientRect((node) => {
+			// 获取滑动区域的宽度，如果未获取到则默认为0
+			swipe.width = (node as NodeInfo).width ?? 0;
+			// 根据滑动方向(left/right)设置最大可滑动距离，左滑为负，右滑为正
+			swipe.maxX = swipe.width * (swipe.direction == "left" ? -1 : 1);
+		})
+		.exec();
+}
+
+/**
+ * 重置滑动状态
+ * 将开始和结束位置重置为0
+ */
+function resetSwipe() {
+	swipe.startX = 0;
+	swipe.endX = 0;
+	swipe.offsetX = 0;
+}
+
+/**
+ * 滑动到指定位置
+ * @param num 目标位置
+ * 使用requestAnimationFrame实现平滑滑动动画
+ */
+function swipeTo(num: number) {
+	swipe.offsetX = num;
+	swipe.endX = num;
+}
+
+// 点击态状态
+const isHover = ref(false);
+
+/**
+ * 触摸开始事件处理
+ * @param e 触摸事件对象
+ */
+function onTouchStart(e: UniTouchEvent) {
+	// 注册触摸开始事件
+	touch.start(e);
+
+	// 设置点击态
+	isHover.value = true;
+
+	// 记录开始触摸位置
+	if (props.swipeable) {
+		swipe.startX = (e.touches[0] as UniTouch).pageX;
+	}
+}
+
+/**
+ * 触摸结束事件处理
+ * 根据滑动距离判断是否触发完整滑动
+ */
+function onTouchEnd() {
+	if (isHover.value) {
+		// 注册触摸结束事件
+		touch.end();
+
+		// 计算滑动阈值 - 取滑动区域一半和50px中的较小值
+		const threshold = swipe.width / 2 > 50 ? 50 : swipe.width / 2;
+		// 计算实际滑动距离
+		const offset = Math.abs(swipe.offsetX - swipe.endX);
+
+		// 移除点击效果
+		isHover.value = false;
+
+		// 根据滑动距离判断是否触发滑动
+		if (offset > threshold) {
+			// 如果滑动方向与预设方向一致,滑动到最大位置
+			if (swipe.direction == swipe.moveDirection) {
+				swipeTo(swipe.maxX);
+			} else {
+				// 否则回到起始位置
+				swipeTo(0);
+			}
+		} else {
+			// 滑动距离不够,回到最近的位置
+			swipeTo(swipe.endX == 0 ? 0 : swipe.maxX);
+		}
+	}
+}
+
+/**
+ * 触摸取消事件处理
+ */
+function onTouchCancel() {
+	onTouchEnd();
+	isHover.value = false; // 移除点击效果
+}
+
+/**
+ * 触摸移动事件处理
+ * @param e 触摸事件对象
+ */
+function onTouchMove(e: UniTouchEvent) {
+	if (isHover.value) {
+		// 注册触摸移动事件
+		touch.move(e);
+
+		// 横向移动时才处理
+		if (touch.horizontal != 1) {
+			return;
+		}
+
+		// 计算滑动偏移量
+		const offsetX = (e.touches[0] as UniTouch).pageX - swipe.startX;
+
+		// 根据偏移量判断滑动方向
+		swipe.moveDirection = offsetX > 0 ? "right" : "left";
+
+		// 计算目标位置
+		let x = offsetX + swipe.endX;
+
+		// 限制滑动范围
+		if (swipe.direction == "right") {
+			// 向右滑动时的边界处理
+			if (x > swipe.maxX) {
+				x = swipe.maxX;
+			}
+			if (x < 0) {
+				x = 0;
+			}
+		}
+
+		if (swipe.direction == "left") {
+			// 向左滑动时的边界处理
+			if (x < swipe.maxX) {
+				x = swipe.maxX;
+			}
+			if (x > 0) {
+				x = 0;
+			}
+		}
+
+		// 更新偏移量
+		swipe.offsetX = x;
+	}
+}
+
+// 折叠状态
+const isCollapse = ref(false);
+
+/**
+ * 点击事件处理
+ */
+function onTap() {
+	if (props.collapse) {
+		isCollapse.value = !isCollapse.value;
+	}
+}
+
+onMounted(() => {
+	setTimeout(
+		() => {
+			initSwipe();
+		},
+		isHarmony() || isAppIOS() ? 50 : 0
+	);
+});
+
+defineExpose({
+	initSwipe,
+	resetSwipe
+});
+</script>
+
+<style lang="scss" scoped>
+.cl-list-item {
+	@apply flex flex-col w-full relative;
+
+	&__wrapper {
+		@apply w-full transition-none;
+		overflow: visible;
+
+		&.is-transition {
+			@apply duration-200;
+			transition-property: transform;
+		}
+	}
+
+	&__inner {
+		@apply flex flex-row items-center;
+		padding: 12px;
+	}
+
+	&__content {
+		@apply flex flex-row items-center;
+		flex: 1;
+	}
+
+	&__swipe {
+		@apply absolute h-full;
+
+		&-left {
+			@apply left-full;
+			transform: translateX(0.5px);
+		}
+
+		&-right {
+			@apply right-full;
+		}
+	}
+
+	&--disabled {
+		@apply opacity-50;
+	}
+}
+</style>

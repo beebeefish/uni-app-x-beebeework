@@ -1,0 +1,106 @@
+<template>
+	<view
+		class="cl-col"
+		:class="[
+			`cl-col-${span}`,
+			`cl-col-offset-${offset}`,
+			`cl-col-push-${push}`,
+			`cl-col-pull-${pull}`,
+			pt.className
+		]"
+		:style="{
+			paddingLeft: padding,
+			paddingRight: padding
+		}"
+	>
+		<slot></slot>
+	</view>
+</template>
+
+<script setup lang="ts">
+import { computed } from "vue";
+import { getUnit, parsePt, useParent } from "@/.cool";
+
+defineOptions({
+	name: "cl-col"
+});
+
+// 组件属性定义
+const props = defineProps({
+	// 透传样式配置
+	pt: {
+		type: Object,
+		default: () => ({})
+	},
+	// 栅格占据的列数
+	span: {
+		type: Number,
+		default: 24
+	},
+	// 栅格左侧的间隔格数
+	offset: {
+		type: Number,
+		default: 0
+	},
+	// 栅格向右移动格数
+	push: {
+		type: Number,
+		default: 0
+	},
+	// 栅格向左移动格数
+	pull: {
+		type: Number,
+		default: 0
+	}
+});
+
+// 获取父组件实例
+const parent = useParent<ClRowComponentPublicInstance>("cl-row");
+
+// 透传类型定义
+type PassThrough = {
+	// 自定义类名
+	className?: string;
+};
+
+// 解析透传配置
+const pt = computed(() => parsePt<PassThrough>(props.pt));
+
+// 计算列的padding,用于实现栅格间隔
+const padding = computed(() => (parent == null ? "0" : getUnit(parent.gutter / 2)));
+</script>
+
+<style lang="scss" scoped>
+@use "sass:math";
+
+.cl-col {
+	@apply w-full overflow-visible;
+}
+
+@for $i from 1 through 24 {
+	.cl-col-push-#{$i},
+	.cl-col-pull-#{$i} {
+		position: relative;
+	}
+}
+
+@for $i from 1 through 24 {
+	$w: math.div(100%, 24);
+
+	.cl-col-#{$i} {
+		width: $w * $i;
+	}
+
+	.cl-col-offset-#{$i} {
+		margin-left: $w * $i;
+	}
+
+	.cl-col-pull-#{$i} {
+		right: $w * $i;
+	}
+
+	.cl-col-push-#{$i} {
+		left: $w * $i;
+	}
+}
+</style>

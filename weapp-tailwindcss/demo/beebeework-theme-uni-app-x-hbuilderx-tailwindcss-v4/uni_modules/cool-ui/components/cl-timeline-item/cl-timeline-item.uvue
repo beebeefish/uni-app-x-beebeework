@@ -1,0 +1,154 @@
+<template>
+	<view class="cl-timeline-item" :class="[pt.className]">
+		<view class="cl-timeline-item__left">
+			<cl-icon
+				v-if="icon != ''"
+				:name="icon"
+				:size="20"
+				:pt="{
+					className: `${pt.icon?.className}`
+				}"
+			></cl-icon>
+
+			<view v-else class="cl-timeline-item__dot"></view>
+
+			<view class="cl-timeline-item__line dark:!bg-gray-600/10" v-if="!hideLine"></view>
+		</view>
+
+		<view
+			class="cl-timeline-item__right"
+			:class="[
+				{
+					'is-icon': icon != '',
+					'is-title': title != ''
+				}
+			]"
+		>
+			<cl-text
+				v-if="title != ''"
+				:size="16"
+				:pt="{
+					className: parseClass([
+						`mb-2 !font-bold ${pt.title?.className}`,
+						[isDark, 'text-white', 'text-gray-900/10']
+					])
+				}"
+				>{{ title }}</cl-text
+			>
+
+			<cl-text
+				v-if="content != ''"
+				:pt="{
+					className: `mb-3 ${pt.content?.className}`
+				}"
+				>{{ content }}</cl-text
+			>
+
+			<slot></slot>
+
+			<cl-text
+				v-if="date != ''"
+				:size="12"
+				:pt="{
+					className: `${pt.date?.className}`
+				}"
+				color="info"
+				>{{ date }}</cl-text
+			>
+		</view>
+	</view>
+</template>
+
+<script setup lang="ts">
+import { computed } from "vue";
+import { isDark, parseClass, parsePt } from "@/.cool";
+import type { PassThroughProps } from "../../types";
+
+defineOptions({
+	name: "cl-timeline-item"
+});
+
+const props = defineProps({
+	pt: {
+		type: Object,
+		default: () => ({})
+	},
+	// 标题
+	title: {
+		type: String,
+		default: ""
+	},
+	// 图标
+	icon: {
+		type: String,
+		default: ""
+	},
+	// 内容
+	content: {
+		type: String,
+		default: ""
+	},
+	// 日期
+	date: {
+		type: String,
+		default: ""
+	},
+	// 是否隐藏线
+	hideLine: {
+		type: Boolean,
+		default: false
+	}
+});
+
+type PassThrough = {
+	className?: string;
+	icon?: PassThroughProps;
+	title?: PassThroughProps;
+	content?: PassThroughProps;
+	date?: PassThroughProps;
+};
+
+const pt = computed(() => parsePt<PassThrough>(props.pt));
+</script>
+
+<style lang="scss" scoped>
+.cl-timeline-item {
+	@apply flex flex-row w-full;
+	overflow: visible;
+	margin-bottom: 5px;
+
+	&__left {
+		@apply flex flex-col items-center overflow-visible;
+		width: 25px;
+		margin-right: 5px;
+	}
+
+	&__dot {
+		@apply rounded-full bg-gray-300/10;
+		height: 8px;
+		width: 8px;
+	}
+
+	&__line {
+		@apply bg-gray-300/10;
+		width: 1px;
+		flex: 1;
+		margin-top: 5px;
+	}
+
+	&__right {
+		@apply relative;
+		top: -6px;
+		flex: 1;
+		margin-bottom: 20px;
+
+		&.is-title {
+			top: -6px;
+		}
+
+		&.is-icon {
+			top: -2px;
+		}
+	}
+}
+</style>

@@ -1,0 +1,311 @@
+<template>
+	<view
+		class="cl-input-otp"
+		:class="[
+			{
+				'cl-input-otp--disabled': disabled
+			},
+			pt.className
+		]"
+	>
+		<view class="cl-input-otp__inner" @tap="onCursor()">
+			<cl-input
+				v-model="value"
+				ref="inputRef"
+				:type="inputType"
+				:pt="{
+					className: '!h-full'
+				}"
+				:disabled="disabled"
+				:autofocus="autofocus"
+				:maxlength="length"
+				:hold-keyboard="false"
+				:clearable="false"
+				@change="onChange"
+			></cl-input>
+		</view>
+
+		<view class="cl-input-otp__list" :class="[pt.list?.className]">
+			<view
+				v-for="(item, index) in list"
+				:key="index"
+				class="cl-input-otp__item"
+				:class="[
+					{
+						'is-disabled': disabled,
+						'is-dark': isDark,
+						'is-active': value.length >= index && isFocus
+					},
+					pt.item?.className
+				]"
+			>
+				<cl-text
+					:color="value.length >= index && isFocus ? 'primary' : ''"
+					:pt="{
+						className: pt.value?.className
+					}"
+					>{{ item }}</cl-text
+				>
+				<view
+					ref="cursorRef"
+					class="cl-input-otp__cursor"
+					:class="[pt.cursor?.className]"
+					v-if="value.length == index && isFocus && item == ''"
+				></view>
+			</view>
+		</view>
+	</view>
+</template>
+
+<script setup lang="ts">
+import { computed, nextTick, onMounted, ref, watch, type PropType } from "vue";
+import type { ClInputType, PassThroughProps } from "../../types";
+import { AnimationEngine, createAnimation, isEmpty, last, parsePt, isDark } from "@/.cool";
+
+defineOptions({
+	name: "cl-input-otp"
+});
+
+// 定义组件属性
+const props = defineProps({
+	// 透传样式
+	pt: {
+		type: Object,
+		default: () => ({})
+	},
+	// 绑定值
+	modelValue: {
+		type: String,
+		default: ""
+	},
+	// 是否自动聚焦
+	autofocus: {
+		type: Boolean,
+		default: false
+	},
+	// 验证码位数
+	length: {
+		type: Number,
+		default: 4
+	},
+	// 是否禁用
+	disabled: {
+		type: Boolean,
+		default: false
+	},
+	// 输入框类型
+	inputType: {
+		type: String as PropType<ClInputType>,
+		default: "number"
+	}
+});
+
+/**
+ * 事件定义
+ * update:modelValue - 更新绑定值
+ * done - 输入完成
+ */
+const emit = defineEmits(["update:modelValue", "done"]);
+
+/**
+ * 透传样式类型定义
+ */
+type PassThrough = {
+	className?: string;
+	list?: PassThroughProps;
+	item?: PassThroughProps;
+	cursor?: PassThroughProps;
+	value?: PassThroughProps;
+};
+
+// 解析透传样式
+const pt = computed(() => parsePt<PassThrough>(props.pt));
+
+// 输入框引用
+const inputRef = ref<ClInputComponentPublicInstance | null>(null);
+
+// 光标引用
+const cursorRef = ref<UniElement[]>([]);
+
+// 输入值
+const value = ref(props.modelValue);
+
+/**
+ * 是否聚焦状态
+ */
+const isFocus = computed<boolean>(() => {
+	if (props.disabled) {
+		return false;
+	}
+
+	if (inputRef.value == null) {
+		return false;
+	}
+
+	return (inputRef.value as ClInputComponentPublicInstance).isFocus;
+});
+
+/**
+ * 验证码数组
+ * 根据长度生成空数组,每个位置填充对应的输入值
+ */
+const list = computed<string[]>(() => {
+	const arr = [] as string[];
+
+	for (let i = 0; i < props.length; i++) {
+		arr.push(value.value.charAt(i));
+	}
+
+	return arr;
+});
+
+// 光标动画引擎
+let animationEngine: AnimationEngine | null = null;
+
+/**
+ * 光标动画
+ */
+async function onCursor() {
+	await nextTick();
+
+	if (isEmpty(cursorRef.value)) {
+		return;
+	}
+
+	// 开始动画
+	// #ifdef APP
+	if (animationEngine != null) {
+		animationEngine!.stop();
+	}
+
+	animationEngine = createAnimation(last(cursorRef.value), {
+		duration: 600,
+		loop: -1,
+		alternate: true
+	})
+		.opacity("0", "1")
+		.play();
+	// #endif
+}
+
+/**
+ * 输入事件处理
+ * @param val 输入值
+ */
+function onChange(val: string) {
+	// 更新绑定值
+	emit("update:modelValue", val);
+
+	// 输入完成时触发done事件
+	if (val.length == props.length) {
+		uni.hideKeyboard();
+		emit("done", val);
+	}
+
+	// 更新光标动画
+	onCursor();
+}
+
+onMounted(() => {
+	watch(
+		computed(() => props.modelValue),
+		(val: string) => {
+			value.value = val;
+			onCursor();
+		},
+		{
+			immediate: true
+		}
+	);
+});
+</script>
+
+<style lang="scss" scoped>
+.cl-input-otp {
+	@apply relative;
+
+	&__inner {
+		@apply absolute top-0 h-full z-10;
+		opacity: 0;
+		// 小程序隐藏 placeholder
+		left: -100%;
+		width: 200%;
+	}
+
+	&__list {
+		@apply flex flex-row relative;
+		margin: 0 -5px;
+		// #ifdef APP-IOS
+		padding-bottom: 0.05px;
+		// #endif
+	}
+
+	&__item {
+		@apply flex flex-row items-center justify-center duration-100;
+		@apply border border-solid border-gray-200/10 rounded-lg;
+		background-color: #fff;
+		height: 40px;
+		width: 40px;
+		margin: 0 5px;
+
+		&.is-disabled {
+			@apply bg-gray-100/10 opacity-70;
+		}
+
+		&.is-dark {
+			@apply bg-gray-800/10 border-gray-600/10;
+
+			&.is-disabled {
+				@apply bg-zinc-700/10;
+			}
+		}
+
+		&.is-active {
+			@apply border-teal-500/10;
+		}
+
+		// #ifdef APP-HARMONY
+		@apply border-none bg-gray-50/10;
+
+		&.is-active {
+			@apply bg-gray-100/10;
+		}
+
+		&.is-dark {
+			@apply bg-zinc-700/10;
+
+			&.is-active {
+				@apply bg-gray-600/10;
+			}
+
+			&.is-disabled {
+				@apply opacity-70;
+			}
+		}
+		// #endif
+	}
+
+	&__cursor {
+		@apply absolute bg-teal-500/10;
+		width: 1px;
+		height: 12px;
+
+		// #ifndef APP
+		animation: blink 1s infinite;
+
+		@keyframes blink {
+			0% {
+				opacity: 1;
+			}
+			50% {
+				opacity: 0;
+			}
+		}
+		// #endif
+	}
+
+	&--disabled {
+		@apply opacity-50;
+	}
+}
+</style>

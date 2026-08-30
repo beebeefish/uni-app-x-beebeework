@@ -1,0 +1,273 @@
+---
+title: "⚙️ 一般配置"
+sidebar_label: "⚙️ 一般配置"
+sidebar_position: 4
+description: "⚙️ 一般配置：18 个 UserDefinedOptions 配置项，包含类型、默认值和源码说明。"
+keywords:
+  - "weapp-tailwindcss"
+  - "API"
+  - "接口文档"
+  - "配置项"
+  - "小程序"
+  - "tailwindcss"
+  - "微信小程序"
+  - "一般配置"
+  - "⚙️ 一般配置"
+  - "一般配置 配置"
+  - "插件参数"
+---
+
+本页收录 18 个配置项，来源于 `UserDefinedOptions`。
+
+## 配置一览
+
+| 配置项 | 类型 | 默认值 | 说明 |
+| --- | --- | --- | --- |
+| [supportCustomLengthUnitsPatch](#supportcustomlengthunitspatch) | <code>boolean &#124; ILengthUnitsPatchOptions</code> | — | 控制 Tailwind 自定义长度单位补丁。 |
+| [appType](#apptype) | <code>AppType</code> | — | 声明所使用的框架类型。 |
+| [arbitraryValues](#arbitraryvalues) | <code>IArbitraryValues</code> | — | TailwindCSS 任意值的相关配置。 |
+| [unocss](#unocss) | <code>boolean &#124; IUnocssCompatibilityOptions</code> | <code>false</code> | 启用部分 UnoCSS class 写法兼容。 |
+| [jsPreserveClass](#jspreserveclass) | <code>(keyword: string) => boolean &#124; undefined</code> | — | 控制 JS 字面量是否需要保留。 |
+| [jsArbitraryValueFallback](#jsarbitraryvaluefallback) | <code>boolean &#124; "auto"</code> | — | 控制 JS 任意值类名在 classNameSet 异常时的受控兜底策略。 |
+| [replaceRuntimePackages](#replaceruntimepackages) | <code>boolean &#124; Record<string, string></code> | — | 是否替换运行时依赖包名。 |
+| [generator](#generator) | <code>import("../..").WeappTailwindcssGeneratorOptions</code> | — | 控制 Tailwind CSS 直接生成目标端 CSS 的策略。 |
+| [disabledDefaultTemplateHandler](#disableddefaulttemplatehandler) | <code>boolean</code> | <code>false</code> | 禁用默认的 `wxml` 模板替换器。 |
+| [tailwindcssBasedir](#tailwindcssbasedir) | <code>string</code> | — | 指定用于获取 Tailwind 上下文的路径。 |
+| [cache](#cache) | <code>boolean &#124; ICreateCacheReturnType</code> | — | 控制缓存策略。 |
+| [babelParserOptions](#babelparseroptions) | <code>(Partial<Options> & { cache?: boolean &#124; undefined; cacheKey?: string &#124; undefined; cacheMaxEntries?: number &#124; undefined; cacheMaxSourceLength?: number &#124; undefined; })</code> | — | `@babel/parser` 的配置选项。 |
+| [cssChildCombinatorReplaceValue](#csschildcombinatorreplacevalue) | <code>string &#124; string[]</code> | <code>'view + view'</code> | 自定义 Tailwind 子组合器的替换值。 |
+| [postcssOptions](#postcssoptions) | <code>Partial<Omit<import(".pnpm/postcss-load-config@6.0.1_jiti@2.7.0_postcss@8.5.15_tsx@4.22.4_yaml@2.9.0/node_modules/postcss-load-config").Result, "file">></code> | — | `postcss` 的配置选项。 |
+| [cssRemoveHoverPseudoClass](#cssremovehoverpseudoclass) | <code>boolean</code> | <code>`true`</code> | 是否移除 CSS 中的 `:hover` 选择器。 |
+| [cssRemoveProperty](#cssremoveproperty) | <code>boolean</code> | <code>`true`</code> | 是否移除 `@property` 节点。 |
+| [tailwindcssPatcherOptions](#tailwindcsspatcheroptions) | <code>TailwindCssPatchOptions</code> | — | 自定义 patcher 参数。 |
+| [logLevel](#loglevel) | <code>"error" &#124; "warn" &#124; "silent" &#124; "info"</code> | — | 控制命令行日志输出级别。 |
+
+## 详细说明
+
+### supportCustomLengthUnitsPatch
+
+> 可选 | 类型: `boolean | ILengthUnitsPatchOptions`
+
+控制 Tailwind 自定义长度单位补丁。
+
+#### 参阅
+
+https://github.com/sonofmagic/weapp-tailwindcss/issues/110
+
+#### 备注
+
+TailwindCSS 3.2.0 起对任意值执行长度单位校验，会将未声明的 `rpx` 识别为颜色。本选项默认开启，并由构建运行时自动接管。
+
+### appType
+
+> 可选 | 类型: `AppType`
+
+声明所使用的框架类型。
+
+#### 备注
+
+用于辅助定位主要的 CSS bundle，以便默认的 `mainCssChunkMatcher` 做出更准确的匹配，未传入时将尝试自动猜测变量注入位置。
+
+### arbitraryValues
+
+> 可选 | 类型: `IArbitraryValues`
+
+TailwindCSS 任意值的相关配置。
+
+### unocss
+
+> 可选 | 类型: `boolean | IUnocssCompatibilityOptions` | 默认值: `false`
+
+启用部分 UnoCSS class 写法兼容。
+
+#### 备注
+
+默认关闭。传入 `true` 后会启用 Tailwind CSS v4 裸任意值生成。class 字符转义继续由
+`customReplaceDictionary` 控制，JS 转译仍遵循 `classNameSet` 精确命中原则。
+
+#### 默认值
+
+```ts
+false
+```
+
+### jsPreserveClass
+
+> 可选 | 类型: `(keyword: string) => boolean | undefined` | 版本: ^2.6.1
+
+控制 JS 字面量是否需要保留。
+
+#### 备注
+
+当 Tailwind 与 JS 字面量冲突时，可通过回调返回 `true` 保留当前值，返回 `false` 或 `undefined` 则继续转义。默认保留所有带 `*` 的字符串字面量。
+
+#### 参数
+
+##### keyword
+
+`string`
+
+#### 返回
+
+`boolean | undefined`
+
+### jsArbitraryValueFallback
+
+> 可选 | 类型: `boolean | "auto"`
+
+控制 JS 任意值类名在 classNameSet 异常时的受控兜底策略。
+
+#### 备注
+
+为避免误伤业务字符串，兜底仅在 class 语义上下文生效。
+- `false`：关闭兜底；
+- `true`：始终开启受控兜底；
+- `'auto'`：仅 TailwindCSS v4 且 classNameSet 为空时启用。
+
+### replaceRuntimePackages
+
+> 可选 | 类型: `boolean | Record<string, string>`
+
+是否替换运行时依赖包名。
+
+#### 备注
+
+适用于运行时包名需要重定向的场景，例如：
+- 小程序侧无法直接安装 `tailwind-merge`/`class-variance-authority`/`tailwind-variants`，需要替换为内置的 weapp 版本。
+- 企业内私有镜像/多包发布导致运行时包名不同，希望在转换后统一到目标包名。
+传入 `true` 使用内置替换表，或传入对象自定义映射。
+
+#### 示例
+
+```ts
+replaceRuntimePackages: {
+  'tailwind-merge': '@weapp-tailwindcss/merge',
+  'class-variance-authority': '@weapp-tailwindcss/cva',
+}
+```
+
+### generator
+
+> 可选 | 类型: `import("../..").WeappTailwindcssGeneratorOptions`
+
+控制 Tailwind CSS 直接生成目标端 CSS 的策略。
+
+#### 备注
+
+默认值会按构建环境推断：小程序构建使用 `weapp`，H5/Web 与普通 uni-app App WebView 使用 `web`。
+uni-app x 原生 App 目标继续通过 `uniAppX` 配置处理 uvue/App 约束，不需要配置 `target: 'app'`。
+
+### disabledDefaultTemplateHandler
+
+> 可选 | 类型: `boolean` | 默认值: `false` | 版本: ^2.6.2
+
+禁用默认的 `wxml` 模板替换器。
+
+#### 备注
+
+启用后模板匹配完全交由 [`customAttributes`](/docs/api/options/important#customattributes) 管理，需要自行覆盖默认的 `class` / `hover-class` 等匹配规则。
+
+#### 默认值
+
+```ts
+false
+```
+
+### tailwindcssBasedir
+
+> 可选 | 类型: `string` | 版本: ^2.9.3
+
+指定用于获取 Tailwind 上下文的路径。
+
+#### 备注
+
+在 linked 或 monorepo 场景下可手动指向目标项目的 `package.json` 所在目录。
+
+### cache
+
+> 可选 | 类型: `boolean | ICreateCacheReturnType` | 版本: ^3.0.11
+
+控制缓存策略。
+
+### babelParserOptions
+
+> 可选 | 类型: `(Partial<Options> & { cache?: boolean | undefined; cacheKey?: string | undefined; cacheMaxEntries?: number | undefined; cacheMaxSourceLength?: number | undefined; })` | 版本: ^3.2.0
+
+`@babel/parser` 的配置选项。
+
+### cssChildCombinatorReplaceValue
+
+> 可选 | 类型: `string | string[]` | 默认值: `'view + view'`
+
+自定义 Tailwind 子组合器的替换值。
+
+#### 备注
+
+为兼容小程序缺乏 `:not([hidden])~` 支持的限制，默认会将 `.space-x-4` 等选择器替换为 `view + view`。可传入字符串或字符串数组以扩展适用标签。
+```css
+// 数组示例
+.space-y-4>view + view,text + text{}
+
+// 字符串示例
+.space-y-4>view,text,button,input ~ view,text,button,input{}
+```
+
+#### 默认值
+
+```ts
+'view + view'
+```
+
+### postcssOptions
+
+> 可选 | 类型: `Partial<Omit<import(".pnpm/postcss-load-config@6.0.1_jiti@2.7.0_postcss@8.5.15_tsx@4.22.4_yaml@2.9.0/node_modules/postcss-load-config").Result, "file">>` | 版本: ^3.2.0
+
+`postcss` 的配置选项。
+
+### cssRemoveHoverPseudoClass
+
+> 可选 | 类型: `boolean` | 默认值: `\`true\`` | 版本: ^3.2.1
+
+是否移除 CSS 中的 `:hover` 选择器。
+
+#### 参阅
+
+https://github.com/sonofmagic/weapp-tailwindcss/issues/293
+
+#### 备注
+
+小程序不支持 `:hover`，需要使用组件的 `hover-class`，因此默认删除相关节点。
+
+#### 默认值
+
+`true`
+
+### cssRemoveProperty
+
+> 可选 | 类型: `boolean` | 默认值: `\`true\`` | 版本: ^4.1.2
+
+是否移除 `@property` 节点。
+
+#### 备注
+
+微信小程序可识别 `@property`，但支付宝暂不支持，默认移除以避免构建失败。
+
+#### 默认值
+
+`true`
+
+### tailwindcssPatcherOptions
+
+> 可选 | 类型: `TailwindCssPatchOptions`
+
+自定义 patcher 参数。
+
+### logLevel
+
+> 可选 | 类型: `"error" | "warn" | "silent" | "info"`
+
+控制命令行日志输出级别。
+
+#### 备注
+
+默认 `info`，可设置为 `silent` 屏蔽全部输出。

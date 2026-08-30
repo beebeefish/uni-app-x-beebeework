@@ -1,0 +1,38 @@
+// 生成 rem 转 rpx 的 PostCSS 插件，确保在 OnceExit 阶段执行
+import type { AcceptedPlugin } from 'postcss'
+import type { UserDefinedOptions as Rem2rpxOptions } from 'postcss-rem-to-responsive-pixel'
+import type { IStyleHandlerOptions } from '../types'
+import { defuOverrideArray } from '@weapp-tailwindcss/shared'
+import postcssRem2rpx from 'postcss-rem-to-responsive-pixel'
+
+const defaultRemOptions: Rem2rpxOptions = {
+  rootValue: 32,
+  propList: ['*'],
+  transformUnit: 'rpx',
+}
+
+const defaultStage: Pick<Rem2rpxOptions, 'processorStage'> = {
+  processorStage: 'OnceExit',
+}
+
+const defaultRemTransformOptions: Rem2rpxOptions = {
+  ...defaultRemOptions,
+  ...defaultStage,
+}
+
+export function getRemTransformPlugin(options: IStyleHandlerOptions): AcceptedPlugin | null {
+  if (!options.rem2rpx) {
+    return null
+  }
+
+  if (options.rem2rpx === true) {
+    return postcssRem2rpx(defaultRemTransformOptions)
+  }
+
+  const merged = defuOverrideArray<Rem2rpxOptions, Rem2rpxOptions[]>(
+    options.rem2rpx,
+    defaultStage,
+  )
+
+  return postcssRem2rpx(merged)
+}

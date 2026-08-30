@@ -1,0 +1,337 @@
+<template>
+	<view class="cl-sign" :class="[pt.className]">
+		<canvas
+			class="cl-sign__canvas"
+			ref="canvasRef"
+			:id="canvasId"
+			:style="{
+				height: getUnit(height),
+				width: getUnit(width)
+			}"
+			@touchstart="onTouchStart"
+			@touchmove.stop.prevent="onTouchMove"
+			@touchend="onTouchEnd"
+		></canvas>
+	</view>
+</template>
+
+<script lang="ts" setup>
+import { canvasToPng, getDevicePixelRatio, parsePt, uuid, getUnit } from "@/.cool";
+import { computed, getCurrentInstance, nextTick, onMounted, ref, shallowRef, watch } from "vue";
+
+defineOptions({
+	name: "cl-sign"
+});
+
+// 定义组件属性
+const props = defineProps({
+	pt: {
+		type: Object,
+		default: () => ({})
+	},
+	// 画布宽度
+	width: {
+		type: Number,
+		default: 300
+	},
+	// 画布高度
+	height: {
+		type: Number,
+		default: 200
+	},
+	// 线条颜色
+	strokeColor: {
+		type: String,
+		default: "#000000"
+	},
+	// 线条宽度
+	strokeWidth: {
+		type: Number,
+		default: 3
+	},
+	// 背景颜色
+	backgroundColor: {
+		type: String,
+		default: "#ffffff"
+	},
+	// 是否启用毛笔效果
+	enableBrush: {
+		type: Boolean,
+		default: true
+	},
+	// 最小线条宽度
+	minStrokeWidth: {
+		type: Number,
+		default: 1
+	},
+	// 最大线条宽度
+	maxStrokeWidth: {
+		type: Number,
+		default: 6
+	},
+	// 速度敏感度
+	velocitySensitivity: {
+		type: Number,
+		default: 0.7
+	}
+});
+
+// 定义事件发射器
+const emit = defineEmits(["change", "clear"]);
+
+// 获取当前实例
+const { proxy } = getCurrentInstance()!;
+
+// 获取设备像素比
+const dpr = getDevicePixelRatio();
+
+// 触摸点类型
+type Point = { x: number; y: number; time: number };
+
+// 矩形类型
+type Rect = { left: number; top: number };
+
+// 透传样式类型定义
+type PassThrough = {
+	className?: string;
+};
+
+// 解析透传样式配置
+const pt = computed(() => parsePt<PassThrough>(props.pt));
+
+// 签名组件画布
+const canvasRef = shallowRef<UniElement | null>(null);
+
+// 绘图上下文
+let drawCtx: CanvasRenderingContext2D | null = null;
+
+// 生成唯一的canvas ID
+const canvasId = `cl-sign__${uuid()}`;
+
+// 触摸状态
+const isDrawing = ref(false);
+
+// 上一个触摸点
+let lastPoint: Point | null = null;
+
+// 当前线条宽度
+let currentStrokeWidth = ref(3);
+
+// 速度缓冲数组（用于平滑速度变化）
+const velocityBuffer: number[] = [];
+
+// canvas位置信息缓存
+let canvasRect: Rect | null = null;
+
+// 获取canvas位置信息
+function getCanvasRect(): Promise<Rect> {
+	return new Promise((resolve) => {
+		// #ifdef MP
+		uni.createSelectorQuery()
+			.in(proxy)
+			.select(`#${canvasId}`)
+			.boundingClientRect((rect: any) => {
+				if (rect) {
+					canvasRect = { left: rect.left, top: rect.top };
+					resolve(canvasRect!);
+				} else {
+					resolve({ left: 0, top: 0 });
+				}
+			})
+			.exec();
+		// #endif
+
+		// #ifndef MP
+		// 非小程序平台，在需要时通过DOM获取位置信息
+		canvasRect = { left: 0, top: 0 };
+		resolve(canvasRect!);
+		// #endif
+	});
+}
+
+// 获取触摸点在canvas中的坐标
+function getTouchPos(e: TouchEvent): Point {
+	const touch = e.touches[0];
+
+	// #ifdef H5
+	const rect = (e.target as any).getBoundingClientRect();
+
+	return {
+		x: touch.clientX - rect.left,
+		y: touch.clientY - rect.top,
+		time: Date.now()
+	};
+	// #endif
+
+	// #ifndef H5
+	// 小程序中使用缓存的位置信息或直接使用触摸坐标
+	const left = canvasRect?.left ?? 0;
+	const top = canvasRect?.top ?? 0;
+
+	return {
+		x: touch.clientX - left,
+		y: touch.clientY - top,
+		time: Date.now()
+	};
+	// #endif
+}
+
+// 计算速度并返回动态线条宽度
+function calculateStrokeWidth(currentPoint: Point): number {
+	if (lastPoint == null || !props.enableBrush) {
+		return props.strokeWidth;
+	}
+
+	// 计算距离和时间差
+	const distance = Math.sqrt(
+		Math.pow(currentPoint.x - lastPoint!.x, 2) + Math.pow(currentPoint.y - lastPoint!.y, 2)
+	);
+	const timeDelta = currentPoint.time - lastPoint!.time;
+
+	if (timeDelta <= 0) return currentStrokeWidth.value;
+
+	// 计算速度 (像素/毫秒)
+	const velocity = distance / timeDelta;
+
+	// 添加到速度缓冲区（用于平滑）
+	velocityBuffer.push(velocity);
+	if (velocityBuffer.length > 5) {
+		velocityBuffer.shift();
+	}
+
+	// 计算平均速度
+	const avgVelocity = velocityBuffer.reduce((sum, v) => sum + v, 0) / velocityBuffer.length;
+
+	// 根据速度计算线条宽度（速度越快越细）
+	const normalizedVelocity = Math.min(avgVelocity * props.velocitySensitivity, 1);
+	const widthRange = props.maxStrokeWidth - props.minStrokeWidth;
+	const targetWidth = props.maxStrokeWidth - normalizedVelocity * widthRange;
+
+	// 平滑过渡到目标宽度
+	const smoothFactor = 0.3;
+	return currentStrokeWidth.value + (targetWidth - currentStrokeWidth.value) * smoothFactor;
+}
+
+// 触摸开始
+async function onTouchStart(e: TouchEvent) {
+	e.preventDefault();
+	isDrawing.value = true;
+
+	// #ifdef MP
+	// 小程序中，如果没有缓存位置信息，先获取
+	if (canvasRect == null) {
+		await getCanvasRect();
+	}
+	// #endif
+
+	lastPoint = getTouchPos(e);
+
+	// 初始化线条宽度和清空速度缓冲
+	currentStrokeWidth.value = props.enableBrush ? props.maxStrokeWidth : props.strokeWidth;
+	velocityBuffer.length = 0;
+}
+
+// 触摸移动
+function onTouchMove(e: TouchEvent) {
+	e.preventDefault();
+	if (!isDrawing.value || lastPoint == null || drawCtx == null) return;
+
+	const currentPoint = getTouchPos(e);
+
+	// 计算动态线条宽度
+	const strokeWidth = calculateStrokeWidth(currentPoint);
+	currentStrokeWidth.value = strokeWidth;
+
+	// 绘制线条
+	drawCtx!.beginPath();
+	drawCtx!.moveTo(lastPoint!.x * dpr, lastPoint!.y * dpr);
+	drawCtx!.lineTo(currentPoint.x * dpr, currentPoint.y * dpr);
+	drawCtx!.strokeStyle = props.strokeColor;
+	drawCtx!.lineWidth = strokeWidth * dpr;
+	drawCtx!.lineCap = "round";
+	drawCtx!.lineJoin = "round";
+	drawCtx!.stroke();
+
+	lastPoint = currentPoint;
+	emit("change");
+}
+
+// 触摸结束
+function onTouchEnd(e: TouchEvent) {
+	e.preventDefault();
+	isDrawing.value = false;
+	lastPoint = null;
+}
+
+// 清除画布
+function clear() {
+	if (drawCtx == null) return;
+
+	// #ifdef APP
+	drawCtx!.reset();
+	// #endif
+
+	// #ifndef APP
+	drawCtx!.clearRect(0, 0, props.width * dpr, props.height * dpr);
+	// #endif
+
+	// 填充背景色
+	drawCtx!.fillStyle = props.backgroundColor;
+	drawCtx!.fillRect(0, 0, props.width * dpr, props.height * dpr);
+
+	emit("clear");
+}
+
+// 获取签名图片
+function toPng(): Promise<string> {
+	return canvasToPng(canvasRef.value!);
+}
+
+// 初始化画布
+function initCanvas() {
+	uni.createCanvasContextAsync({
+		id: canvasId,
+		component: proxy,
+		success: (context: CanvasContext) => {
+			// 获取绘图上下文
+			drawCtx = context.getContext("2d")!;
+
+			// 设置宽高
+			drawCtx!.canvas.width = props.width * dpr;
+			drawCtx!.canvas.height = props.height * dpr;
+
+			// 优化渲染质量
+			drawCtx!.textBaseline = "middle";
+			drawCtx!.textAlign = "center";
+			drawCtx!.miterLimit = 10;
+
+			// 初始化背景
+			clear();
+
+			// #ifdef MP
+			// 小程序中初始化时获取canvas位置信息
+			getCanvasRect();
+			// #endif
+		}
+	});
+}
+
+onMounted(() => {
+	watch(
+		computed(() => [props.width, props.height]),
+		() => {
+			nextTick(() => {
+				initCanvas();
+			});
+		},
+		{
+			immediate: true
+		}
+	);
+});
+
+defineExpose({
+	clear,
+	toPng
+});
+</script>

@@ -1,0 +1,121 @@
+<template>
+  <view class="-mx-4 flex flex-col gap-2">
+    <!-- 1. 分组标题 -->
+    <view class="flex flex-col w-full px-4">
+      <h3 class="text-lg font-bold text-gray-900 dark:text-white tracking-tight truncate flex flex-row items-center gap-2">
+        <text>{{ normalizedItem.displayTitle }}</text>
+        <svg-icon :size="20"><text class="i-[mingcute--right-line] text-gray-400 dark:text-neutral-500 size-[20px]"></text></svg-icon>
+      </h3>
+      <p class="text-xs text-gray-500 dark:text-gray-400 truncate mt-0.5">
+        {{ normalizedItem.description }}
+      </p>
+    </view>
+
+    <!-- 2. 商品横向滚动 -->
+    <scroll-view
+    type="custom" 
+      scroll-x="true"
+      class="w-full flex flex-row flex-nowrap h-60 -mt-2"
+      :show-scrollbar="false"
+      :scroll-with-animation="!isSwiping"
+    >
+    <view class="p-4 flex flex-row flex-nowrap gap-3">
+      <view
+        v-for="(product, index) in normalizedItem.shopItems"
+        :key="product.id"
+        class="flex-shrink-0"
+        style="width: 158px;"
+      >
+        <view 
+          class="h-full w-full flex flex-col rounded-2xl overflow-hidden dropdown-pop-base active:scale-[0.98] transition-transform"
+          @click="!isSwiping && $emit('item-click', product)"
+          :class="{ 'pointer-events-none': isSwiping }"
+        >
+          <!-- 封面图 -->
+          <view class="relative w-full h-[100px] bg-gray-100 dark:bg-neutral-800 overflow-hidden">
+            <image
+              :src="product.cover"
+              mode="aspectFill"
+              class="w-full h-full"
+            />
+            <!-- 库存紧张/售罄角标 -->
+            <view 
+              class="absolute left-2 top-2 flex flex-row items-center justify-center gap-1"
+            >
+              <view 
+                v-if="product.stock <= 3"
+                class="flex items-center justify-center"
+              >
+                <text v-if="product.stock === 0" class="text-white text-xs px-2 py-0.5 bg-black/60 rounded-full">已售罄</text>
+                <text v-else-if="product.stock <= 3" class="text-white text-xs px-2 py-0.5 bg-red-500 rounded-full">仅剩{{ product.stock }}</text>
+              </view>
+              <view 
+                v-if="product.limit > 0"
+                class="flex items-center justify-center"
+              >
+                <text class="text-white text-xs px-2 py-0.5 bg-yellow-500/60 rounded-full">限购{{ product.limit }}</text>
+              </view>
+            </view>
+          </view>
+
+          <!-- 商品信息 -->
+          <view class="flex flex-col gap-1 p-3 pt-2.5">
+            <text class="text-[13px] font-bold text-gray-900 dark:text-white truncate leading-snug">
+              {{ product.title }}
+            </text>
+            <text class="text-[11px] text-gray-500 dark:text-gray-400 truncate leading-snug">
+              {{ product.subtitle }}
+            </text>
+
+            <!-- 价格与按钮 -->
+            <view class="flex flex-row items-center justify-between mt-2">
+              <view class="flex flex-row items-baseline gap-0.5">
+                <text class="text-[10px] text-gray-400 dark:text-gray-500 font-medium">
+                  {{ product.currency === 'points' ? '积分' : '¥' }}
+                </text>
+                <text class="text-base font-bold text-red-500 dark:text-red-400 leading-none">
+                  {{ formatPrice(product.price) }}
+                </text>
+              </view>
+              
+              <view 
+                class="px-3 py-1.5 rounded-full text-[11px] font-semibold leading-none primary-btn"
+              >
+               详情
+              </view>
+            </view>
+          </view>
+        </view>
+      </view>
+      </view>
+    </scroll-view>
+  </view>
+</template>
+
+<script setup>
+import { computed } from 'vue'
+
+const props = defineProps({
+  item: { type: Object, required: true },
+  isSwiping: { type: Boolean, default: false }
+})
+
+defineEmits(['item-click', 'avatar-click'])
+
+const normalizedItem = computed(() => {
+  const raw = props.item
+  const desc = raw.description || raw.excerpt?.rendered || ''
+  return {
+    id: raw.id,
+    displayTitle: raw.displayTitle || raw.title?.rendered || '无标题',
+    description: desc.replace(/<\/?[^>]+(>|$)/g, ''),
+    shopItems: raw.shopItems || raw.acf?.shop_items || []
+  }
+})
+
+function formatPrice(price) {
+  if (price >= 10000) return (price / 10000).toFixed(1) + 'w'
+  if (price >= 1000) return (price / 1000).toFixed(1) + 'k'
+  return price.toString()
+}
+</script>

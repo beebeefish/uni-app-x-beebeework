@@ -1,0 +1,239 @@
+{
+  // 使用 IntelliSense 了解相关属性。
+  // 悬停以查看现有属性的描述。
+  // 欲了解更多信息，请访问: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "command": "npm run postinstall",
+      "name": "postinstall",
+      "request": "launch",
+      "type": "node-terminal",
+      "cwd": "${workspaceFolder}/demo/web"
+    },
+    {
+      "command": "npm run dev",
+      "name": "[App] native",
+      "request": "launch",
+      "type": "node-terminal",
+      "cwd": "${workspaceFolder}/apps/native"
+    },
+    {
+      "command": "npm run dev",
+      "name": "[App] native-skyline",
+      "request": "launch",
+      "type": "node-terminal",
+      "cwd": "${workspaceFolder}/apps/native-skyline"
+    },
+    {
+      "command": "npm run dev",
+      "name": "[App] native-ts",
+      "request": "launch",
+      "type": "node-terminal",
+      "cwd": "${workspaceFolder}/apps/native-ts"
+    },
+    {
+      "command": "npm run dev",
+      "name": "[App] native-ts-skyline",
+      "request": "launch",
+      "type": "node-terminal",
+      "cwd": "${workspaceFolder}/apps/native-ts-skyline"
+    },
+    {
+      "command": "npm run dev",
+      "name": "[App] vite-native",
+      "request": "launch",
+      "type": "node-terminal",
+      "cwd": "${workspaceFolder}/apps/vite-native"
+    },
+    {
+      "command": "npm run build",
+      "name": "[App] vite-native build",
+      "request": "launch",
+      "type": "node-terminal",
+      "cwd": "${workspaceFolder}/apps/vite-native"
+    },
+    {
+      "command": "npm run dev",
+      "name": "[App] vite-native-skyline",
+      "request": "launch",
+      "type": "node-terminal",
+      "cwd": "${workspaceFolder}/apps/vite-native-skyline"
+    },
+    {
+      "command": "npm run dev",
+      "name": "[App] vite-native-ts",
+      "request": "launch",
+      "type": "node-terminal",
+      "cwd": "${workspaceFolder}/apps/vite-native-ts"
+    },
+    {
+      "command": "npm run dev",
+      "name": "[App] vite-native-ts-skyline",
+      "request": "launch",
+      "type": "node-terminal",
+      "cwd": "${workspaceFolder}/apps/vite-native-ts-skyline"
+    },
+    {
+      "command": "npm run dev",
+      "name": "[Docs] website dev",
+      "request": "launch",
+      "type": "node-terminal",
+      "cwd": "${workspaceFolder}/website"
+    },
+    {
+      "command": "npm run dev:watch",
+      "name": "[CLI] watch script",
+      "request": "launch",
+      "type": "node-terminal",
+      "cwd": "${workspaceFolder}/plugins/cli"
+    },
+    {
+      "command": "npm run dev:local",
+      "name": "[Demo] uni-app-vue3-vite dev:local",
+      "request": "launch",
+      "type": "node-terminal",
+      "cwd": "${workspaceFolder}/demo/uni-app-vue3-vite"
+    },
+    {
+      "command": "npm run dev",
+      "name": "[Demo] uni-app-vue3-vite dev",
+      "request": "launch",
+      "type": "node-terminal",
+      "cwd": "${workspaceFolder}/demo/uni-app-vue3-vite"
+    },
+    {
+      "command": "npm run test:dev",
+      "name": "Run vitest dev debug",
+      "request": "launch",
+      "type": "node-terminal"
+    },
+    {
+      "command": "yarn dev",
+      "name": "[Demo] native-mina weapp dev",
+      "request": "launch",
+      "type": "node-terminal",
+      "cwd": "${workspaceFolder}/demo/native-mina"
+    },
+    {
+      "command": "yarn dev",
+      "name": "[Demo] taro app run weapp dev",
+      "request": "launch",
+      "type": "node-terminal",
+      "cwd": "${workspaceFolder}/demo/taro-app"
+    },
+    {
+      "command": "yarn dev",
+      "name": "[Demo] taro-vue3-app run weapp dev",
+      "request": "launch",
+      "type": "node-terminal",
+      "cwd": "${workspaceFolder}/demo/taro-vue3-app"
+    },
+    {
+      "command": "yarn build",
+      "name": "[Demo] taro-vue3-app run weapp build",
+      "request": "launch",
+      "type": "node-terminal",
+      "cwd": "${workspaceFolder}/demo/taro-vue3-app"
+    },
+    {
+      "command": "yarn dev:local",
+      "name": "[Demo] local taro app run weapp dev",
+      "request": "launch",
+      "type": "node-terminal",
+      "cwd": "${workspaceFolder}/demo/taro-app"
+    },
+    {
+      "command": "yarn dev",
+      "name": "[Demo Mpx] Mpx dev",
+      "request": "launch",
+      "type": "node-terminal",
+      "cwd": "${workspaceFolder}/demo/mpx-app"
+    },
+    {
+      "command": "yarn build",
+      "name": "[Demo Mpx] Mpx build",
+      "request": "launch",
+      "type": "node-terminal",
+      "cwd": "${workspaceFolder}/demo/mpx-app"
+    },
+    {
+      "name": "Debug Jest Tests",
+      "type": "node",
+      "request": "launch",
+      "runtimeArgs": [
+        "--inspect-brk",
+        "${workspaceRoot}/node_modules/jest/bin/jest.js",
+        "--runInBand"
+      ],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Debug Vitest Current Test File",
+      "autoAttachChildProcesses": true,
+      "skipFiles": [
+        "<node_internals>/**",
+        "**/node_modules/**"
+      ],
+      "program": "${workspaceRoot}/node_modules/vitest/vitest.mjs",
+      "args": [
+        "run",
+        "${relativeFile}"
+      ],
+      "smartStep": true,
+      "console": "integratedTerminal"
+    },
+    {
+      "command": "npm run dev",
+      "name": "[demo-linked] taro-app-react dev",
+      "request": "launch",
+      "type": "node-terminal",
+      "cwd": "${workspaceFolder}/demo-linked/taro-app-react"
+    },
+    {
+      "command": "npm run build",
+      "name": "[demo-linked] taro-app-react build",
+      "request": "launch",
+      "type": "node-terminal",
+      "cwd": "${workspaceFolder}/demo-linked/taro-app-react"
+    },
+    {
+      "command": "npm run dev",
+      "name": "[demo-linked] uni-app-webpack5 dev",
+      "request": "launch",
+      "type": "node-terminal",
+      "cwd": "${workspaceFolder}/demo-linked/uni-app-webpack5"
+    },
+    {
+      "command": "npm run build",
+      "name": "[demo-linked] uni-app-webpack5 build",
+      "request": "launch",
+      "type": "node-terminal",
+      "cwd": "${workspaceFolder}/demo-linked/uni-app-webpack5"
+    },
+    {
+      "command": "npm run dev",
+      "name": "[demo-linked] uni-app-vite dev",
+      "request": "launch",
+      "type": "node-terminal",
+      "cwd": "${workspaceFolder}/demo-linked/uni-app-vite"
+    },
+    {
+      "command": "npm run build",
+      "name": "[demo-linked] uni-app-vite build",
+      "request": "launch",
+      "type": "node-terminal",
+      "cwd": "${workspaceFolder}/demo-linked/uni-app-vite"
+    },
+    {
+      "command": "npm run dev",
+      "name": "[demo] uni-app-webpack5 dev",
+      "request": "launch",
+      "type": "node-terminal",
+      "cwd": "${workspaceFolder}/demo/uni-app-webpack5"
+    }
+  ]
+}

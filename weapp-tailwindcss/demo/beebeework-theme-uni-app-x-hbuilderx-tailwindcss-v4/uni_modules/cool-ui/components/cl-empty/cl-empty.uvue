@@ -1,0 +1,105 @@
+<template>
+	<view
+		class="cl-empty"
+		:class="[
+			{
+				'cl-empty--fixed': fixed
+			},
+			pt.className
+		]"
+	>
+		<image
+			class="cl-empty__icon"
+			:src="`/static/empty/${icon}.png`"
+			:style="{
+				height: getUnit(iconSize)
+			}"
+			mode="aspectFit"
+			v-if="showIcon"
+		></image>
+
+		<cl-text
+			:pt="{
+				className: parseClass([
+					'cl-empty__text text-gray-400/10 mt-1',
+					{
+						'text-gray-100/10': isDark
+					}
+				])
+			}"
+			v-if="text"
+			>{{ text }}</cl-text
+		>
+	</view>
+</template>
+
+<script lang="ts" setup>
+import { isDark, parseClass, parsePt, getUnit, t } from "@/.cool";
+import { computed } from "vue";
+
+// 组件属性定义
+const props = defineProps({
+	// 透传样式配置
+	pt: {
+		type: Object,
+		default: () => ({})
+	},
+	// 空状态文本
+	text: {
+		type: String,
+		default: () => t("暂无数据")
+	},
+	// 空状态图标名称
+	icon: {
+		type: String,
+		default: "comm"
+	},
+	// 图标尺寸
+	iconSize: {
+		type: [Number, String],
+		default: 60
+	},
+	// 是否显示图标
+	showIcon: {
+		type: Boolean,
+		default: true
+	},
+	// 是否固定定位
+	fixed: {
+		type: Boolean,
+		default: true
+	}
+});
+
+// 透传样式类型定义
+type PassThrough = {
+	className?: string; // 根元素类名
+};
+
+// 解析透传样式配置
+const pt = computed(() => parsePt<PassThrough>(props.pt));
+</script>
+
+<style lang="scss" scoped>
+.cl-empty {
+	@apply flex flex-col items-center justify-center w-full h-full;
+	pointer-events: none;
+
+	&--fixed {
+		@apply fixed top-0 left-0;
+		z-index: -1;
+
+		// #ifdef H5
+		z-index: 0;
+		// #endif
+
+		// #ifndef H5
+		padding-top: -44px;
+		// #endif
+	}
+
+	&__icon {
+		margin-bottom: 10px;
+	}
+}
+</style>

@@ -1,0 +1,268 @@
+<template>
+	<view
+		class="cl-calendar-picker"
+		:class="{
+			'is-dark': isDark
+		}"
+		v-if="visible"
+	>
+		<view class="cl-calendar-picker__header">
+			<view
+				class="cl-calendar-picker__prev"
+				:class="{
+					'is-dark': isDark
+				}"
+				@tap="prev"
+			>
+				<cl-icon name="arrow-left-double-line"></cl-icon>
+			</view>
+
+			<view class="cl-calendar-picker__date" @tap="toMode('year')">
+				<cl-text :size="18">
+					{{ title }}
+				</cl-text>
+			</view>
+
+			<view
+				class="cl-calendar-picker__next"
+				:class="{
+					'is-dark': isDark
+				}"
+				@tap="next"
+			>
+				<cl-icon name="arrow-right-double-line"></cl-icon>
+			</view>
+		</view>
+
+		<view class="cl-calendar-picker__list">
+			<view
+				class="cl-calendar-picker__item"
+				v-for="item in list"
+				:key="item.value"
+				@tap="select(item.value)"
+			>
+				<cl-text
+					:pt="{
+						className: parseClass([[item.value == value, 'text-teal-500/10']])
+					}"
+					>{{ item.label }}</cl-text
+				>
+			</view>
+		</view>
+	</view>
+</template>
+
+<script lang="ts" setup>
+import { first, isDark, last, parseClass, t } from "@/.cool";
+import { computed, ref } from "vue";
+
+defineOptions({
+	name: "cl-calendar-picker"
+});
+
+// 定义日历选择器的条目类型
+type Item = {
+	label: string; // 显示的标签，如"1月"、"2024"
+	value: number; // 对应的数值，如1、2024
+};
+
+// 定义组件接收的属性：年份和月份，均为数字类型，默认值为0
+const props = defineProps({
+	year: {
+		type: Number,
+		default: 0
+	},
+	month: {
+		type: Number,
+		default: 0
+	}
+});
+
+// 定义组件可触发的事件，这里只定义了"change"事件
+const emit = defineEmits(["change"]);
+
+// 当前选择的模式，"year"表示选择年份，"month"表示选择月份，默认是"month"
+const mode = ref<"year" | "month">("month");
+
+// 当前选中的年份
+const year = ref(0);
+
+// 当前选中的月份
+const month = ref(0);
+
+// 当前年份选择面板的起始年份（如2020-2029，则startYear为2020）
+const startYear = ref(0);
+
+// 当前选中的值，若为月份模式则为月份，否则为年份
+const value = computed(() => {
+	return mode.value == "month" ? month.value : year.value;
+});
+
+// 计算可供选择的列表：
+// - 若为月份模式，返回1-12月
+// - 若为年份模式，返回以startYear为起点的连续10年
+const list = computed(() => {
+	if (mode.value == "month") {
+		return [
+			{ label: t("1月"), value: 1 },
+			{ label: t("2月"), value: 2 },
+			{ label: t("3月"), value: 3 },
+			{ label: t("4月"), value: 4 },
+			{ label: t("5月"), value: 5 },
+			{ label: t("6月"), value: 6 },
+			{ label: t("7月"), value: 7 },
+			{ label: t("8月"), value: 8 },
+			{ label: t("9月"), value: 9 },
+			{ label: t("10月"), value: 10 },
+			{ label: t("11月"), value: 11 },
+			{ label: t("12月"), value: 12 }
+		] as Item[];
+	} else {
+		const years: Item[] = [];
+		// 生成10个连续年份
+		for (let i = 0; i < 10; i++) {
+			years.push({
+				label: `${startYear.value + i}`,
+				value: startYear.value + i
+			});
+		}
+		return years;
+	}
+});
+
+// 计算标题内容：
+// - 月份模式下显示“xxxx年”
+// - 年份模式下显示“起始年 - 结束年”
+const title = computed(() => {
+	return mode.value == "month"
+		? `${year.value}`
+		: `${first(list.value)?.label} - ${last(list.value)?.label}`;
+});
+
+// 控制选择器弹窗的显示与隐藏
+const visible = ref(false);
+
+/**
+ * 打开选择器，并初始化年份、月份、起始年份
+ */
+function open() {
+	visible.value = true;
+
+	// 初始化当前年份和月份为传入的props
+	year.value = props.year;
+	month.value = props.month;
+
+	// 计算当前年份所在的十年区间的起始年份
+	startYear.value = Math.floor(year.value / 10) * 10;
+}
+
+/**
+ * 关闭选择器
+ */
+function close() {
+	visible.value = false;
+}
+
+/**
+ * 切换选择模式（年份/月份）
+ * @param val "year" 或 "month"
+ */
+function toMode(val: "year" | "month") {
+	mode.value = val;
+}
+
+/**
+ * 选择某个值（年份或月份）
+ * @param val 选中的值
+ */
+function select(val: number) {
+	if (mode.value == "month") {
+		// 选择月份后，关闭弹窗并触发change事件
+		month.value = val;
+		close();
+		emit("change", [year.value, month.value]);
+	} else {
+		// 选择年份后，切换到月份选择模式
+		year.value = val;
+		toMode("month");
+	}
+}
+
+/**
+ * 切换到上一个区间
+ * - 月份模式下，年份减1
+ * - 年份模式下，起始年份减10
+ */
+function prev() {
+	if (mode.value == "month") {
+		year.value -= 1;
+	} else {
+		startYear.value -= 10;
+	}
+}
+
+/**
+ * 切换到下一个区间
+ * - 月份模式下，年份加1
+ * - 年份模式下，起始年份加10
+ */
+function next() {
+	if (mode.value == "month") {
+		year.value += 1;
+	} else {
+		startYear.value += 10;
+	}
+}
+
+defineExpose({
+	open,
+	close
+});
+</script>
+
+<style lang="scss" scoped>
+.cl-calendar-picker {
+	@apply flex flex-col absolute left-0 top-0 w-full h-full bg-white z-10;
+
+	&__header {
+		@apply flex flex-row items-center justify-between w-full p-3;
+	}
+
+	&__prev,
+	&__next {
+		@apply flex flex-row items-center justify-center rounded-full bg-gray-100/10;
+		width: 30px;
+		height: 30px;
+
+		&.is-dark {
+			@apply bg-zinc-700/10;
+		}
+	}
+
+	&__date {
+		@apply flex flex-row items-center justify-center;
+	}
+
+	&__list {
+		@apply flex flex-row flex-wrap;
+	}
+
+	&__item {
+		@apply flex flex-row items-center justify-center;
+		height: 50px;
+		width: 25%;
+
+		&-bg {
+			@apply px-4 py-2;
+
+			&.is-active {
+				@apply bg-teal-500/10 rounded-xl;
+			}
+		}
+	}
+
+	&.is-dark {
+		@apply bg-gray-800/10 rounded-2xl;
+	}
+}
+</style>

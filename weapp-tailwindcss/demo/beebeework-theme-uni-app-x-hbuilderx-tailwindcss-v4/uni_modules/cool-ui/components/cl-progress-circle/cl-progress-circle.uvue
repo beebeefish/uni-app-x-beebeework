@@ -1,0 +1,270 @@
+<template>
+	<view class="cl-progress-circle" :class="[pt.className]">
+		<canvas
+			class="cl-progress-circle__canvas"
+			:id="canvasId"
+			:style="{
+				height: `${props.size}px`,
+				width: `${props.size}px`
+			}"
+		></canvas>
+
+		<slot name="text">
+			<cl-text
+				:value="`${value}${unit}`"
+				:pt="{
+					className: parseClass(['absolute', pt.text?.className])
+				}"
+				v-if="showText"
+			></cl-text>
+		</slot>
+	</view>
+</template>
+
+<script lang="ts" setup>
+import {
+	getColor,
+	getDevicePixelRatio,
+	isDark,
+	isHarmony,
+	parseClass,
+	parsePt,
+	uuid
+} from "@/.cool";
+import { computed, getCurrentInstance, onMounted, ref, watch, type PropType } from "vue";
+import type { PassThroughProps } from "../../types";
+
+defineOptions({
+	name: "cl-progress-circle"
+});
+
+const props = defineProps({
+	pt: {
+		type: Object,
+		default: () => ({})
+	},
+	// 数值 (0-100)
+	value: {
+		type: Number,
+		default: 0
+	},
+	// 圆形大小
+	size: {
+		type: Number,
+		default: 120
+	},
+	// 线条宽度
+	strokeWidth: {
+		type: Number,
+		default: 8
+	},
+	// 进度条颜色
+	color: {
+		type: String as PropType<string | null>,
+		default: null
+	},
+	// 底色
+	unColor: {
+		type: String as PropType<string | null>,
+		default: null
+	},
+	// 是否显示文本
+	showText: {
+		type: Boolean,
+		default: true
+	},
+	// 单位
+	unit: {
+		type: String,
+		default: "%"
+	},
+	// 起始角度 (弧度)
+	startAngle: {
+		type: Number,
+		default: -Math.PI / 2
+	},
+	// 是否顺时针
+	clockwise: {
+		type: Boolean,
+		default: true
+	},
+	// 动画时长
+	duration: {
+		type: Number,
+		default: 500
+	}
+});
+
+const { proxy } = getCurrentInstance()!;
+
+// 获取设备像素比
+const dpr = getDevicePixelRatio();
+
+// 透传样式类型定义
+type PassThrough = {
+	className?: string;
+	text?: PassThroughProps;
+};
+
+// 解析透传样式配置
+const pt = computed(() => parsePt<PassThrough>(props.pt));
+
+// canvas组件上下文
+let canvasCtx: CanvasContext | null = null;
+
+// 绘图上下文
+let drawCtx: CanvasRenderingContext2D | null = null;
+
+// 生成唯一的canvas ID
+const canvasId = `cl-progress-circle__${uuid()}`;
+
+// 当前显示值
+const value = ref(0);
+
+// 绘制圆形进度条
+function drawProgress() {
+	if (drawCtx == null) return;
+
+	const centerX = (props.size / 2) * dpr;
+	const centerY = (props.size / 2) * dpr;
+	const radius = ((props.size - props.strokeWidth) / 2) * dpr;
+
+	// 清除画布
+	// #ifdef APP
+	drawCtx!.reset();
+	// #endif
+	// #ifndef APP
+	drawCtx!.clearRect(0, 0, props.size * dpr, props.size * dpr);
+	// #endif
+
+	// 优化渲染质量
+	drawCtx!.textBaseline = "middle";
+	drawCtx!.textAlign = "center";
+	drawCtx!.miterLimit = 10;
+
+	// 保存当前状态
+	drawCtx!.save();
+
+	// 优化的圆环绘制
+	const drawCircle = (startAngle: number, endAngle: number, color: string) => {
+		if (drawCtx == null) return;
+		drawCtx!.beginPath();
+		drawCtx!.arc(centerX, centerY, radius, startAngle, endAngle, false);
+		drawCtx!.strokeStyle = color;
+		drawCtx!.lineWidth = props.strokeWidth * dpr;
+		drawCtx!.lineCap = "round";
+		drawCtx!.lineJoin = "round";
+		drawCtx!.stroke();
+	};
+
+	// 绘制底色圆环
+	drawCircle(
+		0,
+		2 * Math.PI,
+		props.unColor ?? (isDark.value ? getColor("zinc-700/10") : getColor("gray-200/10"))
+	);
+
+	// 绘制进度圆弧
+	if (value.value > 0) {
+		const progress = Math.max(0, Math.min(100, value.value)) / 100;
+		const endAngle = props.startAngle + (props.clockwise ? 1 : -1) * 2 * Math.PI * progress;
+		drawCircle(props.startAngle, endAngle, props.color ?? getColor("teal-500/10"));
+	}
+}
+
+// 动画更新数值
+function animate(targetValue: number) {
+	const startValue = value.value;
+	const startTime = Date.now();
+
+	function update() {
+		// 获取当前时间
+		const currentTime = Date.now();
+
+		// 计算动画经过的时间
+		const elapsed = currentTime - startTime;
+
+		// 计算动画进度
+		const progress = Math.min(elapsed / props.duration, 1);
+
+		// 缓动函数
+		const easedProgress = 1 - Math.pow(1 - progress, 3);
+
+		// 计算当前值
+		value.value = Math.round(startValue + (targetValue - startValue) * easedProgress);
+
+		// 绘制进度条
+		drawProgress();
+
+		if (progress < 1) {
+			if (canvasCtx != null) {
+				// @ts-ignore
+				canvasCtx!.requestAnimationFrame(() => {
+					update();
+				});
+			}
+		}
+	}
+
+	update();
+}
+
+// 初始化画布
+function initCanvas() {
+	setTimeout(
+		() => {
+			uni.createCanvasContextAsync({
+				id: canvasId,
+				component: proxy,
+				success: (context: CanvasContext) => {
+					// 设置canvas上下文
+					canvasCtx = context;
+
+					// 获取绘图上下文
+					drawCtx = context.getContext("2d")!;
+
+					// 设置宽高
+					drawCtx!.canvas.width = props.size * dpr;
+					drawCtx!.canvas.height = props.size * dpr;
+
+					// 开始动画
+					animate(props.value);
+				}
+			});
+		},
+		isHarmony() ? 100 : 0
+	);
+}
+
+onMounted(() => {
+	initCanvas();
+
+	// 监听value变化
+	watch(
+		computed(() => props.value),
+		(val: number) => {
+			animate(Math.max(0, Math.min(100, val)));
+		},
+		{
+			immediate: true
+		}
+	);
+
+	watch(
+		computed(() => [props.color, props.unColor, isDark.value]),
+		() => {
+			drawProgress();
+		}
+	);
+});
+
+defineExpose({
+	animate
+});
+</script>
+
+<style lang="scss" scoped>
+.cl-progress-circle {
+	@apply flex flex-col items-center justify-center relative;
+}
+</style>

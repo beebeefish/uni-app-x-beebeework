@@ -1,0 +1,324 @@
+<template>
+	<view class="cl-countdown" :class="[pt.className]">
+		<view
+			class="cl-countdown__item"
+			:class="[`${item.isSplitor ? pt.splitor?.className : pt.text?.className}`]"
+			v-for="(item, index) in list"
+			:key="index"
+		>
+			<slot name="item" :item="item">
+				<cl-text>{{ item.value }}</cl-text>
+			</slot>
+		</view>
+	</view>
+</template>
+
+<script lang="ts" setup>
+import { ref, watch, nextTick, computed, type PropType, onMounted, onUnmounted } from "vue";
+import type { PassThroughProps } from "../../types";
+import { dayUts, get, has, isEmpty, parsePt } from "@/.cool";
+
+type Item = {
+	value: string;
+	isSplitor: boolean;
+};
+
+defineOptions({
+	name: "cl-countdown"
+});
+
+defineSlots<{
+	item(props: { item: Item }): any;
+}>();
+
+const props = defineProps({
+	// 样式穿透配置
+	pt: {
+		type: Object,
+		default: () => ({})
+	},
+	// 格式化模板，支持 {d}天{h}:{m}:{s} 格式
+	format: {
+		type: String,
+		default: "{h}:{m}:{s}"
+	},
+	// 是否隐藏为0的单位
+	hideZero: {
+		type: Boolean,
+		default: false
+	},
+	// 倒计时天数
+	day: {
+		type: Number,
+		default: 0
+	},
+	// 倒计时小时数
+	hour: {
+		type: Number,
+		default: 0
+	},
+	// 倒计时分钟数
+	minute: {
+		type: Number,
+		default: 0
+	},
+	// 倒计时秒数
+	second: {
+		type: Number,
+		default: 0
+	},
+	// 结束时间，可以是Date对象或日期字符串
+	datetime: {
+		type: [Date, String] as PropType<Date | string>,
+		default: null
+	},
+	// 是否自动开始倒计时
+	auto: {
+		type: Boolean,
+		default: true
+	}
+});
+
+/**
+ * 组件事件定义
+ */
+const emit = defineEmits(["stop", "done", "change"]);
+
+/**
+ * 样式穿透类型定义
+ */
+type PassThrough = {
+	className?: string;
+	text?: PassThroughProps;
+	splitor?: PassThroughProps;
+};
+
+// 解析样式穿透配置
+const pt = computed(() => parsePt<PassThrough>(props.pt));
+
+// 定时器ID，用于清除定时器
+let timer: number = 0;
+
+// 当前剩余秒数
+const seconds = ref(0);
+
+// 倒计时运行状态
+const isRunning = ref(false);
+
+// 显示列表
+const list = ref<Item[]>([]);
+
+/**
+ * 倒计时选项类型定义
+ */
+type Options = {
+	day?: number;
+	hour?: number;
+	minute?: number;
+	second?: number;
+	datetime?: Date | string;
+};
+
+/**
+ * 将时间单位转换为总秒数
+ * @param options 时间选项，支持天、时、分、秒或具体日期时间
+ * @returns 总秒数
+ */
+function toSeconds({ day, hour, minute, second, datetime }: Options) {
+	if (datetime != null) {
+		// 如果提供了具体日期时间，计算与当前时间的差值
+		const diff = dayUts(datetime).diff(dayUts());
+		return Math.max(0, Math.floor(diff / 1000));
+	} else {
+		// 否则将各个时间单位转换为秒数
+		return Math.max(
+			0,
+			(day ?? 0) * 86400 + (hour ?? 0) * 3600 + (minute ?? 0) * 60 + (second ?? 0)
+		);
+	}
+}
+
+/**
+ * 执行倒计时逻辑
+ * 计算剩余时间并格式化显示
+ */
+function countDown() {
+	// 计算天、时、分、秒，使用更简洁的计算方式
+	const totalSeconds = Math.floor(seconds.value);
+	const day = Math.floor(totalSeconds / 86400); // 86400 = 24 * 60 * 60
+	const hour = Math.floor((totalSeconds % 86400) / 3600); // 3600 = 60 * 60
+	const minute = Math.floor((totalSeconds % 3600) / 60);
+	const second = totalSeconds % 60;
+
+	// 格式化时间对象，用于模板替换
+	const t = {
+		d: day.toString(),
+		h: hour.toString().padStart(2, "0"),
+		m: minute.toString().padStart(2, "0"),
+		s: second.toString().padStart(2, "0")
+	};
+
+	// 控制是否隐藏零值，初始为true表示隐藏
+	let isHide = true;
+	// 记录开始隐藏的位置索引，-1表示不隐藏
+	let start = -1;
+
+	// 根据格式模板生成显示列表
+	list.value = (props.format.split(/[{,}]/) as string[])
+		.map((e, i) => {
+			const value = has(t, e) ? (get(t, e) as string) : e;
+			const isSplitor = /^\D+$/.test(value);
+
+			if (props.hideZero) {
+				if (isHide && !isSplitor) {
+					if (value == "00" || value == "0" || isEmpty(value)) {
+						start = i;
+						isHide = true;
+					} else {
+						isHide = false;
+					}
+				}
+			}
+
+			return {
+				value,
+				isSplitor
+			} as Item;
+		})
+		.filter((e, i) => {
+			return !isEmpty(e.value) && (start == -1 ? true : start < i);
+		})
+		.filter((e, i) => {
+			if (i == 0 && e.isSplitor) {
+				return false;
+			}
+			return true;
+		});
+
+	// 触发change事件
+	emit("change", list.value);
+}
+
+/**
+ * 清除定时器并重置状态
+ */
+function clear() {
+	clearTimeout(timer);
+	timer = 0;
+	isRunning.value = false;
+}
+
+/**
+ * 停止倒计时
+ */
+function stop() {
+	clear();
+	emit("stop");
+}
+
+/**
+ * 倒计时结束处理
+ */
+function done() {
+	clear();
+	emit("done");
+}
+
+/**
+ * 继续倒计时
+ * 启动定时器循环执行倒计时逻辑
+ */
+function next() {
+	// 如果时间已到或正在运行，直接返回
+	if (seconds.value <= 0 || isRunning.value) {
+		return;
+	}
+
+	isRunning.value = true;
+
+	/**
+	 * 倒计时循环函数
+	 * 每秒执行一次，直到时间结束
+	 */
+	function loop() {
+		countDown();
+
+		if (seconds.value <= 0) {
+			done();
+			return;
+		} else {
+			seconds.value--;
+			// @ts-ignore
+			timer = setTimeout(() => loop(), 1000);
+		}
+	}
+
+	loop();
+}
+
+/**
+ * 开始倒计时
+ * @param options 可选的倒计时参数，不传则使用props中的值
+ */
+function start(options: Options | null = null) {
+	nextTick(() => {
+		// 计算初始秒数
+		seconds.value = toSeconds({
+			day: options?.day ?? props.day,
+			hour: options?.hour ?? props.hour,
+			minute: options?.minute ?? props.minute,
+			second: options?.second ?? props.second,
+			datetime: options?.datetime ?? props.datetime
+		});
+
+		// 开始倒计时
+		if (props.auto) {
+			next();
+		} else {
+			countDown();
+		}
+	});
+}
+
+// 组件销毁前停止倒计时
+onUnmounted(() => stop());
+
+// 组件挂载前开始倒计时
+onMounted(() => {
+	start();
+
+	// 监听时间单位变化，重新开始倒计时
+	watch(
+		computed(() => [props.day, props.hour, props.minute, props.second] as number[]),
+		() => {
+			start();
+		}
+	);
+
+	// 监听结束时间变化，重新开始倒计时
+	watch(
+		computed(() => props.datetime),
+		() => {
+			start();
+		}
+	);
+});
+
+defineExpose({
+	start,
+	stop,
+	done,
+	next,
+	isRunning
+});
+</script>
+
+<style lang="scss" scoped>
+.cl-countdown {
+	@apply flex flex-row items-center;
+
+	&__item {
+		@apply flex flex-row justify-center items-center;
+	}
+}
+</style>

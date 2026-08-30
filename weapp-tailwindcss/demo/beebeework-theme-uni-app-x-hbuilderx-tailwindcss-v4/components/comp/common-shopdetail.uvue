@@ -1,0 +1,105 @@
+<template>
+  <view class="flex flex-col w-full bg-white dark:bg-neutral-900 rounded-2xl overflow-hidden">
+    
+    <!-- 顶部大图（全宽，视觉冲击） -->
+    <view class="relative w-full h-44">
+      <image 
+        v-if="product != null && (product['image'] != null || product['cover'] != null)" 
+        class="w-full h-full" 
+        :src="String(product['image'] ?? product['cover'])" 
+        mode="aspectFill"
+      />
+      <!-- 右上角关闭 -->
+      <view 
+        class="absolute top-3 right-3 w-8 h-8 rounded-full bg-black/20 backdrop-blur-sm flex flex-row items-center justify-center active:opacity-60 z-10" 
+        @click="onClose"
+      >
+        <svg-icon :size="16"><text class="i-[mingcute--close-line] text-white size-[16px]"></text></svg-icon>
+      </view>
+      <!-- 底部渐变遮罩 -->
+      <view class="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-black/30 to-transparent"></view>
+    </view>
+
+    <!-- 内容区 -->
+    <view class="flex flex-col p-3">
+      
+      <!-- 1. 标题区 -->
+      <view class="flex flex-col mb-2 gap-1">
+        <text class="text-xl font-bold text-gray-900 dark:text-white leading-snug">
+          {{ product != null ? (product['name'] ?? product['title'] ?? '权益商品') : '权益商品' }}
+        </text>
+        <text class="text-xs text-gray-400 leading-relaxed">
+          {{ product?.subtitle ?? '官方精选限量兑换专区' }}
+        </text>
+      </view>
+
+      <!-- 2. 价格与库存（一行搞定） -->
+      <view class="flex flex-row items-center mb-2">
+        <view class="flex flex-row items-center mr-2">
+          <text class="text-xl font-bold text-yellow-500 mr-1">{{ product?.price ?? 0 }}</text>
+          <text class="text-xs text-yellow-500 font-medium">积分</text>
+        </view>
+        <view class="flex flex-row items-center mr-1">
+          <text class="w-px h-3 bg-gray-200 dark:bg-neutral-700 mr-2"></text>
+          <text class="text-xs text-gray-700">库存 {{ product?.stock ?? 0 }}</text>
+        </view>
+        <view class="flex flex-row items-center">
+          <text 
+            class="text-xs px-2 py-0.5 rounded-full font-medium"
+            :class="product?.stock === 0 ? 'bg-gray-100 dark:bg-neutral-800 text-gray-400' : 'bg-blue-500 text-white'"
+          >
+            {{ product?.stock === 0 ? '已售罄' : product?.stock <= 10 ? '库存告急' : '充足' }}
+          </text>
+        </view>
+      </view>
+
+      <!-- 3. 特权效果（卡片式，柔和） -->
+      <view class="flex flex-col bg-amber-100/80 dark:bg-amber-900/30 rounded-xl p-3">
+        <view class="flex flex-row items-center gap-1">
+          <text class="text-xs font-bold text-amber-600 dark:text-amber-400">兑换后效果</text>
+          <text class="text-xs text-gray-500 dark:text-gray-400">(限购 {{ product?.limit ?? 1 }} 个)</text>
+        </view>
+        <text class="text-lg text-gray-800 dark:text-gray-100 leading-relaxed font-medium">
+          {{ product?.attribute ?? product?.effect ?? '成功兑换后立即生效，全方位突破账号上限，尊享特权！' }}
+        </text>
+      </view>
+
+  </view>
+   <view class="flex flex-col p-3 relative">
+   <text class="absolute top-0 left-0 h-px w-full bg-gray-200 dark:bg-neutral-700"></text>
+      <!-- 5. 按钮（等高，视觉统一） -->
+      <view class="flex flex-row items-center justify-end gap-3">
+        <view 
+          class="px-5 h-9 flex items-center justify-center rounded-full muted-btn"
+          @click="onClose"
+        >
+          再想想
+        </view>
+        <view 
+          class="px-5 h-9 flex items-center justify-center rounded-full primary-btn"
+          @click="onExchange"
+        >
+          立即兑换
+        </view>
+      </view>
+
+    </view>
+  </view>
+</template>
+
+<script setup lang="uts">
+import { defineProps, defineEmits } from 'vue'
+
+const props = defineProps({
+  product: { type: Object, default: null }
+})
+
+const emit = defineEmits(['close'])
+
+const onClose = () => emit('close')
+
+const onExchange = () => {
+  uni.showToast({ title: '兑换成功！', icon: 'success' })
+  emit('close')
+}
+</script>

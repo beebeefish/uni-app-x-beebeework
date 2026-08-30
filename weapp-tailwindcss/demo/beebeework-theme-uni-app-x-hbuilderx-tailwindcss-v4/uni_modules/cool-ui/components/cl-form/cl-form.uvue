@@ -1,0 +1,454 @@
+<template>
+	<view
+		class="cl-form"
+		:class="[
+			`cl-form--label-${labelPosition}`,
+			{
+				'cl-form--disabled': disabled
+			},
+			pt.className
+		]"
+	>
+		<slot></slot>
+	</view>
+</template>
+
+<script setup lang="ts">
+import { computed, getCurrentInstance, nextTick, ref, watch, type PropType } from "vue";
+import { get, isEmpty, isString, parsePt, parseToObject, $t, t } from "@/.cool";
+import type { ClFormLabelPosition, ClFormRule, ClFormValidateError } from "../../types";
+import { usePage } from "../../hooks";
+
+defineOptions({
+	name: "cl-form"
+});
+
+// 组件属性定义
+const props = defineProps({
+	// 透传样式
+	pt: {
+		type: Object,
+		default: () => ({})
+	},
+	// 表单数据模型
+	modelValue: {
+		type: Object as PropType<any>,
+		default: () => ({})
+	},
+	// 表单规则
+	rules: {
+		type: Object as PropType<Map<string, ClFormRule[]>>,
+		default: () => new Map<string, ClFormRule[]>()
+	},
+	// 标签位置
+	labelPosition: {
+		type: String as PropType<ClFormLabelPosition>,
+		default: "top"
+	},
+	// 标签宽度
+	labelWidth: {
+		type: String,
+		default: "70px"
+	},
+	// 是否显示必填星号
+	showAsterisk: {
+		type: Boolean,
+		default: true
+	},
+	// 是否显示错误信息
+	showMessage: {
+		type: Boolean,
+		default: true
+	},
+	// 是否禁用整个表单
+	disabled: {
+		type: Boolean,
+		default: false
+	},
+	// 滚动到第一个错误位置
+	scrollToError: {
+		type: Boolean,
+		default: true
+	}
+});
+
+const { proxy } = getCurrentInstance()!;
+
+// cl-page 上下文
+const page = usePage();
+
+// 透传样式类型
+type PassThrough = {
+	className?: string;
+};
+
+// 解析透传样式
+const pt = computed(() => parsePt<PassThrough>(props.pt));
+
+// 表单数据
+const data = ref({} as UTSJSONObject);
+
+// 表单字段错误信息
+const errors = ref(new Map<string, string>());
+
+// 表单字段集合
+const fields = ref(new Set<string>([]));
+
+// 标签位置
+const labelPosition = computed(() => props.labelPosition);
+
+// 标签宽度
+const labelWidth = computed(() => props.labelWidth);
+
+// 是否显示必填星号
+const showAsterisk = computed(() => props.showAsterisk);
+
+// 是否显示错误信息
+const showMessage = computed(() => props.showMessage);
+
+// 是否禁用整个表单
+const disabled = computed(() => props.disabled);
+
+// 错误信息锁定
+const errorLock = ref(false);
+
+// 设置字段错误信息
+function setError(prop: string, error: string) {
+	if (errorLock.value) {
+		return;
+	}
+
+	if (prop != "") {
+		errors.value.set(prop, error);
+	}
+}
+
+// 移除字段错误信息
+function removeError(prop: string) {
+	if (prop != "") {
+		errors.value.delete(prop);
+	}
+}
+
+// 获取字段错误信息
+function getError(prop: string): string {
+	if (prop != "") {
+		return errors.value.get(prop) ?? "";
+	}
+
+	return "";
+}
+
+// 获得错误信息，并滚动到第一个错误位置
+async function getErrors(): Promise<ClFormValidateError[]> {
+	return new Promise((resolve) => {
+		// 错误信息
+		const errs = [] as ClFormValidateError[];
+
+		// 错误信息位置
+		const tops = new Map<string, number>();
+
+		// 完成回调，将错误信息添加到数组中
+		function done() {
+			tops.forEach((top, prop) => {
+				errs.push({
+					field: prop,
+					message: getError(prop)
+				});
+			});
+
+			// 滚动到第一个错误位置
+			if (props.scrollToError && errs.length > 0) {
+				page.scrollTo((tops.get(errs[0].field) ?? 0) + page.getScrollTop());
+			}
+
+			resolve(errs);
+		}
+
+		// 如果错误信息为空，直接返回
+		if (errors.value.size == 0) {
+			done();
+			return;
+		}
+
+		nextTick(() => {
+			let component = proxy;
+
+			// #ifdef MP
+			let num = 0; // 记录已处理的表单项数量
+
+			// 并查找其错误节点的位置
+			const deep = (el: any, index: number) => {
+				// 遍历当前节点的所有子节点
+				el?.$children.map((e: any) => {
+					// 限制递归深度，防止死循环
+					if (index < 5) {
+						// 判断是否为 cl-form-item 组件且 prop 存在
+						if (e.prop != null && e.$options.name == "cl-form-item") {
+							// 如果该字段已注册到 fields 中，则计数加一
+							if (fields.value.has(e.prop)) {
+								num += 1;
+							}
+
+							// 查询该 cl-form-item 下是否有错误节点，并获取其位置信息
+							uni.createSelectorQuery()
+								.in(e)
+								.select(".cl-form-item--error")
+								.boundingClientRect((res) => {
+									// 如果未获取到节点信息，直接返回
+									if (res == null) {
+										return;
+									}
+
+									// 记录该字段的错误节点 top 值
+									tops.set(e.prop, (res as NodeInfo).top!);
+
+									// 如果已处理的表单项数量达到总数，执行 done 回调
+									if (num >= fields.value.size) {
+										done();
+									}
+								})
+								.exec();
+						}
+
+						// 递归查找子节点
+						deep(e, index + 1);
+					}
+				});
+			};
+
+			deep(component, 0);
+			// #endif
+
+			// #ifndef MP
+			uni.createSelectorQuery()
+				.in(component)
+				.selectAll(".cl-form-item--error")
+				.boundingClientRect((res) => {
+					(res as NodeInfo[]).map((e) => {
+						tops.set((e.id ?? "").replace("cl-form-item-", ""), e.top ?? 0);
+					});
+
+					done();
+				})
+				.exec();
+
+			// #endif
+		});
+	});
+}
+
+// 清除所有错误信息
+function clearErrors() {
+	errors.value.clear();
+}
+
+// 获取字段值
+function getValue(prop: string): any | null {
+	if (prop != "") {
+		return get(data.value, prop, null);
+	}
+
+	return null;
+}
+
+// 获取字段规则
+function getRule(prop: string): ClFormRule[] {
+	return props.rules.get(prop) ?? ([] as ClFormRule[]);
+}
+
+// 设置字段规则
+function setRule(prop: string, rules: ClFormRule[]) {
+	if (prop != "" && !isEmpty(rules)) {
+		props.rules.set(prop, rules);
+	}
+}
+
+// 移除字段规则
+function removeRule(prop: string) {
+	if (prop != "") {
+		props.rules.delete(prop);
+	}
+}
+
+// 注册表单字段
+function addField(prop: string, rules: ClFormRule[]) {
+	if (prop != "") {
+		fields.value.add(prop);
+		setRule(prop, rules);
+	}
+}
+
+// 注销表单字段
+function removeField(prop: string) {
+	if (prop != "") {
+		fields.value.delete(prop);
+		removeRule(prop);
+		removeError(prop);
+	}
+}
+
+// 验证单个规则
+function validateRule(value: any | null, rule: ClFormRule): null | string {
+	// 必填验证
+	if (rule.required == true) {
+		if (
+			value == null ||
+			(value == "" && isString(value)) ||
+			(Array.isArray(value) && value.length == 0)
+		) {
+			return rule.message ?? t("此字段为必填项");
+		}
+	}
+
+	// 如果值为空且不是必填，直接通过
+	if ((value == null || (value == "" && isString(value))) && rule.required != true) {
+		return null;
+	}
+
+	// 最小长度验证
+	if (rule.min != null) {
+		if (typeof value == "number") {
+			if ((value as number) < rule.min) {
+				return rule.message ?? $t(`最小值为{min}`, { min: rule.min });
+			}
+		} else {
+			const len = Array.isArray(value) ? value.length : `${value}`.length;
+			if (len < rule.min) {
+				return rule.message ?? $t(`最少需要{min}个字符`, { min: rule.min });
+			}
+		}
+	}
+
+	// 最大长度验证
+	if (rule.max != null) {
+		if (typeof value == "number") {
+			if (value > rule.max) {
+				return rule.message ?? $t(`最大值为{max}`, { max: rule.max });
+			}
+		} else {
+			const len = Array.isArray(value) ? value.length : `${value}`.length;
+			if (len > rule.max) {
+				return rule.message ?? $t(`最多允许{max}个字符`, { max: rule.max });
+			}
+		}
+	}
+
+	// 正则验证
+	if (rule.pattern != null) {
+		if (!rule.pattern.test(`${value}`)) {
+			return rule.message ?? t("格式不正确");
+		}
+	}
+
+	// 自定义验证
+	if (rule.validator != null) {
+		const result = rule.validator(value);
+		if (result != true) {
+			return typeof result == "string" ? result : (rule.message ?? t("验证失败"));
+		}
+	}
+
+	return null;
+}
+
+// 清除所有验证
+function clearValidate() {
+	errorLock.value = true;
+
+	nextTick(() => {
+		clearErrors();
+		errorLock.value = false;
+	});
+}
+
+// 验证单个字段
+function validateField(prop: string): string | null {
+	let error = null as string | null;
+
+	if (prop != "") {
+		const value = getValue(prop);
+		const rules = getRule(prop);
+
+		if (!isEmpty(rules)) {
+			// 逐个验证规则
+			rules.find((rule) => {
+				const msg = validateRule(value, rule);
+
+				if (msg != null) {
+					error = msg;
+					return true;
+				}
+
+				return false;
+			});
+		}
+
+		// 移除错误信息
+		removeError(prop);
+	}
+
+	if (error != null) {
+		setError(prop, error!);
+	}
+
+	return error;
+}
+
+// 验证整个表单
+async function validate(callback: (valid: boolean, errors: ClFormValidateError[]) => void) {
+	// 验证所有字段
+	fields.value.forEach((prop) => {
+		validateField(prop);
+	});
+
+	// 获取所有错误信息，并滚动到第一个错误位置
+	const errs = await getErrors();
+
+	// 回调
+	callback(errs.length == 0, errs);
+}
+
+watch(
+	computed(() => parseToObject(props.modelValue)),
+	(val: UTSJSONObject) => {
+		data.value = val;
+	},
+	{
+		immediate: true,
+		deep: true
+	}
+);
+
+defineExpose({
+	labelPosition,
+	labelWidth,
+	showAsterisk,
+	showMessage,
+	disabled,
+	data,
+	errors,
+	fields,
+	addField,
+	removeField,
+	getValue,
+	setError,
+	getError,
+	getErrors,
+	removeError,
+	clearErrors,
+	getRule,
+	setRule,
+	removeRule,
+	validateRule,
+	clearValidate,
+	validateField,
+	validate
+});
+</script>
+
+<style lang="scss" scoped>
+.cl-form {
+	@apply w-full;
+}
+</style>

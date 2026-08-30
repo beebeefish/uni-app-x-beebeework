@@ -1,0 +1,532 @@
+<template>
+	<cl-select-trigger
+		v-if="showTrigger"
+		:pt="ptTrigger"
+		:placeholder="placeholder"
+		:disabled="disabled"
+		:focus="popupRef?.isOpen"
+		:text="text"
+		@open="open"
+		@clear="clear"
+	></cl-select-trigger>
+
+	<cl-popup ref="popupRef" v-model="visible" :title="title" :pt="ptPopup" @closed="onClosed">
+		<view class="cl-select-popup" @touchmove.stop>
+			<view class="cl-select-popup__labels">
+				<cl-tag
+					v-for="(item, index) in labels"
+					:key="index"
+					:type="index != current ? 'info' : 'primary'"
+					plain
+					@tap="onLabelTap(index)"
+				>
+					{{ item }}
+				</cl-tag>
+			</view>
+
+			<view
+				class="cl-select-popup__list"
+				:style="{
+					height: getUnit(height)
+				}"
+			>
+				<swiper
+					v-if="isMp() ? popupRef?.isOpen : true"
+					class="h-full bg-transparent"
+					:current="current"
+					:disable-touch="disableTouch"
+					@change="onSwiperChange"
+				>
+					<swiper-item
+						v-for="(data, index) in list"
+						:key="index"
+						class="h-full bg-transparent"
+					>
+						<cl-list-view
+							:data="data"
+							:item-height="45"
+							:virtual="!isMp()"
+							@item-tap="onItemTap"
+						>
+							<template #item="{ data, item }">
+								<view
+									class="flex flex-row items-center justify-between w-full px-[10px]"
+									:class="{
+										'bg-teal-50/10': onItemActive(index, data),
+										'bg-gray-800/10': isDark && onItemActive(index, data)
+									}"
+									:style="{
+										height: item.height + 'px'
+									}"
+								>
+									<cl-text
+										:pt="{
+											className: parseClass({
+												'text-teal-500/10': onItemActive(index, data)
+											})
+										}"
+										>{{ data[labelKey] }}</cl-text
+									>
+								</view>
+							</template>
+						</cl-list-view>
+					</swiper-item>
+				</swiper>
+			</view>
+		</view>
+	</cl-popup>
+</template>
+
+<script setup lang="ts">
+import { ref, computed, type PropType, nextTick } from "vue";
+import {
+	isDark,
+	isEmpty,
+	isMp,
+	isNull,
+	parseClass,
+	parsePt,
+	parseToObject,
+	getUnit,
+	t
+} from "@/.cool";
+import type { ClSelectTriggerPassThrough } from "../cl-select-trigger/props";
+import type { ClPopupPassThrough } from "../cl-popup/props";
+import type { ClListViewItem } from "../../types";
+
+defineOptions({
+	name: "cl-cascader"
+});
+
+/**
+ * 组件属性定义
+ * 定义级联选择器组件的所有可配置属性
+ */
+const props = defineProps({
+	/**
+	 * 透传样式配置
+	 * 用于自定义组件各部分的样式，支持嵌套配置
+	 * 可配置：trigger(触发器)、popup(弹窗)等部分的样式
+	 */
+	pt: {
+		type: Object,
+		default: () => ({})
+	},
+	/**
+	 * 选择器的值 - v-model绑定
+	 * 数组形式，按层级顺序存储选中的值
+	 * 例如：["province", "city", "district"] 表示选中了省市区三级
+	 */
+	modelValue: {
+		type: Array as PropType<string[]>,
+		default: () => []
+	},
+	/**
+	 * 选择器弹窗标题
+	 * 显示在弹窗顶部的标题文字
+	 */
+	title: {
+		type: String,
+		default: () => t("请选择")
+	},
+	/**
+	 * 选择器占位符文本
+	 * 当没有选中任何值时显示的提示文字
+	 */
+	placeholder: {
+		type: String,
+		default: () => t("请选择")
+	},
+	/**
+	 * 选项数据源，支持树形结构
+	 * 每个选项需包含 labelKey 和 valueKey 指定的字段
+	 * 如果有子级，需包含 children 字段
+	 */
+	options: {
+		type: Array as PropType<ClListViewItem[]>,
+		default: () => []
+	},
+	/**
+	 * 是否显示选择器触发器
+	 * 设为 false 时可以通过编程方式控制弹窗显示
+	 */
+	showTrigger: {
+		type: Boolean,
+		default: true
+	},
+	/**
+	 * 是否禁用选择器
+	 * 禁用状态下无法点击触发器打开弹窗
+	 */
+	disabled: {
+		type: Boolean,
+		default: false
+	},
+	/**
+	 * 标签显示字段的键名
+	 * 指定从数据项的哪个字段读取显示文字
+	 */
+	labelKey: {
+		type: String,
+		default: "label"
+	},
+	/**
+	 * 值字段的键名
+	 * 指定从数据项的哪个字段读取实际值
+	 */
+	valueKey: {
+		type: String,
+		default: "label"
+	},
+	/**
+	 * 文本分隔符
+	 * 用于连接多级标签的文本
+	 */
+	textSeparator: {
+		type: String,
+		default: " - "
+	},
+	/**
+	 * 列表高度
+	 */
+	height: {
+		type: [String, Number],
+		default: 400
+	}
+});
+
+/**
+ * 定义组件事件
+ * 向父组件发射的事件列表
+ */
+const emit = defineEmits(["update:modelValue", "change"]);
+
+/**
+ * 弹出层组件的引用
+ * 用于调用弹出层的方法，如打开、关闭等
+ */
+const popupRef = ref<ClPopupComponentPublicInstance | null>(null);
+
+/**
+ * 透传样式类型定义
+ * 定义可以透传给子组件的样式配置结构
+ */
+type PassThrough = {
+	trigger?: ClSelectTriggerPassThrough; // 触发器样式配置
+	popup?: ClPopupPassThrough; // 弹窗样式配置
+};
+
+/**
+ * 解析透传样式配置
+ * 将传入的样式配置按照指定类型进行解析和处理
+ */
+const pt = computed(() => parsePt<PassThrough>(props.pt));
+
+// 解析触发器透传样式配置
+const ptTrigger = computed(() => parseToObject(pt.value.trigger));
+
+// 解析弹窗透传样式配置
+const ptPopup = computed(() => parseToObject(pt.value.popup));
+
+/**
+ * 当前显示的级联层级索引
+ * 用于控制 swiper 组件显示哪一级的选项列表
+ */
+const current = ref(0);
+
+/**
+ * 是否还有下一级可选
+ * 当选中项没有子级时设为 false，表示选择完成
+ */
+const isNext = ref(true);
+
+/**
+ * 当前临时选中的值数组
+ * 存储用户在弹窗中正在选择的值，确认后才会更新到 modelValue
+ */
+const value = ref<any[]>([]);
+
+/**
+ * 级联选择的数据列表
+ * 根据当前选中的值生成多级选项数据数组
+ * 返回二维数组，第一维是级别，第二维是该级别的选项
+ *
+ * 计算逻辑：
+ * 1. 如果没有选中任何值，返回根级选项
+ * 2. 根据已选中的值，逐级查找对应的子级选项
+ * 3. 最终返回所有级别的选项数据
+ */
+const list = computed<ClListViewItem[][]>(() => {
+	let data = props.options;
+
+	// 如果没有选中任何值，直接返回根级选项
+	if (isEmpty(value.value)) {
+		return [data];
+	}
+
+	// 根据选中的值逐级构建选项数据
+	const arr = value.value.map((v) => {
+		// 在当前级别中查找选中的项
+		const item = data.find((e) => e[props.valueKey] == v);
+
+		if (item == null) {
+			return [];
+		}
+
+		// 如果找到的项有子级，更新data为子级数据
+		if (!isNull(item.children)) {
+			data = item.children ?? [];
+		}
+
+		return data as ClListViewItem[];
+	});
+
+	// 返回根级选项 + 各级子选项
+	return [props.options, ...arr];
+});
+
+/**
+ * 扁平化的选项数据
+ * 将树形结构的选项数据转换为一维数组
+ * 用于根据值快速查找对应的选项信息
+ */
+const flatOptions = computed(() => {
+	const data = props.options;
+	const arr = [] as ClListViewItem[];
+
+	/**
+	 * 深度遍历树形数据，将所有节点添加到扁平数组中
+	 * @param list 当前层级的选项列表
+	 */
+	function deep(list: ClListViewItem[]) {
+		list.forEach((e) => {
+			// 将当前项添加到扁平数组
+			arr.push(e);
+
+			// 如果有子级，递归处理
+			if (e.children != null) {
+				deep(e.children!);
+			}
+		});
+	}
+
+	// 开始深度遍历
+	deep(data);
+
+	return arr;
+});
+
+/**
+ * 当前选中项的标签数组
+ * 根据选中的值获取对应的显示标签
+ * 用于在弹窗顶部显示选择路径
+ */
+const labels = computed(() => {
+	const arr = value.value.map((v, i) => {
+		// 在对应级别的选项中查找匹配的项，返回其标签
+		return list.value[i].find((e) => e[props.valueKey] == v)?.[props.labelKey] ?? "";
+	});
+
+	if (isNext.value && !isEmpty(flatOptions.value)) {
+		arr.push(t("请选择"));
+	}
+
+	return arr;
+});
+
+/**
+ * 触发器显示的文本
+ * 将选中的值转换为对应的标签，用 " - " 连接
+ * 例如：北京 - 朝阳区 - 三里屯街道
+ */
+const text = computed(() => {
+	return props.modelValue
+		.map((v) => {
+			// 在扁平化数据中查找对应的选项，获取其标签
+			return flatOptions.value.find((e) => e[props.valueKey] == v)?.[props.labelKey] ?? "";
+		})
+		.join(props.textSeparator);
+});
+
+/**
+ * 选择器弹窗显示状态
+ * 控制弹窗的打开和关闭
+ */
+const visible = ref(false);
+
+/**
+ * 打开选择器弹窗
+ * 检查禁用状态，如果未禁用则显示弹窗
+ */
+function open() {
+	visible.value = true;
+}
+
+/**
+ * 关闭选择器弹窗
+ * 直接设置弹窗为隐藏状态
+ */
+function close() {
+	visible.value = false;
+}
+
+/**
+ * 重置选择器
+ */
+function reset() {
+	// 重置当前级别索引
+	current.value = 0;
+
+	// 清空临时选中的值
+	value.value = [];
+
+	// 重置下一级状态
+	isNext.value = true;
+}
+
+/**
+ * 弹窗关闭完成后的回调
+ * 重置所有临时状态，为下次打开做准备
+ */
+function onClosed() {
+	reset();
+}
+
+/**
+ * 清空选择器的值
+ * 重置所有状态并触发相关事件
+ */
+function clear() {
+	reset();
+
+	// 触发值更新事件
+	emit("update:modelValue", value.value);
+	emit("change", value.value);
+}
+
+/**
+ * 是否禁用触摸
+ */
+const disableTouch = ref(false);
+
+/**
+ * 处理选项点击事件
+ * 根据点击的选项更新选中状态，如果是叶子节点则完成选择并关闭弹窗
+ *
+ * @param item 被点击的选项数据
+ */
+function onItemTap(item: ClListViewItem) {
+	if (disableTouch.value == true) {
+		return;
+	}
+
+	// 处理选项点击事件的主逻辑，防止重复点击，确保级联选择流程正确
+	disableTouch.value = true;
+
+	// 设置新的定时器
+	setTimeout(() => {
+		disableTouch.value = false;
+	}, 300);
+
+	// 如果选项没有值，直接返回
+	if (item[props.valueKey] == null) {
+		return;
+	}
+
+	// 在当前级别的数据中查找对应的完整选项信息
+	const data = list.value[current.value].find((e) => e[props.valueKey] == item[props.valueKey]);
+
+	// 截取当前级别之前的值，清除后续级别的选择
+	value.value = value.value.slice(0, current.value);
+
+	// 添加当前选中的值
+	value.value.push(item[props.valueKey]!);
+
+	if (data != null) {
+		// 判断是否为叶子节点（没有子级或子级为空）
+		if (data.children == null || isEmpty(data.children!)) {
+			// 关闭弹窗
+			close();
+
+			// 设置下一级状态为不可选
+			isNext.value = false;
+
+			// 选择完成
+			emit("update:modelValue", value.value);
+			emit("change", value.value);
+		} else {
+			// 还有下一级，继续选择
+			isNext.value = true;
+
+			nextTick(() => {
+				current.value += 1; // 切换到下一级
+			});
+		}
+	}
+}
+
+/**
+ * 判断选项是否为当前激活状态
+ * 用于高亮显示当前选中的选项
+ *
+ * @param index 当前级别索引
+ * @param item 选项数据
+ * @returns 是否为激活状态
+ */
+function onItemActive(index: number, item: ClListViewItem) {
+	// 如果没有选中任何值，则没有激活项
+	if (isEmpty(value.value)) {
+		return false;
+	}
+
+	// 如果索引超出选中值的长度，说明该级别没有选中项
+	if (index >= value.value.length) {
+		return false;
+	}
+
+	// 判断当前级别的选中值是否与该选项的值相匹配
+	return value.value[index] == item[props.valueKey];
+}
+
+/**
+ * 处理标签点击事件
+ * 点击标签可以快速跳转到对应的级别
+ *
+ * @param index 要跳转到的级别索引
+ */
+function onLabelTap(index: number) {
+	current.value = index;
+}
+
+/**
+ * 处理 swiper 组件的切换事件
+ * 当用户滑动切换级别时同步更新当前级别索引
+ *
+ * @param e swiper 切换事件对象
+ */
+function onSwiperChange(e: UniSwiperChangeEvent) {
+	current.value = e.detail.current;
+}
+
+defineExpose({
+	open,
+	close,
+	reset,
+	clear
+});
+</script>
+
+<style lang="scss" scoped>
+.cl-select {
+	&-popup {
+		&__labels {
+			@apply flex flex-row mb-3;
+			padding: 0 10px;
+		}
+
+		&__list {
+			@apply relative;
+		}
+	}
+}
+</style>

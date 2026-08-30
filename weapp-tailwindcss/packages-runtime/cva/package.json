@@ -1,0 +1,62 @@
+{
+  "name": "@weapp-tailwindcss/cva",
+  "type": "module",
+  "version": "0.1.7-next.0",
+  "description": "class-variance-authority 的运行时封装，自动完成小程序 escape/unescape。",
+  "author": "ice breaker <1324318532@qq.com>",
+  "license": "MIT",
+  "homepage": "https://tw.icebreaker.top/docs/community/merge/cva-and-variants",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sonofmagic/weapp-tailwindcss.git",
+    "directory": "packages-runtime/cva"
+  },
+  "bugs": {
+    "url": "https://github.com/sonofmagic/weapp-tailwindcss/issues"
+  },
+  "keywords": [
+    "tailwindcss",
+    "cva",
+    "mini-program",
+    "variance"
+  ],
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.mts",
+        "default": "./dist/index.mjs"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    }
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": "^20.19.0 || >=22.12.0"
+  },
+  "scripts": {
+    "dev": "tsdown -w",
+    "build": "tsdown",
+    "test": "vitest run",
+    "test:dev": "vitest",
+    "tsd": "tsd",
+    "release": "pnpm publish",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@weapp-tailwindcss/runtime": "workspace:*",
+    "class-variance-authority": "catalog:classVarianceAuthority"
+  }
+}

@@ -1,0 +1,378 @@
+<template>
+	<cl-select-trigger
+		v-if="showTrigger"
+		:pt="ptTrigger"
+		:placeholder="placeholder"
+		:disabled="disabled"
+		:focus="popupRef?.isOpen"
+		:text="text"
+		arrow-icon="time-line"
+		@open="open()"
+		@clear="clear"
+	></cl-select-trigger>
+
+	<cl-popup ref="popupRef" v-model="visible" :title="title" :pt="ptPopup">
+		<view class="cl-select-popup" @touchmove.stop>
+			<view class="cl-select-popup__picker">
+				<cl-picker-view
+					:value="indexes"
+					:headers="headers"
+					:columns="columns"
+					:reset-on-change="false"
+					@change-index="onChange"
+				></cl-picker-view>
+			</view>
+
+			<view class="cl-select-popup__op">
+				<cl-button
+					v-if="showCancel"
+					size="large"
+					text
+					border
+					type="light"
+					fluid
+					@tap="close"
+					>{{ cancelText }}</cl-button
+				>
+				<cl-button v-if="showConfirm" size="large" fluid @tap="confirm">{{
+					confirmText
+				}}</cl-button>
+			</view>
+		</view>
+	</cl-popup>
+</template>
+
+<script setup lang="ts">
+import { ref, computed, type PropType, watch } from "vue";
+import type { ClSelectOption } from "../../types";
+import { isEmpty, isNull, parsePt, parseToObject, t } from "@/.cool";
+import type { ClSelectTriggerPassThrough } from "../cl-select-trigger/props";
+import type { ClPopupPassThrough } from "../cl-popup/props";
+
+defineOptions({
+	name: "cl-select-time"
+});
+
+// 组件属性定义
+const props = defineProps({
+	// 透传样式配置
+	pt: {
+		type: Object,
+		default: () => ({})
+	},
+	// 选择器的值
+	modelValue: {
+		type: String,
+		default: ""
+	},
+	// 表头
+	headers: {
+		type: Array as PropType<string[]>,
+		default: () => [t("小时"), t("分钟"), t("秒数")]
+	},
+	// 类型，控制选择的粒度
+	type: {
+		type: String as PropType<"hour" | "minute" | "second">,
+		default: "second"
+	},
+	// 选择器标题
+	title: {
+		type: String,
+		default: () => t("请选择")
+	},
+	// 选择器占位符
+	placeholder: {
+		type: String,
+		default: () => t("请选择")
+	},
+	// 是否显示选择器触发器
+	showTrigger: {
+		type: Boolean,
+		default: true
+	},
+	// 是否禁用选择器
+	disabled: {
+		type: Boolean,
+		default: false
+	},
+	// 确认按钮文本
+	confirmText: {
+		type: String,
+		default: () => t("确定")
+	},
+	// 是否显示确认按钮
+	showConfirm: {
+		type: Boolean,
+		default: true
+	},
+	// 取消按钮文本
+	cancelText: {
+		type: String,
+		default: () => t("取消")
+	},
+	// 是否显示取消按钮
+	showCancel: {
+		type: Boolean,
+		default: true
+	},
+	// 时间标签格式化
+	labelFormat: {
+		type: String as PropType<string | null>,
+		default: null
+	}
+});
+
+// 定义事件
+const emit = defineEmits(["update:modelValue", "change"]);
+
+// 弹出层引用
+const popupRef = ref<ClPopupComponentPublicInstance | null>(null);
+
+// 透传样式类型定义
+type PassThrough = {
+	trigger?: ClSelectTriggerPassThrough;
+	popup?: ClPopupPassThrough;
+};
+
+// 解析透传样式配置
+const pt = computed(() => parsePt<PassThrough>(props.pt));
+
+// 解析触发器透传样式配置
+const ptTrigger = computed(() => parseToObject(pt.value.trigger));
+
+// 解析弹窗透传样式配置
+const ptPopup = computed(() => parseToObject(pt.value.popup));
+
+// 标签格式化
+const labelFormat = computed(() => {
+	if (props.labelFormat != null) {
+		return props.labelFormat;
+	}
+
+	if (props.type == "hour") {
+		return "{H}";
+	}
+
+	if (props.type == "minute") {
+		return "{H}:{m}";
+	}
+
+	return "{H}:{m}:{s}";
+});
+
+// 当前选中的值
+const value = ref<string[]>([]);
+
+// 当前选中项的索引
+const indexes = ref<number[]>([]);
+
+// 时间选择器列表
+const list = computed(() => {
+	const arr = [[], [], []] as ClSelectOption[][];
+
+	for (let i = 0; i < 60; i++) {
+		const v = i.toString().padStart(2, "0");
+
+		const item = {
+			label: v,
+			value: v
+		} as ClSelectOption;
+
+		if (i < 24) {
+			arr[0].push(item);
+		}
+
+		arr[1].push(item);
+		arr[2].push(item);
+	}
+
+	return arr;
+});
+
+// 列数，决定显示多少列（时、分、秒）
+const columnNum = computed(() => {
+	return ["hour", "minute", "second"].findIndex((e) => e == props.type) + 1;
+});
+
+// 列数据，取出需要显示的列
+const columns = computed(() => {
+	return list.value.slice(0, columnNum.value);
+});
+
+// 显示文本
+const text = ref("");
+
+// 更新文本内容
+function updateText() {
+	// 获取当前v-model绑定的时间字符串
+	const val = props.modelValue;
+
+	// 如果值为空或为null，返回空字符串
+	if (isEmpty(val) || isNull(val)) {
+		text.value = "";
+	} else {
+		// 拆分时间字符串，分别获取小时、分钟、秒
+		const [h, m, s] = val.split(":");
+
+		// 按照labelFormat格式化显示文本
+		text.value = labelFormat.value.replace("{H}", h).replace("{m}", m).replace("{s}", s);
+	}
+}
+
+// 设置值
+function setValue(val: string) {
+	// 声明选中值数组
+	let _value: string[];
+
+	// 判断输入值是否为空
+	if (isEmpty(val) || isNull(val)) {
+		// 设置空数组
+		_value = [];
+	} else {
+		// 按冒号分割字符串为数组
+		_value = val.split(":");
+	}
+
+	// 声明索引数组
+	let _indexes = [] as number[];
+
+	// 遍历时分秒三列
+	for (let i = 0; i < 3; i++) {
+		// 判断是否需要设置默认值
+		if (i >= _value.length) {
+			// 添加默认索引0
+			_indexes.push(0);
+
+			// 添加默认值
+			_value.push(list.value[i][0].value as string);
+		} else {
+			// 查找当前值对应的索引
+			let index = list.value[i].findIndex((e) => e.value == _value[i]);
+
+			// 索引无效时重置为0
+			if (index < 0) {
+				index = 0;
+			}
+
+			// 添加索引
+			_indexes.push(index);
+		}
+	}
+
+	// 更新选中值
+	value.value = _value;
+
+	// 更新索引值
+	indexes.value = _indexes;
+
+	// 更新文本内容
+	updateText();
+}
+
+// 选择器值改变事件
+function onChange(a: number[]) {
+	// 复制当前组件内部维护的索引数组
+	const b = [...indexes.value];
+
+	// 遍历所有列,处理联动逻辑
+	for (let i = 0; i < a.length; i++) {
+		// 检查当前列是否发生改变
+		if (b[i] != a[i]) {
+			// 更新当前列的索引
+			b[i] = a[i];
+		}
+	}
+
+	// 更新组件内部维护的索引数组
+	indexes.value = b;
+	// 根据最新的索引数组,更新选中的值数组
+	value.value = b.map((e, i) => list.value[i][e].value as string);
+}
+
+// 选择器显示状态
+const visible = ref(false);
+
+// 选择回调函数
+let callback: ((value: string) => void) | null = null;
+
+// 打开选择器
+function open(cb: ((value: string) => void) | null = null) {
+	if (props.disabled) {
+		return;
+	}
+
+	// 显示选择器弹窗
+	visible.value = true;
+
+	// 设置值
+	setValue(props.modelValue);
+
+	// 保存回调函数
+	callback = cb;
+}
+
+// 关闭选择器
+function close() {
+	visible.value = false;
+}
+
+// 清空选择器
+function clear() {
+	text.value = "";
+	emit("update:modelValue", "");
+	emit("change", "");
+}
+
+// 确认选择
+function confirm() {
+	// 将选中值转换为字符串格式
+	const val = value.value.join(":");
+
+	// 触发更新事件
+	emit("update:modelValue", val);
+	emit("change", val);
+
+	// 触发回调
+	if (callback != null) {
+		callback!(val);
+	}
+
+	// 关闭选择器
+	close();
+}
+
+// 监听modelValue变化
+watch(
+	computed(() => props.modelValue),
+	(val: string) => {
+		setValue(val);
+	},
+	{
+		immediate: true
+	}
+);
+
+// 监听labelFormat和type变化
+watch(
+	computed(() => [props.labelFormat, props.type]),
+	() => {
+		updateText();
+	}
+);
+
+defineExpose({
+	open,
+	close
+});
+</script>
+
+<style lang="scss" scoped>
+.cl-select {
+	&-popup {
+		&__op {
+			@apply flex flex-row items-center justify-center;
+			padding: 12px;
+		}
+	}
+}
+</style>

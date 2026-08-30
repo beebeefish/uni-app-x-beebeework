@@ -1,0 +1,696 @@
+<template>
+	<view
+		class="cl-draggable"
+		:class="[
+			{
+				'cl-draggable--columns': props.columns > 1
+			},
+			pt.className
+		]"
+	>
+		<!-- @vue-ignore -->
+		<view
+			v-for="(item, index) in list"
+			:key="getItemKey(item, index)"
+			class="cl-draggable__item"
+			:class="[
+				{
+					'cl-draggable__item--disabled': disabled,
+					'cl-draggable__item--dragging': dragging && dragIndex == index,
+					'cl-draggable__item--animating': dragging && dragIndex != index
+				}
+			]"
+			:style="getItemStyle(index)"
+			@touchstart="
+				(event: UniTouchEvent) => {
+					onTouchStart(event, index, 'touch');
+				}
+			"
+			@longpress="
+				(event: UniTouchEvent) => {
+					onTouchStart(event, index, 'longpress');
+				}
+			"
+			@touchmove="onTouchMove"
+			@touchend="onTouchEnd"
+		>
+			<slot
+				name="item"
+				:item="item"
+				:index="index"
+				:dragging="dragging"
+				:dragIndex="dragIndex"
+				:insertIndex="insertIndex"
+			>
+			</slot>
+		</view>
+	</view>
+</template>
+
+<script lang="ts" setup>
+import { computed, ref, getCurrentInstance, type PropType, watch } from "vue";
+import { isNull, parsePt, uuid } from "@/.cool";
+import type { PassThroughProps } from "../../types";
+
+defineOptions({
+	name: "cl-draggable"
+});
+
+defineSlots<{
+	item(props: {
+		item: UTSJSONObject;
+		index: number;
+		dragging: boolean;
+		dragIndex: number;
+		insertIndex: number;
+	}): any;
+}>();
+
+// 项目位置信息类型定义
+type ItemPosition = {
+	top: number;
+	left: number;
+	width: number;
+	height: number;
+};
+
+// 位移偏移量类型定义
+type TranslateOffset = {
+	x: number;
+	y: number;
+};
+
+const props = defineProps({
+	/** PassThrough 样式配置 */
+	pt: {
+		type: Object,
+		default: () => ({})
+	},
+	/** 数据数组，支持双向绑定 */
+	modelValue: {
+		type: Array as PropType<UTSJSONObject[]>,
+		default: () => []
+	},
+	/** 是否禁用拖拽功能 */
+	disabled: {
+		type: Boolean,
+		default: false
+	},
+	/** 列数：1为单列纵向布局，>1为多列网格布局 */
+	columns: {
+		type: Number,
+		default: 1
+	},
+	// 是否需要长按触发
+	longPress: {
+		type: Boolean,
+		default: true
+	}
+});
+
+const emit = defineEmits(["update:modelValue", "change", "start", "end"]);
+
+const { proxy } = getCurrentInstance()!;
+
+// 透传样式类型定义
+type PassThrough = {
+	className?: string;
+	ghost?: PassThroughProps;
+};
+
+/** PassThrough 样式解析 */
+const pt = computed(() => parsePt<PassThrough>(props.pt));
+
+/** 数据列表 */
+const list = ref<UTSJSONObject[]>([]);
+
+/** 是否正在拖拽 */
+const dragging = ref(false);
+/** 当前拖拽元素的原始索引 */
+const dragIndex = ref(-1);
+/** 预期插入的目标索引 */
+const insertIndex = ref(-1);
+/** 触摸开始时的Y坐标 */
+const startY = ref(0);
+/** 触摸开始时的X坐标 */
+const startX = ref(0);
+/** Y轴偏移量 */
+const offsetY = ref(0);
+/** X轴偏移量 */
+const offsetX = ref(0);
+/** 当前拖拽的数据项 */
+const dragItem = ref<UTSJSONObject>({});
+/** 所有项目的位置信息缓存 */
+const itemPositions = ref<ItemPosition[]>([]);
+/** 是否处于放下动画状态 */
+const dropping = ref(false);
+/** 动态计算的项目高度 */
+const itemHeight = ref(0);
+/** 动态计算的项目宽度 */
+const itemWidth = ref(0);
+/** 是否已开始排序模拟（防止误触） */
+const sortingStarted = ref(false);
+
+/**
+ * 重置所有拖拽相关的状态
+ * 在拖拽结束后调用，确保组件回到初始状态
+ */
+function reset() {
+	dragging.value = false; // 拖拽状态
+	dropping.value = false; // 放下动画状态
+	dragIndex.value = -1; // 拖拽元素索引
+	insertIndex.value = -1; // 插入位置索引
+	offsetX.value = 0; // X轴偏移
+	offsetY.value = 0; // Y轴偏移
+	dragItem.value = {}; // 拖拽的数据项
+	itemPositions.value = []; // 位置信息缓存
+	itemHeight.value = 0; // 动态计算的高度
+	itemWidth.value = 0; // 动态计算的宽度
+	sortingStarted.value = false; // 排序模拟状态
+}
+
+/**
+ * 计算网格布局中元素的位移偏移
+ * @param index 当前元素索引
+ * @param dragIdx 拖拽元素索引
+ * @param insertIdx 插入位置索引
+ * @returns 包含 x 和 y 坐标偏移的对象
+ */
+function calculateGridOffset(index: number, dragIdx: number, insertIdx: number): TranslateOffset {
+	const cols = props.columns;
+
+	// 计算当前元素在网格中的行列位置
+	const currentRow = Math.floor(index / cols);
+	const currentCol = index % cols;
+
+	// 计算元素在拖拽后的新位置索引
+	let newIndex = index;
+
+	if (dragIdx < insertIdx) {
+		// 向后拖拽：dragIdx+1 到 insertIdx 之间的元素需要向前移动一位
+		if (index > dragIdx && index <= insertIdx) {
+			newIndex = index - 1;
+		}
+	} else if (dragIdx > insertIdx) {
+		// 向前拖拽：insertIdx 到 dragIdx-1 之间的元素需要向后移动一位
+		if (index >= insertIdx && index < dragIdx) {
+			newIndex = index + 1;
+		}
+	}
+
+	// 计算新位置的行列坐标
+	const newRow = Math.floor(newIndex / cols);
+	const newCol = newIndex % cols;
+
+	// 使用动态计算的网格尺寸
+	const cellWidth = itemWidth.value;
+	const cellHeight = itemHeight.value;
+
+	// 计算实际的像素位移
+	const offsetX = (newCol - currentCol) * cellWidth;
+	const offsetY = (newRow - currentRow) * cellHeight;
+
+	return { x: offsetX, y: offsetY };
+}
+
+/**
+ * 计算网格布局的插入位置
+ * @param dragCenterX 拖拽元素中心点X坐标
+ * @param dragCenterY 拖拽元素中心点Y坐标
+ * @returns 最佳插入位置索引
+ */
+function calculateGridInsertIndex(dragCenterX: number, dragCenterY: number): number {
+	if (itemPositions.value.length == 0) {
+		return dragIndex.value;
+	}
+
+	let closestIndex = dragIndex.value;
+	let minDistance = Infinity;
+
+	// 使用欧几里得距离找到最近的网格位置（包括原位置）
+	for (let i = 0; i < itemPositions.value.length; i++) {
+		const position = itemPositions.value[i];
+
+		// 计算到元素中心点的距离
+		const centerX = position.left + position.width / 2;
+		const centerY = position.top + position.height / 2;
+
+		// 使用欧几里得距离公式
+		const distance = Math.sqrt(
+			Math.pow(dragCenterX - centerX, 2) + Math.pow(dragCenterY - centerY, 2)
+		);
+
+		// 更新最近的位置
+		if (distance < minDistance) {
+			minDistance = distance;
+			closestIndex = i;
+		}
+	}
+
+	return closestIndex;
+}
+
+/**
+ * 计算单列布局的插入位置
+ * @param clientY Y坐标
+ * @returns 最佳插入位置索引
+ */
+function calculateSingleColumnInsertIndex(clientY: number): number {
+	let closestIndex = dragIndex.value;
+	let minDistance = Infinity;
+
+	// 遍历所有元素，找到距离最近的元素中心
+	for (let i = 0; i < itemPositions.value.length; i++) {
+		const position = itemPositions.value[i];
+
+		// 计算到元素中心点的距离
+		const itemCenter = position.top + position.height / 2;
+		const distance = Math.abs(clientY - itemCenter);
+
+		if (distance < minDistance) {
+			minDistance = distance;
+			closestIndex = i;
+		}
+	}
+
+	return closestIndex;
+}
+
+/**
+ * 计算拖拽元素的最佳插入位置
+ * @param clientPosition 在主轴上的坐标（仅用于单列布局的Y轴坐标）
+ * @returns 最佳插入位置的索引
+ */
+function calculateInsertIndex(clientPosition: number): number {
+	// 如果没有位置信息，保持原位置
+	if (itemPositions.value.length == 0) {
+		return dragIndex.value;
+	}
+
+	// 根据布局类型选择计算方式
+	if (props.columns > 1) {
+		// 多列网格布局：计算拖拽元素的中心点坐标，使用2D坐标计算最近位置
+		const dragPos = itemPositions.value[dragIndex.value];
+		const dragCenterX = dragPos.left + dragPos.width / 2 + offsetX.value;
+		const dragCenterY = dragPos.top + dragPos.height / 2 + offsetY.value;
+		return calculateGridInsertIndex(dragCenterX, dragCenterY);
+	} else {
+		// 单列布局：基于Y轴距离计算最近的元素中心
+		return calculateSingleColumnInsertIndex(clientPosition);
+	}
+}
+
+/**
+ * 计算单列布局的位移偏移
+ * @param index 元素索引
+ * @param dragIdx 拖拽元素索引
+ * @param insertIdx 插入位置索引
+ * @returns 位移偏移对象
+ */
+function calculateSingleColumnOffset(
+	index: number,
+	dragIdx: number,
+	insertIdx: number
+): TranslateOffset {
+	if (dragIdx < insertIdx) {
+		// 向下拖拽：dragIdx+1 到 insertIdx 之间的元素向上移动
+		if (index > dragIdx && index <= insertIdx) {
+			return { x: 0, y: -itemHeight.value };
+		}
+	} else if (dragIdx > insertIdx) {
+		// 向上拖拽：insertIdx 到 dragIdx-1 之间的元素向下移动
+		if (index >= insertIdx && index < dragIdx) {
+			return { x: 0, y: itemHeight.value };
+		}
+	}
+
+	return { x: 0, y: 0 };
+}
+
+/**
+ * 计算非拖拽元素的位移偏移量
+ * @param index 元素索引
+ * @returns 包含 x 和 y 坐标偏移的对象
+ */
+function getItemTranslateOffset(index: number): TranslateOffset {
+	// 只在满足所有条件时才计算位移：拖拽中、非放下状态、已开始排序
+	if (!dragging.value || dropping.value || !sortingStarted.value) {
+		return { x: 0, y: 0 };
+	}
+
+	const dragIdx = dragIndex.value;
+	const insertIdx = insertIndex.value;
+
+	// 跳过正在拖拽的元素（拖拽元素由位置控制）
+	if (index == dragIdx) {
+		return { x: 0, y: 0 };
+	}
+
+	// 没有位置变化时不需要位移（拖回原位置）
+	if (dragIdx == insertIdx) {
+		return { x: 0, y: 0 };
+	}
+
+	// 根据布局类型计算位移
+	if (props.columns > 1) {
+		// 多列网格布局：使用2D位移计算
+		return calculateGridOffset(index, dragIdx, insertIdx);
+	} else {
+		// 单列布局：使用简单的纵向位移
+		return calculateSingleColumnOffset(index, dragIdx, insertIdx);
+	}
+}
+
+/**
+ * 计算项目的完整样式对象
+ * @param index 项目索引
+ * @returns 样式对象
+ */
+function getItemStyle(index: number) {
+	const style = {};
+	const isCurrent = dragIndex.value == index;
+
+	// 多列布局时设置等宽分布
+	if (props.columns > 1) {
+		const widthPercent = 100 / props.columns;
+		style["flex-basis"] = `${widthPercent}%`;
+		style["width"] = `${widthPercent}%`;
+		style["box-sizing"] = "border-box";
+	}
+
+	// 放下动画期间，只保留基础样式
+	if (dropping.value) {
+		return style;
+	}
+
+	// 拖拽状态下的样式处理
+	if (dragging.value) {
+		if (isCurrent) {
+			// 拖拽元素：跟随移动
+			style["transform"] = `translate(${offsetX.value}px, ${offsetY.value}px)`;
+			style["z-index"] = "100";
+		} else {
+			// 其他元素：显示排序预览位移
+			const translateOffset = getItemTranslateOffset(index);
+			style["transform"] = `translate(${translateOffset.x}px, ${translateOffset.y}px)`;
+		}
+	}
+
+	return style;
+}
+
+/**
+ * 获取所有项目的位置信息
+ */
+async function getItemPosition(): Promise<void> {
+	return new Promise((resolve) => {
+		uni.createSelectorQuery()
+			.in(proxy)
+			.select(".cl-draggable")
+			.boundingClientRect()
+			.exec((res) => {
+				const box = res[0] as NodeInfo;
+
+				itemWidth.value = (box.width ?? 0) / props.columns;
+
+				uni.createSelectorQuery()
+					.in(proxy)
+					.selectAll(".cl-draggable__item")
+					.boundingClientRect()
+					.exec((res) => {
+						const rects = res[0] as NodeInfo[];
+						const positions: ItemPosition[] = [];
+
+						for (let i = 0; i < rects.length; i++) {
+							const rect = rects[i];
+
+							if (i == 0) {
+								itemHeight.value = rect.height ?? 0;
+							}
+
+							positions.push({
+								top: rect.top ?? 0,
+								left: rect.left ?? 0,
+								width: itemWidth.value,
+								height: itemHeight.value
+							});
+						}
+
+						itemPositions.value = positions;
+
+						resolve();
+					});
+			});
+	});
+}
+
+/**
+ * 获取项目是否禁用
+ * @param index 项目索引
+ * @returns 是否禁用
+ */
+function getItemDisabled(index: number): boolean {
+	return !isNull(list.value[index]["disabled"]) && (list.value[index]["disabled"] as boolean);
+}
+
+/**
+ * 检查拖拽元素的中心点是否移动到其他元素区域
+ */
+function checkMovedToOtherElement(): boolean {
+	// 如果没有位置信息，默认未移出
+	if (itemPositions.value.length == 0) return false;
+
+	const dragIdx = dragIndex.value;
+	const dragPosition = itemPositions.value[dragIdx];
+
+	// 计算拖拽元素当前的中心点位置（考虑拖拽偏移）
+	const dragCenterX = dragPosition.left + dragPosition.width / 2 + offsetX.value;
+	const dragCenterY = dragPosition.top + dragPosition.height / 2 + offsetY.value;
+
+	// 根据布局类型采用不同的判断策略
+	if (props.columns > 1) {
+		// 多列网格布局：检查中心点是否与其他元素区域重叠
+		for (let i = 0; i < itemPositions.value.length; i++) {
+			if (i == dragIdx) continue;
+
+			const otherPosition = itemPositions.value[i];
+			const isOverlapping =
+				dragCenterX >= otherPosition.left &&
+				dragCenterX <= otherPosition.left + otherPosition.width &&
+				dragCenterY >= otherPosition.top &&
+				dragCenterY <= otherPosition.top + otherPosition.height;
+
+			if (isOverlapping) {
+				return true;
+			}
+		}
+	} else {
+		// 检查是否向上移动超过上一个元素的中线
+		if (dragIdx > 0) {
+			const prevPosition = itemPositions.value[dragIdx - 1];
+			const prevCenterY = prevPosition.top + prevPosition.height / 2;
+			if (dragCenterY <= prevCenterY) {
+				return true;
+			}
+		}
+
+		// 检查是否向下移动超过下一个元素的中线
+		if (dragIdx < itemPositions.value.length - 1) {
+			const nextPosition = itemPositions.value[dragIdx + 1];
+			const nextCenterY = nextPosition.top + nextPosition.height / 2;
+			if (dragCenterY >= nextCenterY) {
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
+
+/**
+ * 触摸开始事件处理
+ * @param event 触摸事件对象
+ * @param index 触摸的项目索引
+ */
+async function onTouchStart(event: UniTouchEvent, index: number, type: string) {
+	// 如果是长按触发，但未开启长按功能，则直接返回
+	if (type == "longpress" && !props.longPress) return;
+	// 如果是普通触摸触发，但已开启长按功能，则直接返回
+	if (type == "touch" && props.longPress) return;
+
+	// 检查是否禁用或索引无效
+	if (props.disabled) return;
+	if (getItemDisabled(index)) return;
+	if (index < 0 || index >= list.value.length) return;
+
+	// 获取触摸点
+	const touch = event.touches[0];
+
+	// 初始化拖拽状态
+	dragging.value = true;
+
+	// 初始化拖拽索引
+	dragIndex.value = index;
+	insertIndex.value = index; // 初始插入位置为原位置
+	startX.value = touch.clientX;
+	startY.value = touch.clientY;
+	offsetX.value = 0;
+	offsetY.value = 0;
+	// 初始化拖拽数据项
+	dragItem.value = list.value[index];
+
+	// 先获取所有项目的位置信息，为后续计算做准备
+	await getItemPosition();
+
+	// 触发开始事件
+	emit("start", index);
+
+	// 震动
+	uni.$emit("cool.vibrate");
+
+	// 阻止事件冒泡
+	event.stopPropagation();
+	// 阻止默认行为
+	event.preventDefault();
+}
+
+/**
+ * 触摸移动事件处理
+ * @param event 触摸事件对象
+ */
+function onTouchMove(event: TouchEvent): void {
+	if (!dragging.value) return;
+
+	const touch = event.touches[0];
+
+	// 更新拖拽偏移量
+	offsetX.value = touch.clientX - startX.value;
+	offsetY.value = touch.clientY - startY.value;
+
+	// 智能启动排序模拟：只有移出原元素区域才开始
+	if (!sortingStarted.value) {
+		if (checkMovedToOtherElement()) {
+			sortingStarted.value = true;
+		}
+	}
+
+	// 只有开始排序模拟后才计算插入位置
+	if (sortingStarted.value) {
+		// 计算拖拽元素当前的中心点坐标
+		const dragPos = itemPositions.value[dragIndex.value];
+		const dragCenterX = dragPos.left + dragPos.width / 2 + offsetX.value;
+		const dragCenterY = dragPos.top + dragPos.height / 2 + offsetY.value;
+
+		// 根据布局类型选择坐标轴：网格布局使用X坐标，单列布局使用Y坐标
+		const dragCenter = props.columns > 1 ? dragCenterX : dragCenterY;
+
+		// 计算最佳插入位置
+		const newIndex = calculateInsertIndex(dragCenter);
+		if (newIndex != insertIndex.value) {
+			insertIndex.value = newIndex;
+		}
+	}
+
+	// 阻止默认行为
+	event.preventDefault();
+}
+
+/**
+ * 触摸结束事件处理
+ */
+function onTouchEnd(): void {
+	if (!dragging.value) return;
+
+	// 旧索引
+	const oldIndex = dragIndex.value;
+
+	// 新索引
+	const newIndex = insertIndex.value;
+
+	// 如果位置发生变化，立即更新数组
+	if (oldIndex != newIndex && newIndex >= 0) {
+		const newList = [...list.value];
+		const item = newList.splice(oldIndex, 1)[0];
+		newList.splice(newIndex, 0, item);
+		list.value = newList;
+
+		// 触发变化事件
+		emit("update:modelValue", list.value);
+		emit("change", list.value);
+	}
+
+	// 开始放下动画
+	dropping.value = true;
+	dragging.value = false;
+
+	// 重置所有状态
+	reset();
+
+	// 等待放下动画完成后重置所有状态
+	emit("end", newIndex >= 0 ? newIndex : oldIndex);
+}
+
+/**
+ * 根据平台选择合适的key
+ * @param item 数据项
+ * @param index 索引
+ * @returns 合适的key
+ */
+function getItemKey(item: UTSJSONObject, index: number): string {
+	// #ifdef MP
+	// 小程序环境使用 index 作为 key，避免数据错乱
+	return `${index}`;
+	// #endif
+
+	// #ifndef MP
+	// 其他平台使用 uid，提供更好的性能
+	return item["uid"] as string;
+	// #endif
+}
+
+watch(
+	computed(() => props.modelValue),
+	(val: UTSJSONObject[]) => {
+		list.value = val.map((e) => {
+			return {
+				uid: e["uid"] ?? uuid(),
+				...e
+			};
+		});
+	},
+	{
+		immediate: true
+	}
+);
+</script>
+
+<style lang="scss" scoped>
+.cl-draggable {
+	@apply flex-col relative overflow-visible;
+
+	&--columns {
+		@apply flex-row flex-wrap;
+	}
+
+	&__item {
+		@apply relative z-10;
+
+		// #ifdef APP-IOS
+		@apply transition-none opacity-100;
+		// #endif
+
+		&--dragging {
+			@apply opacity-80 z-20;
+		}
+
+		&--disabled {
+			@apply opacity-60;
+		}
+
+		&--animating {
+			@apply duration-200;
+			transition-property: transform;
+		}
+	}
+}
+</style>

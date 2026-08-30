@@ -1,0 +1,96 @@
+---
+id: index
+title: packages-runtime 总览
+slug: /community/packages-runtime
+description: runtime 系列包的版本选择、能力矩阵与多端使用心智模型。
+keywords:
+  - 社区
+  - 模板
+  - 案例
+  - packages-runtime
+  - 总览
+  - community
+  - packages runtime
+  - weapp-tailwindcss
+  - tailwindcss
+  - 小程序
+  - 微信小程序
+  - uni-app
+  - taro
+  - rax
+  - mpx
+---
+
+`packages-runtime` 是 `weapp-tailwindcss` 的运行时能力集合，用来把编译期的类名规则延伸到小程序端，解决「动态类名冲突」「非法字符转义」「多端一致性」等问题。它们基于 `@weapp-tailwindcss/runtime` 提供 escape/unescape 与工厂能力，配合不同的 Tailwind 版本进行组合。
+
+## 运行时矩阵
+
+| 包名 | Tailwind 版本 | 适用场景 | 说明 |
+| --- | --- | --- | --- |
+| `@weapp-tailwindcss/merge` | v4 | 小程序 / 多端项目 | `tailwind-merge@3` 兼容实现，默认入口 |
+| `@weapp-tailwindcss/merge-v3` | v3 | 旧项目 / 长期维护 | `tailwind-merge@2` 兼容实现 |
+| `@weapp-tailwindcss/cva` | v3/v4 | 组件变体工厂 | `class-variance-authority` 运行时封装 |
+| `@weapp-tailwindcss/variants` | v4 | 组件变体 + slots | `tailwind-variants` 运行时封装 |
+| `tailwind-variant-v3` | v3 | Web / 通用 runtime | 上游 v3 runtime，可接入 `twMergeAdapter` |
+| `@weapp-tailwindcss/variants-v3` | v3 | 小程序 / 多端 | 基于 `tailwind-variant-v3` + `merge-v3` 的封装 |
+
+> `@weapp-tailwindcss/runtime` 是底座包，通常作为间接依赖自动安装，无需单独引入。
+
+## 版本选择
+
+- **Tailwind v4**：优先 `@weapp-tailwindcss/merge` + `@weapp-tailwindcss/variants`；需要变体工厂时加 `@weapp-tailwindcss/cva`。
+- **Tailwind v3**：优先 `@weapp-tailwindcss/merge-v3` + `@weapp-tailwindcss/variants-v3`；仅 Web 或需要定制合并器时可用 `tailwind-variant-v3`。
+
+## pnpm + uni-app 注意事项
+
+uni-app 的 Vite 默认开启 `preserveSymlinks`，会从包内 symlink 路径解析依赖；pnpm 的隔离布局不会把传递依赖放到该路径下，于是会反复出现 “找不到 XXX”（例如 `@vueuse/shared` 是 `@vueuse/core` 的传递依赖）。npm / yarn 不受影响。
+
+想“彻底”解决有两条路：
+
+1. 改 `node-linker` 为 `hoisted`（最彻底，接近 npm/yarn classic）
+
+   在根目录 `.npmrc`（或 `pnpm-workspace.yaml` 的 workspace 配置）中设置后重新 `pnpm install`，依赖会更扁平，`preserveSymlinks` 下也能解析到传递依赖。
+
+   ```ini
+   node-linker=hoisted
+   ```
+
+2. 保持 `isolated`，持续补 hoist/直依赖（不彻底，维护成本高）
+
+   例如在 `.npmrc` 中追加：
+
+   ```ini
+   public-hoist-pattern[]=@weapp-tailwindcss/*
+   public-hoist-pattern[]=tailwind-variant-v3
+   public-hoist-pattern[]=tailwind-merge
+   public-hoist-pattern[]=@weapp-core/*
+   ```
+
+   之后遇到新的缺失依赖（如 `@vueuse/shared`）还需要继续补齐为直依赖。
+
+## 多端心智模型（小程序 + Web）
+
+小程序端需要 escape/unescape 来保持类名合法；Web 端则希望保留原始类名。各包的 `create(...)` 工厂允许你为不同端生成隔离实例：
+
+```ts
+import { create } from '@weapp-tailwindcss/merge'
+
+// 跨平台框架请自行判断是否为 H5 构建，通常可从环境变量读取。
+const isH5 = false
+const { twMerge } = create({
+  escape: !isH5,
+  unescape: !isH5,
+})
+```
+
+这套模式同样适用于 `cva`、`tv`、`cn` 等变体工具，详见各包的「多端用法」与「多端 Demo」章节。
+
+## 章节速览
+
+- [@weapp-tailwindcss/merge（Tailwind v4）](/docs/community/packages-runtime/merge)
+- [@weapp-tailwindcss/merge-v3（Tailwind v3）](/docs/community/packages-runtime/merge-v3)
+- [@weapp-tailwindcss/cva](/docs/community/packages-runtime/cva)
+- [@weapp-tailwindcss/variants](/docs/community/packages-runtime/variants)
+- [tailwind-variant-v3](/docs/community/packages-runtime/tailwind-variant-v3)
+- [@weapp-tailwindcss/variants-v3](/docs/community/packages-runtime/variants-v3)
+- [多端 Demo：uni-app + Web、Taro + Web](/docs/community/packages-runtime/multi-platform-demos)

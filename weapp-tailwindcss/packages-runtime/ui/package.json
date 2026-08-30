@@ -1,0 +1,155 @@
+{
+  "name": "@weapp-tailwindcss/ui",
+  "type": "module",
+  "version": "0.0.9-next.0",
+  "description": "Atomic utility-first CSS component library for WeChat mini programs.",
+  "author": "ice breaker <1324318532@qq.com>",
+  "license": "ISC",
+  "homepage": "https://tw.icebreaker.top/docs/community/ui",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sonofmagic/weapp-tailwindcss.git",
+    "directory": "packages-runtime/ui"
+  },
+  "bugs": {
+    "url": "https://github.com/sonofmagic/weapp-tailwindcss/issues"
+  },
+  "keywords": [
+    "tailwindcss",
+    "mini-program",
+    "ui",
+    "components"
+  ],
+  "sideEffects": [
+    "./dist/index.css",
+    "./dist/index.wxss",
+    "./dist/index.tailwind3.css",
+    "./dist/index.tailwind3.wxss"
+  ],
+  "exports": {
+    ".": "./dist/index.css",
+    "./css": "./dist/index.css",
+    "./index.css": "./dist/index.css",
+    "./index.wxss": "./dist/index.wxss",
+    "./tailwind3.css": "./dist/index.tailwind3.css",
+    "./tailwind3.wxss": "./dist/index.tailwind3.wxss",
+    "./variants": {
+      "types": "./dist/variants.d.ts",
+      "import": "./dist/variants.js",
+      "require": "./dist/variants.cjs"
+    },
+    "./preset": {
+      "types": "./dist/preset.d.ts",
+      "import": "./dist/preset.js",
+      "require": "./dist/preset.cjs"
+    },
+    "./components": {
+      "types": "./dist/components/index.d.ts",
+      "import": "./dist/components/index.js",
+      "require": "./dist/components/index.cjs"
+    },
+    "./utils": {
+      "types": "./dist/utils/index.d.ts",
+      "import": "./dist/utils/index.js",
+      "require": "./dist/utils/index.cjs"
+    },
+    "./hooks": {
+      "types": "./dist/hooks/index.d.ts",
+      "import": "./dist/hooks/index.js",
+      "require": "./dist/hooks/index.cjs"
+    },
+    "./adapters": {
+      "types": "./dist/adapters/index.d.ts",
+      "import": "./dist/adapters/index.js",
+      "require": "./dist/adapters/index.cjs"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": "^20.19.0 || >=22.12.0"
+  },
+  "scripts": {
+    "build": "vite build && tsdown",
+    "build:watch": "vite build --watch",
+    "test": "vitest run",
+    "test:dev": "vitest",
+    "tsd": "tsd --typings dist/variants.d.ts --files test-d/variants.test-d.ts && tsd --typings dist/preset.d.ts --files test-d/preset.test-d.ts && tsd --typings dist/components/index.d.ts --files test-d/components.test-d.ts && tsd --typings dist/hooks/index.d.ts --files test-d/hooks.test-d.ts && tsd --typings dist/utils/index.d.ts --files test-d/utils.test-d.ts && tsd --typings dist/adapters/index.d.ts --files test-d/adapters.test-d.ts",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "gen:component": "tsx scripts/generate-component.ts",
+    "storybook": "storybook dev -p 6006",
+    "storybook:build": "storybook build",
+    "storybook:test": "test-storybook"
+  },
+  "publishConfig": {
+    "exports": {
+      ".": "./dist/index.css",
+      "./css": "./dist/index.css",
+      "./index.css": "./dist/index.css",
+      "./index.wxss": "./dist/index.wxss",
+      "./tailwind3.css": "./dist/index.tailwind3.css",
+      "./tailwind3.wxss": "./dist/index.tailwind3.wxss",
+      "./variants": {
+        "types": "./dist/variants.d.ts",
+        "import": "./dist/variants.js",
+        "require": "./dist/variants.cjs"
+      },
+      "./preset": {
+        "types": "./dist/preset.d.ts",
+        "import": "./dist/preset.js",
+        "require": "./dist/preset.cjs"
+      },
+      "./components": {
+        "types": "./dist/components/index.d.ts",
+        "import": "./dist/components/index.js",
+        "require": "./dist/components/index.cjs"
+      },
+      "./utils": {
+        "types": "./dist/utils/index.d.ts",
+        "import": "./dist/utils/index.js",
+        "require": "./dist/utils/index.cjs"
+      },
+      "./hooks": {
+        "types": "./dist/hooks/index.d.ts",
+        "import": "./dist/hooks/index.js",
+        "require": "./dist/hooks/index.cjs"
+      },
+      "./adapters": {
+        "types": "./dist/adapters/index.d.ts",
+        "import": "./dist/adapters/index.js",
+        "require": "./dist/adapters/index.cjs"
+      }
+    },
+    "main": "./dist/index.css"
+  },
+  "peerDependencies": {
+    "react": ">=16.8.0"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    }
+  },
+  "dependencies": {
+    "@weapp-tailwindcss/merge": "workspace:*",
+    "@weapp-tailwindcss/variants": "workspace:*",
+    "tailwind-variants": "^3.2.2"
+  },
+  "devDependencies": {
+    "@storybook/addon-a11y": "^10.4.2",
+    "@storybook/react": "^10.4.2",
+    "@storybook/react-vite": "^10.4.2",
+    "@tailwindcss/vite": "catalog:tailwindcss4",
+    "@types/react": "^19.2.16",
+    "@types/react-dom": "^19.0.0",
+    "react": "catalog:react18",
+    "react-dom": "catalog:react18",
+    "storybook": "^10.4.2",
+    "tailwindcss": "catalog:tailwindcss4",
+    "typescript": "catalog:typescript59",
+    "vite": "catalog:vite724",
+    "vite-plugin-dts": "^4.5.4"
+  }
+}

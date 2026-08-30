@@ -1,0 +1,283 @@
+<template>
+	<view
+		class="cl-form-item"
+		:class="[
+			{
+				'cl-form-item--error': isError
+			},
+			pt.className
+		]"
+		:id="`cl-form-item-${prop}`"
+	>
+		<view class="cl-form-item__inner" :class="[`is-${labelPosition}`, pt.inner?.className]">
+			<view
+				class="cl-form-item__label"
+				:class="[`is-${labelPosition}`, pt.label?.className]"
+				:style="{
+					width: labelPosition != 'top' ? labelWidth : 'auto'
+				}"
+				v-if="label != ''"
+			>
+				<cl-text :size="pt.label?.size ?? 13" :color="pt.label?.color">{{ label }}</cl-text>
+
+				<cl-text
+					color="error"
+					:pt="{
+						className: 'ml-1'
+					}"
+					v-if="showAsterisk"
+				>
+					*
+				</cl-text>
+			</view>
+
+			<view class="cl-form-item__content" :class="[pt.content?.className]">
+				<slot></slot>
+			</view>
+		</view>
+
+		<view class="cl-form-item__error" v-if="isError && showMessage">
+			<slot name="error" :error="errorText">
+				<cl-text
+					color="error"
+					:pt="{
+						className: parseClass(['mt-2', pt.error?.className])
+					}"
+				>
+					{{ errorText }}
+				</cl-text>
+			</slot>
+		</view>
+	</view>
+</template>
+
+<script setup lang="ts">
+import { computed, onMounted, onUnmounted, watch, type PropType } from "vue";
+import { isEqual, parseClass, parsePt } from "@/.cool";
+import type { ClFormLabelPosition, ClFormRule, PassThroughProps } from "../../types";
+import { useForm } from "../../hooks";
+import type { ClTextProps } from "../cl-text/props";
+
+defineOptions({
+	name: "cl-form-item"
+});
+
+defineSlots<{
+	error(props: { error: string }): any;
+}>();
+
+// 组件属性定义
+const props = defineProps({
+	// 透传样式
+	pt: {
+		type: Object,
+		default: () => ({})
+	},
+	// 字段标签
+	label: {
+		type: String,
+		default: ""
+	},
+	// 字段名称
+	prop: {
+		type: String,
+		default: ""
+	},
+	// 字段验证规则
+	rules: {
+		type: Array as PropType<ClFormRule[]>,
+		default: () => []
+	},
+	// 标签位置
+	labelPosition: {
+		type: String as PropType<ClFormLabelPosition>,
+		default: null
+	},
+	// 标签宽度
+	labelWidth: {
+		type: String as PropType<string | null>,
+		default: null
+	},
+	// 是否显示必填星号
+	showAsterisk: {
+		type: Boolean as PropType<boolean | null>,
+		default: null
+	},
+	// 是否显示错误信息
+	showMessage: {
+		type: Boolean as PropType<boolean | null>,
+		default: null
+	},
+	// 是否必填
+	required: {
+		type: Boolean as PropType<boolean | null>,
+		default: null
+	}
+});
+
+// cl-form 上下文
+const { formRef, getError, getValue, validateField, addField, removeField, setRule, getRule } =
+	useForm();
+
+// 透传样式类型
+type PassThrough = {
+	className?: string;
+	inner?: PassThroughProps;
+	label?: ClTextProps;
+	content?: PassThroughProps;
+	error?: PassThroughProps;
+};
+
+// 解析透传样式
+const pt = computed(() => parsePt<PassThrough>(props.pt));
+
+// 当前错误信息
+const errorText = computed<string>(() => {
+	return getError(props.prop);
+});
+
+// 是否有错误
+const isError = computed<boolean>(() => {
+	return errorText.value != "";
+});
+
+// 当前标签位置
+const labelPosition = computed<ClFormLabelPosition>(() => {
+	return props.labelPosition ?? formRef.value?.labelPosition ?? "left";
+});
+
+// 标签宽度
+const labelWidth = computed<string>(() => {
+	return props.labelWidth ?? formRef.value?.labelWidth ?? "60px";
+});
+
+// 计算是否必填
+const required = computed<boolean>(() => {
+	if (props.required != null) {
+		return props.required;
+	}
+
+	// 否则，根据规则自动判断
+	const rules = getRule(props.prop);
+	return rules.some((rule) => rule.required == true);
+});
+
+// 是否显示必填星号
+const showAsterisk = computed<boolean>(() => {
+	if (!required.value) {
+		return false;
+	}
+
+	return props.showAsterisk ?? formRef.value?.showAsterisk ?? true;
+});
+
+// 是否显示错误信息
+const showMessage = computed<boolean>(() => {
+	if (!required.value) {
+		return false;
+	}
+
+	return props.showMessage ?? formRef.value?.showMessage ?? true;
+});
+
+// 监听计算后的 required 属性
+watch(
+	required,
+	(val: boolean) => {
+		if (val) {
+			addField(props.prop, props.rules);
+		} else {
+			removeField(props.prop);
+		}
+	},
+	{
+		immediate: true
+	}
+);
+
+onMounted(() => {
+	// 监听字段值变化
+	watch(
+		computed(() => {
+			const value = getValue(props.prop);
+
+			if (value == null) {
+				return "";
+			}
+
+			return value;
+		}),
+		(a: any, b: any) => {
+			if (required.value == true) {
+				if (!isEqual(a, b)) {
+					validateField(props.prop);
+				}
+			}
+		},
+		{
+			deep: true
+		}
+	);
+
+	// 监听规则变化
+	watch(
+		computed(() => props.rules),
+		(val: ClFormRule[]) => {
+			setRule(props.prop, val);
+		},
+		{
+			deep: true
+		}
+	);
+});
+
+onUnmounted(() => {
+	removeField(props.prop);
+});
+
+defineExpose({
+	prop: props.prop
+});
+</script>
+
+<style lang="scss" scoped>
+.cl-form-item {
+	@apply w-full mb-6;
+
+	&__inner {
+		@apply w-full;
+
+		&.is-top {
+			@apply flex flex-col;
+		}
+
+		&.is-left {
+			@apply flex flex-row;
+		}
+
+		&.is-right {
+			@apply flex flex-row;
+		}
+	}
+
+	&__label {
+		@apply flex flex-row items-center;
+
+		&.is-top {
+			@apply w-full mb-2;
+		}
+
+		&.is-left {
+			@apply mr-3;
+		}
+
+		&.is-right {
+			@apply mr-3 justify-end;
+		}
+	}
+
+	&__content {
+		@apply relative flex-1 w-full;
+	}
+}
+</style>

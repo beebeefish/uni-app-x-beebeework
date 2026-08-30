@@ -1,0 +1,37 @@
+import Vibrator from "android.os.Vibrator";
+import VibratorManager from "android.os.VibratorManager";
+import VibrationEffect from "android.os.VibrationEffect";
+import Context from "android.content.Context";
+import Build from "android.os.Build";
+
+/**
+ * 震动
+ * @param {number} duration 震动时间单位ms
+ */
+export function vibrate(duration: number) {
+	try {
+		const context = UTSAndroid.getAppContext() as Context;
+		let vb: Vibrator | null = null;
+
+		// Android 12 (API 31) 及以上使用 VibratorManager
+		if (Build.VERSION.SDK_INT >= 31) {
+			const vibratorManager = context.getSystemService(
+				Context.VIBRATOR_MANAGER_SERVICE
+			) as VibratorManager;
+			vb = vibratorManager.getDefaultVibrator();
+		}
+
+		if (vb != null && vb.hasVibrator()) {
+			// Android 8.0 (API 26) 及以上使用 VibrationEffect
+			if (Build.VERSION.SDK_INT >= 26) {
+				const effect = VibrationEffect.createOneShot(
+					duration.toLong(),
+					VibrationEffect.DEFAULT_AMPLITUDE
+				);
+				vb.vibrate(effect);
+			}
+		}
+	} catch (e) {
+		console.error("震动失败:", e);
+	}
+}

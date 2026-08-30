@@ -1,0 +1,107 @@
+<template>
+	<view
+		class="cl-badge"
+		:class="[
+			{
+				'bg-teal-500/10': type == 'primary',
+				'bg-green-500': type == 'success',
+				'bg-yellow-500': type == 'warn',
+				'bg-red-500': type == 'error',
+				'bg-gray-500/10': type == 'info',
+				'cl-badge--dot': dot,
+				'cl-badge--position': position
+			},
+			pt.className
+		]"
+		:style="badgeStyle"
+	>
+		<cl-text
+			:size="10"
+			:pt="{
+				className: parseClass(['cl-badge__text text-white', pt.text?.className])
+			}"
+			v-if="!dot"
+		>
+			{{ value }}
+		</cl-text>
+
+		<slot></slot>
+	</view>
+</template>
+
+<script setup lang="ts">
+import { computed } from "vue";
+import type { PropType } from "vue";
+import type { PassThroughProps, Type } from "../../types";
+import { parseClass, parsePt } from "@/.cool";
+
+defineOptions({
+	name: "cl-badge"
+});
+
+const props = defineProps({
+	pt: {
+		type: Object,
+		default: () => ({})
+	},
+	type: {
+		type: String as PropType<Type>,
+		default: "error"
+	},
+	dot: {
+		type: Boolean,
+		default: false
+	},
+	value: {
+		type: [Number, String],
+		default: 0
+	},
+	position: {
+		type: Boolean,
+		default: false
+	}
+});
+
+type PassThrough = {
+	className?: string;
+	text?: PassThroughProps;
+};
+
+const pt = computed(() => parsePt<PassThrough>(props.pt));
+
+const badgeStyle = computed(() => {
+	const style = {};
+
+	if (props.dot) {
+		style["height"] = "5px";
+		style["width"] = "5px";
+		style["minWidth"] = "5px";
+		style["padding"] = 0;
+	} else {
+		style["height"] = "14px";
+		style["minWidth"] = "14px";
+		style["padding"] = "0 3px";
+	}
+
+	if (props.position) {
+		style["transform"] = "translate(50%, -50%)";
+
+		if (props.dot) {
+			style["transform"] = `translate(-3px, 3px)`;
+		}
+	}
+
+	return style;
+});
+</script>
+
+<style lang="scss" scoped>
+.cl-badge {
+	@apply flex flex-row items-center justify-center;
+	@apply rounded-full;
+
+	&--position {
+		@apply absolute z-10 right-0 top-0;
+	}
+}
+</style>

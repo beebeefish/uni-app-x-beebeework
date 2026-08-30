@@ -1,0 +1,64 @@
+{
+  "name": "@weapp-tailwindcss/variants",
+  "type": "module",
+  "version": "0.2.3-next.0",
+  "description": "tailwind-variants 的运行时封装，提供 tv/cn 等 API 的小程序增强版本。",
+  "author": "ice breaker <1324318532@qq.com>",
+  "license": "MIT",
+  "homepage": "https://tw.icebreaker.top/docs/community/merge/cva-and-variants",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sonofmagic/weapp-tailwindcss.git",
+    "directory": "packages-runtime/variants"
+  },
+  "bugs": {
+    "url": "https://github.com/sonofmagic/weapp-tailwindcss/issues"
+  },
+  "keywords": [
+    "tailwindcss",
+    "variants",
+    "tv",
+    "mini-program",
+    "runtime"
+  ],
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.mts",
+        "default": "./dist/index.mjs"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    }
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": "^20.19.0 || >=22.12.0"
+  },
+  "scripts": {
+    "dev": "tsdown -w",
+    "build": "tsdown",
+    "test": "vitest run",
+    "test:dev": "vitest",
+    "tsd": "tsd",
+    "release": "pnpm publish",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@weapp-tailwindcss/merge": "workspace:*",
+    "@weapp-tailwindcss/runtime": "workspace:*",
+    "tailwind-variants": "^3.2.2"
+  }
+}

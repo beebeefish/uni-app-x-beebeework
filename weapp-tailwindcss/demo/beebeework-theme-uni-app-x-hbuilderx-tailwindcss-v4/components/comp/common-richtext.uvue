@@ -1,0 +1,75 @@
+<template>
+  <kex-rich-text
+    :content="content"
+    :sanitize="sanitize"
+    :scroll-table="scrollTable"
+    :preview-img="previewImg"
+    :tag-style-css="finalTagStyleCss"
+    @imgtap="$emit('click-image', $event)"
+    @linktap="$emit('link-click', $event)"
+  />
+</template>
+
+<script setup lang="uts">
+import { ref, watch } from 'vue'
+import { themeState } from '@/stores/theme.uts'
+
+interface Props {
+  content: string
+  sanitize?: boolean
+  scrollTable?: boolean
+  previewImg?: boolean
+  tagStyleCss?: string
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  sanitize: true,
+  scrollTable: true,
+  previewImg: true
+})
+
+defineEmits<{
+  'click-image': [e: any]
+  'link-click': [e: any]
+}>()
+
+// 从主题 store 取主色
+const primaryColor = themeState.primaryColor || '#0F766E'
+
+function buildDefaultCss(color: string): string {
+  const map: Record<string, string> = {
+    p: "margin:12px 0;line-height:1.65;word-break:break-word;opacity:0.8;",
+    h1: "font-size:1.875rem;font-weight:600;margin:32px 0 20px 0;",
+    h2: "font-size:1.375rem;font-weight:600;margin:30px 0 16px 0;",
+    h3: "font-size:1.125rem;font-weight:500;margin:28px 0 14px 0;",
+    h4: "font-size:1.06rem;font-weight:500;margin:24px 0 10px 0;",
+    h5: "font-size:1.03rem;font-weight:500;margin:20px 0 10px 0;",
+    h6: "font-size:0.9375rem;font-weight:500;margin:20px 0 10px 0;",
+    ul: "margin:20px 0;padding-left:20px;",
+    ol: "margin:20px 0;padding-left:20px;",
+    li: "margin-bottom:6px;",
+    blockquote: `border-left:3px solid ${color};padding-left:20px;margin:20px 0;font-style:italic;`,
+    pre: "padding:11px 10px;border-radius:5px;overflow-x:auto;font-size:0.8125rem;background:#f5f5f5;",
+    code: "padding:0.15em 0.3em;border-radius:4px;background:#f5f5f5;",
+    table: "width:100%;margin:20px 0;border-collapse:collapse;",
+    th: "padding:10px;text-align:left;border:1px solid #e5e7eb;background:#f9fafb;",
+    td: "padding:10px;border:1px solid #e5e7eb;",
+    hr: "margin:28px 0;border-top:1px solid #e5e7eb;",
+    img: "max-width:100%;height:auto;border-radius:5px;display:block;",
+    video: "max-width:100%;height:auto;border-radius:5px;",
+    a: `text-decoration:underline;text-underline-offset:2px;color:${color};`
+  }
+  return Object.entries(map)
+    .map(([tag, css]) => `${tag}:${css}`)
+    .join(';')
+}
+
+const defaultTagStyleCss = buildDefaultCss(primaryColor)
+
+// 用 ref 管理，避免 UTS 中 computed 作为 prop 传递的解包问题
+const finalTagStyleCss = ref<string>(props.tagStyleCss ?? defaultTagStyleCss)
+
+watch(() => props.tagStyleCss, (v) => {
+  finalTagStyleCss.value = v ?? defaultTagStyleCss
+})
+</script>

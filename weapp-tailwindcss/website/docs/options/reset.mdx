@@ -1,0 +1,181 @@
+---
+title: '`weapp-tailwindcss/reset`'
+description: weapp-tailwindcss/reset 提供可组合的 reset 插件，支持 preset、内置组件 reset 与自定义扩展。
+keywords:
+  - 配置项
+  - 插件参数
+  - 选项
+  - weapp-tailwindcss
+  - reset
+  - options
+  - tailwindcss
+  - 小程序
+  - 微信小程序
+  - uni-app
+  - taro
+  - rax
+  - mpx
+---
+# `weapp-tailwindcss/reset`
+
+`weapp-tailwindcss/reset` 提供一组面向小程序生态的 reset 插件能力，默认会：
+
+- 清除所有 `button` 的原生样式（padding / 颜色 / border 等），让它的表现和 `view` / `text` 一致；
+- 将 `<image>` / `<img>` 统一为 `display: block`，并限制为 `max-width: 100%`、`height: auto`。
+
+你可以通过选项控制是否注入这些规则、改写选择器 / 声明，甚至追加自定义 reset。
+
+> ℹ️ `weapp-tailwindcss/reset` 目前是兼容导出层，实际实现来自 `@weapp-tailwindcss/reset`。老项目可以继续使用原入口，新项目也可以直接从 `@weapp-tailwindcss/reset` 导入。
+
+> ℹ️ 当你传入 `.class` / `#id` 作为选择器时，插件会自动转换为 `[class~="class"]` / `[id="id"]`，确保它们仍属于 base layer，不会破坏其他层级。
+
+## 可用选项
+
+- `preset?: 'minimal' | 'form' | 'content' | 'media' | 'all' | ResetPreset[]`
+- `buttonReset?: false | ResetConfig`
+- `imageReset?: false | ResetConfig`
+- `inputReset?: false | ResetConfig`
+- `textareaReset?: false | ResetConfig`
+- `listReset?: false | ResetConfig`
+- `navigatorReset?: false | ResetConfig`
+- `videoReset?: false | ResetConfig`
+- `extraResets?: ResetConfig[]`
+
+```ts
+interface ResetConfig {
+  selectors?: string[]        // 支持元素 / 类名 / ID
+  declarations?: Record<string, string | number | false>
+  pseudo?: Record<string, string | number | false> // 注入到 ::after
+}
+```
+
+设置为 `false` 即可关闭对应默认 reset；当提供类名 / ID 时会自动转换为 `[class~="foo"]` / `[id="bar"]`。
+
+对于 `inputReset`、`textareaReset`、`listReset`、`navigatorReset`、`videoReset` 这类默认未开启的内置项，如果你直接传入配置对象，插件也会自动启用对应 reset，不必先额外声明 `preset`。
+
+```ts
+reset({
+  inputReset: {
+    selectors: ['.wx-reset-input'],
+  },
+  videoReset: {
+    selectors: ['.wx-reset-video'],
+  },
+})
+```
+
+## preset
+
+`preset` 用来快速启用一组内置 reset。默认不传时等价于 `minimal`，保持和旧版本一致，只注入 `button` 与 `image`。
+
+- `minimal`：`button` + `image`
+- `form`：`minimal` + `input` + `textarea`
+- `content`：`minimal` + `ul/ol` + `navigator/a`
+- `media`：`minimal` + `video`
+- `all`：启用全部内置 reset
+
+你也可以组合多个 preset：
+
+```ts
+reset({
+  preset: ['content', 'media'],
+})
+```
+
+## Tailwind CSS v3 用法
+
+```ts title="tailwind.config.ts"
+import reset from 'weapp-tailwindcss/reset'
+
+export default {
+  plugins: [
+    // 默认注入 button/image reset
+    reset(),
+
+    // 完全自定义
+    reset({
+      preset: 'form',
+      buttonReset: {
+        selectors: ['.wx-reset-btn', '#primary-btn'],
+        declarations: {
+          padding: '0',
+          backgroundColor: 'transparent',
+        },
+        pseudo: {
+          border: 'none',
+        },
+      },
+      imageReset: {
+        selectors: ['.wx-reset-image'],
+        declarations: {
+          display: 'inline-block',
+          borderWidth: '0',
+        },
+      },
+      listReset: {
+        selectors: ['.wx-reset-list'],
+      },
+      extraResets: [
+        {
+          selectors: ['.wx-reset-view'],
+          declarations: {
+            display: 'block',
+            borderWidth: '0',
+          },
+          pseudo: {
+            borderColor: 'transparent',
+          },
+        },
+      ],
+    }),
+  ],
+}
+```
+
+关闭默认 reset：
+
+```ts
+reset({
+  buttonReset: false,
+  imageReset: false,
+})
+```
+
+即使启用了 `preset`，你仍然可以通过把单项设置为 `false` 的方式精确关闭内置 reset：
+
+```ts
+reset({
+  preset: 'all',
+  listReset: false,
+  videoReset: false,
+})
+```
+
+## Tailwind CSS v4 用法
+
+在入口 CSS 中通过 `@plugin` 注册即可：
+
+```css title="app.css"
+@plugin 'weapp-tailwindcss/reset';
+
+@plugin 'weapp-tailwindcss/reset' ({
+  preset: 'content',
+  buttonReset: false,
+  imageReset: {
+    selectors: ['.wx-reset-image'],
+    declarations: {
+      display: 'inline-block',
+    },
+  },
+  extraResets: [
+    {
+      selectors: ['.list-reset'],
+      declarations: { listStyle: 'none', margin: '0', padding: '0' },
+    },
+  ],
+});
+
+@import 'tailwindcss/utilities';
+```
+
+同样可以通过 `buttonReset: false` / `imageReset: false` 精准控制需要的 reset。`preset` 负责批量开启内置规则，`extraResets` 允许你一次性追加多个自定义规则。

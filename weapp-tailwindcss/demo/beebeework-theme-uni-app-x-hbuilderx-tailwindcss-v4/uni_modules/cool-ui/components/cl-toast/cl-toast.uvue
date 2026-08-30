@@ -1,0 +1,175 @@
+<template>
+	<cl-popup
+		v-for="(item, id) in list"
+		:key="id"
+		:direction="item.position"
+		:show-mask="false"
+		:show-header="false"
+		:swipe-close="false"
+		:pt="{
+			inner: {
+				className: '!bg-transparent'
+			}
+		}"
+		keep-alive
+		pointer-events="none"
+		v-model="item.visible"
+	>
+		<view class="cl-toast-wrapper">
+			<view
+				class="cl-toast"
+				:class="[
+					{
+						'is-dark': isDark,
+						'is-open': item.isOpen
+					},
+					`cl-toast--${item.position}`
+				]"
+			>
+				<view class="flex flex-row justify-center">
+					<cl-icon
+						color="white"
+						:name="item.icon"
+						:size="28"
+						:pt="{
+							className: `mb-1`
+						}"
+						v-if="item.icon != null"
+					></cl-icon>
+				</view>
+
+				<cl-text
+					color="white"
+					:pt="{
+						className: 'text-center'
+					}"
+					>{{ item.message }}</cl-text
+				>
+			</view>
+		</view>
+	</cl-popup>
+</template>
+
+<script setup lang="ts">
+import { reactive, ref } from "vue";
+import type { ClToastOptions } from "../../types";
+import { isDark, isNull } from "@/.cool";
+
+defineOptions({
+	name: "cl-toast"
+});
+
+// ToastItem 类型定义，表示单个toast的属性
+type ToastItem = {
+	id: number; // 唯一标识
+	visible: boolean; // 是否显示
+	isOpen: boolean; // 是否打开
+	icon?: string; // 可选，图标名称
+	image?: string; // 可选，图片地址
+	message: string; // 显示的文本内容
+	position: "top" | "center" | "bottom"; // 显示位置
+	duration: number; // 显示时长（毫秒）
+};
+
+// toast列表，当前仅用于v-for结构，实际只显示一个
+const list = ref<ToastItem[]>([]);
+
+// 用于生成唯一id
+let id = 0;
+
+// 关闭toast的方法
+function close(id: number) {
+	const item = list.value.find((item) => item.id == id);
+
+	if (item != null) {
+		item.visible = false;
+	}
+}
+
+// 打开toast的方法，传入配置信息
+function open(options: ClToastOptions) {
+	// 创建一个新的 ToastItem 实例，包含所有配置信息
+	const item = reactive<ToastItem>({
+		id: id++,
+		visible: true,
+		isOpen: false,
+		icon: options.icon,
+		image: options.image,
+		duration: options.duration ?? 2000,
+		position: options.position ?? "center",
+		message: options.message
+	});
+
+	// 如果有icon或image，强制居中显示
+	if (!isNull(item.icon) || !isNull(item.image)) {
+		item.position = "center";
+	}
+
+	switch (options.type) {
+		case "success":
+			item.icon = "checkbox-circle-line";
+			break;
+		case "warn":
+			item.icon = "error-warning-line";
+			break;
+		case "error":
+			item.icon = "close-circle-line";
+			break;
+		case "question":
+			item.icon = "question-line";
+			break;
+		case "disabled":
+			item.icon = "prohibited-line";
+			break;
+		case "stop":
+			item.icon = "indeterminate-circle-line";
+			break;
+	}
+
+	// 如果clear为true，则只保留当前toast，否则追加到列表
+	if (options.clear == true) {
+		list.value = [item];
+	} else {
+		list.value.push(item);
+	}
+
+	// 延迟打开toast，避免闪烁
+	setTimeout(() => {
+		item.isOpen = true;
+
+		// 如果duration不为0，则自动关闭toast
+		if (item.duration != 0) {
+			setTimeout(() => {
+				close(item.id); // 到时自动关闭
+			}, item.duration!);
+		}
+	}, 50);
+}
+
+defineExpose({
+	open,
+	close
+});
+</script>
+
+<style lang="scss" scoped>
+.cl-toast-wrapper {
+	@apply flex flex-col items-center justify-center;
+	padding: 25px 0;
+}
+
+.cl-toast {
+	@apply px-[16px] py-[12px] rounded-xl;
+	background-color: rgba(50, 50, 50, 0.9);
+	max-width: 300px;
+	opacity: 0;
+
+	&.is-open {
+		opacity: 1;
+	}
+
+	&.is-dark {
+		background-color: rgba(70, 70, 70, 0.9);
+	}
+}
+</style>

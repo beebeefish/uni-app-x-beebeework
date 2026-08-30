@@ -1,0 +1,49 @@
+/**
+ * 在微信小程序中打开指定的网页URL
+ * 使用微信小程序的wx.openUrl API
+ * @param url 要打开的网页地址，必须是https协议
+ * @returns 返回操作结果，true表示成功，false表示失败
+ */
+export function openWeb(url: string): boolean {
+	// 参数验证：检查URL是否为空或无效
+	if (url == null || url.trim() == "") {
+		console.error("openWeb: URL参数不能为空");
+		return false;
+	}
+
+	try {
+		let trimmedUrl = url.trim();
+		
+		// 微信小程序要求必须是https协议
+		if (!trimmedUrl.startsWith("https://")) {
+			console.error("openWeb: 微信小程序只支持https协议的URL -", trimmedUrl);
+			return false;
+		}
+
+		// 基本URL格式验证
+		if (!trimmedUrl.includes(".") || trimmedUrl.length < 12) { // https:// 最少8个字符 + 域名最少4个字符
+			console.error("openWeb: 无效的URL格式 -", trimmedUrl);
+			return false;
+		}
+
+		// 使用微信小程序的API打开URL
+		wx.openUrl({
+			url: trimmedUrl,
+			success: (res: any) => {
+				console.log("openWeb: 成功打开URL -", trimmedUrl);
+			},
+			fail: (err: any) => {
+				console.error("openWeb: 打开URL失败 -", err);
+			},
+			complete: (res: any) => {
+				console.log("openWeb: 操作完成 -", res);
+			}
+		});
+
+		return true;
+	} catch (e) {
+		// 捕获可能的异常
+		console.error("openWeb: 打开URL时发生错误 -", e);
+		return false;
+	}
+}

@@ -1,0 +1,96 @@
+/*! tailwindcss v4.1.1 | MIT License | https://tailwindcss.com */
+view,text,:before,:after {
+      --tw-font-weight: initial;
+    }
+
+@supports (((-webkit-hyphens:none)) and (not (margin-trim:inline))) or ((-moz-orient:inline) and (not (color:rgb(from red r g b)))) {
+
+  ::before,::after {
+    --tw-content: ""
+  }
+
+}
+
+page,.tw-root,wx-root-portal-content,:host {
+  --color-white: #fff;
+  --spacing: .25rem;
+  --font-weight-bold: 700;
+}
+
+view,text,:after,:before {
+  box-sizing: border-box;
+  border: 0 solid;
+  margin: 0;
+  padding: 0;
+}
+
+.i-mdi-home {
+  width: 1em;
+  height: 1em;
+  -webkit-mask-image: var(--svg);
+  mask-image: var(--svg);
+  --svg: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Cpath fill='black' d='M10 20v-6h4v6h5v-8h3L12 3L2 12h3v8z'/%3E%3C/svg%3E");
+  background-color: currentColor;
+  display: inline-block;
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+}
+
+.flex {
+  display: flex;
+}
+
+.aspect-_p--my-aspect-ratio_P {
+  aspect-ratio: var(--my-aspect-ratio);
+}
+
+.aspect-_bcalc_p4_x3_u1_P_f3_B {
+  aspect-ratio: 13 / 3;
+}
+
+.h-20 {
+  height: calc(var(--spacing) * 20);
+}
+
+.w-20 {
+  width: calc(var(--spacing) * 20);
+}
+
+.flex-col {
+  flex-direction: column;
+}
+
+.bg-_b_h0000ff_B {
+  background-color: #00f;
+}
+
+.text-_b45rpx_B {
+  font-size: 45rpx;
+}
+
+.text-_b88rpx_B {
+  font-size: 88rpx;
+}
+
+.font-bold {
+  --tw-font-weight: var(--font-weight-bold);
+  font-weight: var(--font-weight-bold);
+}
+
+.text-_b_h00f285_B {
+  color: #00f285;
+}
+
+.text-white {
+  color: var(--color-white);
+}
+
+.underline {
+  text-decoration-line: underline;
+}
+
+
+/* @import 'tailwindcss'; */
+page{--status-bar-height:25px;--top-window-height:0px;--window-top:0px;--window-bottom:0px;--window-left:0px;--window-right:0px;--window-magin:0px}[data-c-h="true"]{display: none !important;}

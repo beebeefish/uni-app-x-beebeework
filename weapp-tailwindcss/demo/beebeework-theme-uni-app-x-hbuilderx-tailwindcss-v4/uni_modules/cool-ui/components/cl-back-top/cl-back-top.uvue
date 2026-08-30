@@ -1,0 +1,112 @@
+<template>
+	<view class="cl-back-top-wrapper" :style="{ bottom }" @tap="toTop">
+		<view
+			class="cl-back-top"
+			:class="{
+				'is-show': visible
+			}"
+		>
+			<cl-icon name="skip-up-line" color="white" :size="25"></cl-icon>
+		</view>
+	</view>
+</template>
+
+<script setup lang="ts">
+import { getTabBarHeight, hasCustomTabBar, scroller } from "@/.cool";
+import { computed, onMounted, onUnmounted, ref, watch, type PropType } from "vue";
+import { usePage } from "../../hooks";
+import { clFooterOffset } from "../cl-footer/offset";
+
+defineOptions({
+	name: "cl-back-top"
+});
+
+const props = defineProps({
+	top: {
+		type: Number as PropType<number | null>,
+		default: null
+	}
+});
+
+const emit = defineEmits(["backTop"]);
+
+const { screenHeight } = uni.getWindowInfo();
+
+// cl-page 上下文
+const { scrollToTop, onScroll, offScroll } = usePage();
+
+// 是否显示回到顶部按钮
+const visible = ref(false);
+
+// 底部距离
+const bottom = computed(() => {
+	let h = 20;
+
+	if (hasCustomTabBar()) {
+		h += getTabBarHeight();
+	} else {
+		h += clFooterOffset.get();
+	}
+
+	return h + "px";
+});
+
+// 是否页面滚动
+const isPage = computed(() => props.top == null);
+
+// 控制是否显示
+function onVisible(top: number) {
+	visible.value = top > screenHeight - 100;
+}
+
+// 回到顶部
+function toTop() {
+	if (isPage.value) {
+		scrollToTop();
+	}
+
+	emit("backTop");
+}
+
+onMounted(() => {
+	if (isPage.value) {
+		// 监听页面滚动
+		onScroll(onVisible);
+	} else {
+		// 监听参数变化
+		watch(
+			computed(() => props.top!),
+			(top: number) => {
+				onVisible(top);
+			},
+			{
+				immediate: true
+			}
+		);
+	}
+});
+
+onUnmounted(() => {
+	if (isPage.value) {
+		offScroll(onVisible);
+	}
+});
+</script>
+
+<style lang="scss" scoped>
+.cl-back-top {
+	@apply flex flex-row items-center justify-center bg-teal-500/10 rounded-full duration-300;
+	width: 40px;
+	height: 40px;
+	transition-property: transform;
+	transform: translateX(80px);
+
+	&.is-show {
+		transform: translateX(-20px);
+	}
+
+	&-wrapper {
+		@apply fixed right-0 z-50 overflow-visible;
+	}
+}
+</style>

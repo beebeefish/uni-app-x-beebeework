@@ -1,0 +1,44 @@
+<template>
+  <view 
+    class="scale-wrp" 
+    :class="rootClass"
+    :style="scaleStyle"
+    @touchstart="onTouchStart"
+    @touchend="onTouchEnd"
+    @touchcancel="onTouchEnd"
+    @tap="onTap"
+  >
+    <slot></slot>
+  </view>
+</template>
+
+<script setup>
+import { ref, computed } from 'vue'
+
+const props = defineProps({
+  scaleVal: { type: Number, default: 0.95 },
+  disabled: { type: Boolean, default: false },   // 💡 禁用点击缩放
+  rootClass: { type: String, default: '' }        // 💡 外部样式（圆角等）
+})
+
+const emit = defineEmits(['click'])
+const scaleValue = ref(1.0)
+
+// 💡 禁用时 transform 始终为 1，不干扰共享元素
+const scaleStyle = computed(() => {
+  if (props.disabled) return { transform: 'scale(1)' }
+  return { transform: `scale(${scaleValue.value})` }
+})
+
+const onTouchStart = () => { scaleValue.value = props.scaleVal }
+const onTouchEnd = () => { scaleValue.value = 1.0 }
+const onTap = (e) => { emit('click', e) }
+</script>
+
+<style scoped>
+.scale-wrp {
+  transition-property: transform;
+  transition-duration: 0.2s;
+  transition-timing-function: ease-in-out;
+}
+</style>

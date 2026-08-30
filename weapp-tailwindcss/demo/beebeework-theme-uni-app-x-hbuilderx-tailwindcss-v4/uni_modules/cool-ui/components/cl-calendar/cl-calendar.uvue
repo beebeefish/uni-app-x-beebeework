@@ -1,0 +1,925 @@
+<template>
+	<view class="cl-calendar" :class="[pt.className]">
+		<!-- 年月选择器弹窗 -->
+		<calendar-picker
+			:year="currentYear"
+			:month="currentMonth"
+			:ref="refs.set('picker')"
+			@change="onYearMonthChange"
+		></calendar-picker>
+
+		<!-- 头部导航栏 -->
+		<view class="cl-calendar__header" v-if="showHeader">
+			<!-- 上一月按钮 -->
+			<view
+				class="cl-calendar__header-prev"
+				:class="{ 'is-dark': isDark }"
+				@tap.stop="gotoPrevMonth"
+			>
+				<cl-icon name="arrow-left-s-line" :size="16"></cl-icon>
+			</view>
+
+			<!-- 当前年月显示区域 -->
+			<view class="cl-calendar__header-date" @tap="refs.open('picker')">
+				<slot name="current-date">
+					<cl-text :size="18">{{
+						$t(`{year}年{month}月`, { year: currentYear, month: currentMonth })
+					}}</cl-text>
+				</slot>
+			</view>
+
+			<!-- 下一月按钮 -->
+			<view
+				class="cl-calendar__header-next"
+				:class="{ 'is-dark': isDark }"
+				@tap.stop="gotoNextMonth"
+			>
+				<cl-icon name="arrow-right-s-line" :size="16"></cl-icon>
+			</view>
+		</view>
+
+		<!-- 星期标题行 -->
+		<view class="cl-calendar__weeks" :style="{ gap: `${cellGap}px` }" v-if="showWeeks">
+			<view class="cl-calendar__weeks-item" v-for="weekName in weekLabels" :key="weekName">
+				<cl-text>{{ weekName }}</cl-text>
+			</view>
+		</view>
+
+		<!-- 日期网格容器 -->
+		<view
+			class="cl-calendar__view"
+			ref="viewRef"
+			:style="{ height: `${viewHeight}px`, gap: `${cellGap}px` }"
+			@tap="onTap"
+		>
+			<!-- #ifndef APP -->
+			<view
+				class="cl-calendar__view-row"
+				:style="{ gap: `${cellGap}px` }"
+				v-for="(weekRow, rowIndex) in dateMatrix"
+				:key="rowIndex"
+			>
+				<view
+					class="cl-calendar__view-cell"
+					v-for="(dateCell, cellIndex) in weekRow"
+					:key="cellIndex"
+					:class="{
+						'is-selected': dateCell.isSelected,
+						'is-range': dateCell.isRange,
+						'is-hide': dateCell.isHide,
+						'is-disabled': dateCell.isDisabled,
+						'is-today': dateCell.isToday,
+						'is-other-month': !dateCell.isCurrentMonth
+					}"
+					:style="{
+						height: cellHeight + 'px',
+						backgroundColor: getCellBgColor(dateCell)
+					}"
+					@click.stop="selectDateCell(dateCell)"
+				>
+					<!-- 顶部文本 -->
+					<cl-text
+						:size="10"
+						:color="getCellTextColor(dateCell)"
+						:pt="{
+							className: 'absolute top-[4px]'
+						}"
+						>{{ dateCell.topText }}</cl-text
+					>
+
+					<!-- 主日期数字 -->
+					<cl-text
+						:color="getCellTextColor(dateCell)"
+						:size="fontSize"
+						:pt="{
+							className: 'font-bold'
+						}"
+						>{{ dateCell.date }}</cl-text
+					>
+
+					<!-- 底部文本 -->
+					<cl-text
+						:size="10"
+						:color="getCellTextColor(dateCell)"
+						:pt="{
+							className: 'absolute bottom-[4px]'
+						}"
+						>{{ dateCell.bottomText }}</cl-text
+					>
+				</view>
+			</view>
+			<!-- #endif -->
+		</view>
+	</view>
+</template>
+
+<script lang="ts" setup>
+import { computed, nextTick, onMounted, ref, watch, type PropType } from "vue";
+import { ctx, dayUts, first, isDark, isHarmony, parsePt, useRefs, $t, t } from "@/.cool";
+import CalendarPicker from "./picker.uvue";
+import type { ClCalendarDateConfig, ClCalendarMode } from "../../types";
+import { useSize } from "../../hooks";
+
+defineOptions({
+	name: "cl-calendar"
+});
+
+// 组件属性定义
+const props = defineProps({
+	// 透传样式配置
+	pt: {
+		type: Object,
+		default: () => ({})
+	},
+	// 当前选中的日期值（单选模式）
+	modelValue: {
+		type: String as PropType<string | null>,
+		default: null
+	},
+	// 选中的日期数组（多选/范围模式）
+	date: {
+		type: Array as PropType<string[]>,
+		default: () => []
+	},
+	// 日期选择模式：单选/多选/范围选择
+	mode: {
+		type: String as PropType<ClCalendarMode>,
+		default: "single"
+	},
+	// 日期配置
+	dateConfig: {
+		type: Array as PropType<ClCalendarDateConfig[]>,
+		default: () => []
+	},
+	// 开始日期，可选日期的开始
+	start: {
+		type: String
+	},
+	// 结束日期，可选日期的结束
+	end: {
+		type: String
+	},
+	// 设置年份
+	year: {
+		type: Number
+	},
+	// 设置月份
+	month: {
+		type: Number
+	},
+	// 是否显示其他月份的日期
+	showOtherMonth: {
+		type: Boolean,
+		default: true
+	},
+	// 是否显示头部导航栏
+	showHeader: {
+		type: Boolean,
+		default: true
+	},
+	// 是否显示星期
+	showWeeks: {
+		type: Boolean,
+		default: true
+	},
+	// 单元格高度
+	cellHeight: {
+		type: Number,
+		default: 66
+	},
+	// 单元格间距
+	cellGap: {
+		type: Number,
+		default: 0
+	},
+	// 主色
+	color: {
+		type: String,
+		default: ""
+	},
+	// 当前月份日期颜色
+	textColor: {
+		type: String,
+		default: ""
+	},
+	// 其他月份日期颜色
+	textOtherMonthColor: {
+		type: String,
+		default: ""
+	},
+	// 禁用日期颜色
+	textDisabledColor: {
+		type: String,
+		default: ""
+	},
+	// 今天日期颜色
+	textTodayColor: {
+		type: String,
+		default: "#ff6b6b"
+	},
+	// 选中日期颜色
+	textSelectedColor: {
+		type: String,
+		default: "#ffffff"
+	},
+	// 选中日期背景颜色
+	bgSelectedColor: {
+		type: String,
+		default: ""
+	},
+	// 范围选择背景颜色
+	bgRangeColor: {
+		type: String,
+		default: ""
+	}
+});
+
+// 事件发射器定义
+const emit = defineEmits(["update:modelValue", "update:date", "change"]);
+
+// 日期单元格数据结构
+type DateCell = {
+	date: string; // 显示的日期数字
+	isCurrentMonth: boolean; // 是否属于当前显示月份
+	isToday: boolean; // 是否为今天
+	isSelected: boolean; // 是否被选中
+	isRange: boolean; // 是否在选择范围内
+	fullDate: string; // 完整日期格式 YYYY-MM-DD
+	isDisabled: boolean; // 是否被禁用
+	isHide: boolean; // 是否隐藏显示
+	topText: string; // 顶部文案
+	bottomText: string; // 底部文案
+	color: string; // 颜色
+};
+
+// 透传样式属性类型
+type PassThrough = {
+	className?: string;
+};
+
+// 解析透传样式配置
+const pt = computed(() => parsePt<PassThrough>(props.pt));
+
+// 字体大小
+const { toScale } = useSize();
+
+// 主色
+const color = computed(() => {
+	if (props.color != "") {
+		return props.color;
+	}
+
+	return 'var(--color-teal-500)';
+});
+
+// 单元格高度
+const cellHeight = computed(() => props.cellHeight);
+
+// 单元格间距
+const cellGap = computed(() => props.cellGap);
+
+// 字体大小
+const fontSize = computed(() => {
+	// #ifdef APP
+	return toScale(14);
+	// #endif
+
+	// #ifndef APP
+	return 14;
+	// #endif
+});
+
+// 当前月份日期颜色
+const textColor = computed(() => {
+	if (props.textColor != "") {
+		return props.textColor;
+	}
+
+	return isDark.value ? "white" : "var(--color-zinc-700)";
+});
+
+// 其他月份日期颜色
+const textOtherMonthColor = computed(() => {
+	if (props.textOtherMonthColor != "") {
+		return props.textOtherMonthColor;
+	}
+
+	return isDark.value
+		? "var(--color-zinc-500)"
+		: "var(--color-zinc-300)";
+});
+
+// 禁用日期颜色
+const textDisabledColor = computed(() => {
+	if (props.textDisabledColor != "") {
+		return props.textDisabledColor;
+	}
+
+	return isDark.value
+		? "var(--color-zinc-500)"
+		: "var(--color-zinc-300)";
+});
+
+// 今天日期颜色
+const textTodayColor = computed(() => props.textTodayColor);
+
+// 选中日期颜色
+const textSelectedColor = computed(() => props.textSelectedColor);
+
+// 选中日期背景颜色
+const bgSelectedColor = computed(() => {
+	if (props.bgSelectedColor != "") {
+		return props.bgSelectedColor;
+	}
+
+	return color.value;
+});
+
+// 范围选择背景颜色
+const bgRangeColor = computed(() => {
+	if (props.bgRangeColor != "") {
+		return props.bgRangeColor;
+	}
+
+	return isHarmony() ? "var(--color-teal-50)" : color.value + "11";
+});
+
+// 组件引用管理器
+const refs = useRefs();
+
+// 日历视图DOM元素引用
+const viewRef = ref<UniElement | null>(null);
+
+// 当前显示的年份
+const currentYear = ref(0);
+
+// 当前显示的月份
+const currentMonth = ref(0);
+
+// 视图高度
+const viewHeight = computed(() => {
+	return cellHeight.value * 6;
+});
+
+// 单元格宽度
+const cellWidth = ref(0);
+
+// 星期标签数组
+const weekLabels = computed(() => {
+	return [t("周日"), t("周一"), t("周二"), t("周三"), t("周四"), t("周五"), t("周六")];
+});
+
+// 日历日期矩阵数据（6行7列）
+const dateMatrix = ref<DateCell[][]>([]);
+
+// 当前选中的日期列表
+const selectedDates = ref<string[]>([]);
+
+/**
+ * 获取日历视图元素的位置信息
+ */
+async function getViewRect(): Promise<DOMRect | null> {
+	return viewRef.value!.getBoundingClientRectAsync();
+}
+
+/**
+ * 判断指定日期是否被选中
+ * @param dateStr 日期字符串 YYYY-MM-DD
+ */
+function isDateSelected(dateStr: string): boolean {
+	if (props.mode == "single") {
+		// 单选模式：检查是否为唯一选中日期
+		return selectedDates.value[0] == dateStr;
+	} else {
+		// 多选/范围模式：检查是否在选中列表中
+		return selectedDates.value.includes(dateStr);
+	}
+}
+
+/**
+ * 判断指定日期是否被禁用
+ * @param dateStr 日期字符串 YYYY-MM-DD
+ */
+function isDateDisabled(dateStr: string): boolean {
+	// 大于开始日期
+	if (props.start != null) {
+		if (dayUts(dateStr).isBefore(dayUts(props.start))) {
+			return true;
+		}
+	}
+
+	// 小于结束日期
+	if (props.end != null) {
+		if (dayUts(dateStr).isAfter(dayUts(props.end))) {
+			return true;
+		}
+	}
+
+	return props.dateConfig.some((config) => config.date == dateStr && config.disabled == true);
+}
+
+/**
+ * 判断指定日期是否在选择范围内（不包括端点）
+ * @param dateStr 日期字符串 YYYY-MM-DD
+ */
+function isDateInRange(dateStr: string): boolean {
+	// 仅范围选择模式且已选择两个端点时才有范围
+	if (props.mode != "range" || selectedDates.value.length != 2) {
+		return false;
+	}
+
+	const [startDate, endDate] = selectedDates.value;
+	const currentDate = dayUts(dateStr);
+	return currentDate.isAfter(startDate) && currentDate.isBefore(endDate);
+}
+
+/**
+ * 获取单元格字体颜色
+ * @param dateCell 日期单元格数据
+ * @returns 字体颜色
+ */
+function getCellTextColor(dateCell: DateCell): string {
+	// 选中的日期文字颜色
+	if (dateCell.isSelected) {
+		return textSelectedColor.value;
+	}
+
+	if (dateCell.color != "") {
+		return dateCell.color;
+	}
+
+	// 范围选择日期颜色
+	if (dateCell.isRange) {
+		return color.value;
+	}
+
+	// 禁用的日期颜色
+	if (dateCell.isDisabled) {
+		return textDisabledColor.value;
+	}
+
+	// 今天日期颜色
+	if (dateCell.isToday) {
+		return textTodayColor.value;
+	}
+
+	// 当前月份日期颜色
+	if (dateCell.isCurrentMonth) {
+		return textColor.value;
+	}
+
+	// 其他月份日期颜色
+	return textOtherMonthColor.value;
+}
+
+/**
+ * 获取单元格背景颜色
+ * @param dateCell 日期单元格数据
+ * @returns 背景颜色
+ */
+
+function getCellBgColor(dateCell: DateCell): string {
+	if (dateCell.isSelected) {
+		return bgSelectedColor.value;
+	}
+
+	if (dateCell.isRange) {
+		return bgRangeColor.value;
+	}
+
+	return "transparent";
+}
+
+/**
+ * 计算并生成日历矩阵数据
+ * 生成6行7列共42个日期，包含上月末尾和下月开头的日期
+ */
+function calculateDateMatrix() {
+	const weekRows: DateCell[][] = [];
+	const todayStr = dayUts().format("YYYY-MM-DD"); // 今天的日期字符串
+
+	// 获取当前月第一天
+	const monthFirstDay = dayUts(`${currentYear.value}-${currentMonth.value}-01`);
+	const firstDayWeekIndex = monthFirstDay.getDay(); // 第一天是星期几 (0=周日, 6=周六)
+
+	// 计算日历显示的起始日期（可能是上个月的日期）
+	const calendarStartDate = monthFirstDay.subtract(firstDayWeekIndex, "day");
+
+	// 生成6周的日期数据（6行 × 7列 = 42天）
+	let iterateDate = calendarStartDate;
+	for (let weekIndex = 0; weekIndex < 6; weekIndex++) {
+		const weekDates: DateCell[] = [];
+
+		for (let dayIndex = 0; dayIndex < 7; dayIndex++) {
+			const fullDateStr = iterateDate.format("YYYY-MM-DD");
+			const nativeDate = iterateDate.toDate();
+			const dayNumber = nativeDate.getDate();
+
+			// 判断是否属于当前显示月份
+			const belongsToCurrentMonth =
+				nativeDate.getMonth() + 1 == currentMonth.value &&
+				nativeDate.getFullYear() == currentYear.value;
+
+			// 日期配置
+			const dateConfig = props.dateConfig.find((config) => config.date == fullDateStr);
+
+			// 构建日期单元格数据
+			const dateCell = {
+				date: `${dayNumber}`,
+				isCurrentMonth: belongsToCurrentMonth,
+				isToday: fullDateStr == todayStr,
+				isSelected: isDateSelected(fullDateStr),
+				isRange: isDateInRange(fullDateStr),
+				fullDate: fullDateStr,
+				isDisabled: isDateDisabled(fullDateStr),
+				isHide: false,
+				topText: dateConfig?.topText ?? "",
+				bottomText: dateConfig?.bottomText ?? "",
+				color: dateConfig?.color ?? ""
+			} as DateCell;
+
+			// 根据配置决定是否隐藏相邻月份的日期
+			if (!props.showOtherMonth && !belongsToCurrentMonth) {
+				dateCell.isHide = true;
+			}
+
+			weekDates.push(dateCell);
+			iterateDate = iterateDate.add(1, "day"); // 移动到下一天
+		}
+
+		weekRows.push(weekDates);
+	}
+
+	dateMatrix.value = weekRows;
+}
+
+/**
+ * 使用Canvas绘制日历（仅APP端）
+ * Web端使用DOM渲染，APP端使用Canvas提升性能
+ */
+async function renderCalendar() {
+	// #ifdef APP
+	await nextTick(); // 等待DOM更新完成
+
+	const ctx = viewRef.value!.getDrawableContext();
+
+	if (ctx == null) return;
+
+	ctx!.reset(); // 清空画布
+
+	/**
+	 * 绘制单个日期单元格
+	 * @param dateCell 日期单元格数据
+	 * @param colIndex 列索引 (0-6)
+	 * @param rowIndex 行索引 (0-5)
+	 */
+	function drawSingleCell(dateCell: DateCell, colIndex: number, rowIndex: number) {
+		// 计算单元格位置
+		const cellX = colIndex * cellWidth.value;
+		const cellY = rowIndex * cellHeight.value;
+		const centerX = cellX + cellWidth.value / 2;
+		const centerY = cellY + cellHeight.value / 2;
+
+		// 绘制背景（选中状态或范围状态）
+		if (dateCell.isSelected || dateCell.isRange) {
+			const padding = cellGap.value; // 使用间距作为内边距
+			const bgX = cellX + padding;
+			const bgY = cellY + padding;
+			const bgWidth = cellWidth.value - padding * 2;
+			const bgHeight = cellHeight.value - padding * 2;
+
+			// 设置背景颜色
+			if (dateCell.isSelected) {
+				ctx!.fillStyle = bgSelectedColor.value;
+			}
+			if (dateCell.isRange) {
+				ctx!.fillStyle = bgRangeColor.value;
+			}
+
+			ctx!.fillRect(bgX, bgY, bgWidth, bgHeight); // 绘制背景矩形
+		}
+
+		// 获取单元格文字颜色
+		const cellTextColor = getCellTextColor(dateCell);
+		ctx!.textAlign = "center";
+
+		// 绘制顶部文本
+		if (dateCell.topText != "") {
+			ctx!.font = `${Math.floor(fontSize.value * 0.75)}px sans-serif`;
+			ctx!.fillStyle = cellTextColor;
+			const topY = cellY + 16; // 距离顶部
+			ctx!.fillText(dateCell.topText, centerX, topY);
+		}
+
+		// 绘制主日期数字
+		ctx!.font = `${fontSize.value}px sans-serif`;
+		ctx!.fillStyle = cellTextColor;
+		const textOffsetY = (fontSize.value / 2) * 0.7;
+		ctx!.fillText(dateCell.date.toString(), centerX, centerY + textOffsetY);
+
+		// 绘制底部文本
+		if (dateCell.bottomText != "") {
+			ctx!.font = `${Math.floor(fontSize.value * 0.75)}px sans-serif`;
+			ctx!.fillStyle = cellTextColor;
+			const bottomY = cellY + cellHeight.value - 8; // 距离底部
+			ctx!.fillText(dateCell.bottomText, centerX, bottomY);
+		}
+	}
+
+	// 获取容器尺寸信息
+	const viewRect = await getViewRect();
+
+	if (viewRect == null) {
+		return;
+	}
+
+	// 计算单元格宽度（总宽度除以7列）
+	const cellSize = viewRect.width / 7;
+
+	// 更新渲染配置
+	cellWidth.value = cellSize;
+
+	// 遍历日期矩阵进行绘制
+	for (let rowIndex = 0; rowIndex < dateMatrix.value.length; rowIndex++) {
+		const weekRow = dateMatrix.value[rowIndex];
+		for (let colIndex = 0; colIndex < weekRow.length; colIndex++) {
+			const dateCell = weekRow[colIndex];
+
+			if (!dateCell.isHide) {
+				drawSingleCell(dateCell, colIndex, rowIndex);
+			}
+		}
+	}
+
+	ctx!.update(); // 更新画布显示
+	// #endif
+}
+
+/**
+ * 处理日期单元格选择逻辑
+ * @param dateCell 被点击的日期单元格
+ */
+function selectDateCell(dateCell: DateCell) {
+	// 隐藏或禁用的日期不可选择
+	if (dateCell.isHide || dateCell.isDisabled) {
+		return;
+	}
+
+	if (props.mode == "single") {
+		// 单选模式：直接替换选中日期
+		selectedDates.value = [dateCell.fullDate];
+		emit("update:modelValue", dateCell.fullDate);
+	} else if (props.mode == "multiple") {
+		// 多选模式：切换选中状态
+		const existingIndex = selectedDates.value.indexOf(dateCell.fullDate);
+
+		if (existingIndex >= 0) {
+			// 已选中则移除
+			selectedDates.value.splice(existingIndex, 1);
+		} else {
+			// 未选中则添加
+			selectedDates.value.push(dateCell.fullDate);
+		}
+	} else {
+		// 范围选择模式
+		if (selectedDates.value.length == 0) {
+			// 第一次点击：设置起始日期
+			selectedDates.value = [dateCell.fullDate];
+		} else if (selectedDates.value.length == 1) {
+			// 第二次点击：设置结束日期
+			const startDate = dayUts(selectedDates.value[0]);
+			const endDate = dayUts(dateCell.fullDate);
+
+			if (endDate.isBefore(startDate)) {
+				// 结束日期早于开始日期时自动交换
+				selectedDates.value = [dateCell.fullDate, selectedDates.value[0]];
+			} else {
+				selectedDates.value = [selectedDates.value[0], dateCell.fullDate];
+			}
+		} else {
+			// 已有范围时重新开始选择
+			selectedDates.value = [dateCell.fullDate];
+		}
+	}
+
+	// 发射更新事件
+	emit("update:date", [...selectedDates.value]);
+	emit("change", selectedDates.value);
+
+	// 重新计算日历数据并重绘
+	calculateDateMatrix();
+	renderCalendar();
+}
+
+/**
+ * 处理年月选择器的变化事件
+ * @param yearMonthArray [年份, 月份] 数组
+ */
+function onYearMonthChange(yearMonthArray: number[]) {
+	currentYear.value = yearMonthArray[0];
+	currentMonth.value = yearMonthArray[1];
+
+	// 重新计算日历数据并重绘
+	calculateDateMatrix();
+	renderCalendar();
+}
+
+/**
+ * 处理点击事件（APP端点击检测）
+ */
+async function onTap(e: UniPointerEvent) {
+	// 获取容器位置信息
+	const viewRect = await getViewRect();
+
+	if (viewRect == null) {
+		return;
+	}
+
+	// 计算触摸点相对于容器的坐标
+	const relativeX = e.clientX - viewRect.left;
+	const relativeY = e.clientY - viewRect.top;
+
+	// 根据坐标计算对应的行列索引
+	const columnIndex = Math.floor(relativeX / cellWidth.value);
+	const rowIndex = Math.floor(relativeY / cellHeight.value);
+
+	// 边界检查：确保索引在有效范围内
+	if (
+		rowIndex < 0 ||
+		rowIndex >= dateMatrix.value.length ||
+		columnIndex < 0 ||
+		columnIndex >= 7
+	) {
+		return;
+	}
+
+	const targetDateCell = dateMatrix.value[rowIndex][columnIndex];
+	selectDateCell(targetDateCell);
+}
+
+/**
+ * 切换到上一个月
+ */
+function gotoPrevMonth() {
+	const [newYear, newMonth] = dayUts(`${currentYear.value}-${currentMonth.value}-01`)
+		.subtract(1, "month")
+		.toArray();
+
+	currentYear.value = newYear;
+	currentMonth.value = newMonth;
+
+	// 重新计算并渲染日历
+	calculateDateMatrix();
+	renderCalendar();
+}
+
+/**
+ * 切换到下一个月
+ */
+function gotoNextMonth() {
+	const [newYear, newMonth] = dayUts(`${currentYear.value}-${currentMonth.value}-01`)
+		.add(1, "month")
+		.toArray();
+
+	currentYear.value = newYear;
+	currentMonth.value = newMonth;
+
+	// 重新计算并渲染日历
+	calculateDateMatrix();
+	renderCalendar();
+}
+
+/**
+ * 解析选中日期
+ */
+function parseDate(flag: boolean | null = null) {
+	// 根据选择模式初始化选中日期
+	if (props.mode == "single") {
+		selectedDates.value = props.modelValue != null ? [props.modelValue] : [];
+	} else {
+		selectedDates.value = [...props.date];
+	}
+
+	// 获取初始显示日期（优先使用选中日期，否则使用当前日期）
+	let [year, month] = dayUts(first(selectedDates.value)).toArray();
+
+	if (flag == true) {
+		year = props.year ?? year;
+		month = props.month ?? month;
+	}
+
+	currentYear.value = year;
+	currentMonth.value = month;
+
+	// 计算初始日历数据
+	calculateDateMatrix();
+
+	// 渲染日历视图
+	renderCalendar();
+}
+
+// 组件挂载时的初始化逻辑
+onMounted(() => {
+	// 解析日期
+	parseDate(true);
+
+	// 监听单选模式的值变化
+	watch(
+		computed(() => props.modelValue ?? ""),
+		(newValue: string) => {
+			selectedDates.value = [newValue];
+			parseDate();
+		}
+	);
+
+	// 监听多选/范围模式的值变化
+	watch(
+		computed(() => props.date),
+		(newDateArray: string[]) => {
+			selectedDates.value = [...newDateArray];
+			parseDate();
+		}
+	);
+
+	// 重新渲染
+	watch(
+		computed(() => [props.dateConfig, props.showOtherMonth]),
+		() => {
+			calculateDateMatrix();
+			renderCalendar();
+		},
+		{
+			deep: true
+		}
+	);
+});
+</script>
+
+<style lang="scss" scoped>
+/* 日历组件主容器 */
+.cl-calendar {
+	@apply relative;
+
+	/* 头部导航栏样式 */
+	&__header {
+		@apply flex flex-row items-center justify-between p-3 w-full;
+
+		/* 上一月/下一月按钮样式 */
+		&-prev,
+		&-next {
+			@apply flex flex-row items-center justify-center rounded-full bg-zinc-100;
+			width: 30px;
+			height: 30px;
+
+			/* 暗色模式适配 */
+			&.is-dark {
+				@apply bg-zinc-700;
+			}
+		}
+
+		/* 当前年月显示区域 */
+		&-date {
+			@apply flex flex-row items-center justify-center;
+		}
+	}
+
+	/* 星期标题行样式 */
+	&__weeks {
+		@apply flex flex-row;
+
+		/* 单个星期标题样式 */
+		&-item {
+			@apply flex flex-row items-center justify-center flex-1;
+			height: 40px;
+		}
+	}
+
+	/* 日期网格容器样式 */
+	&__view {
+		@apply w-full;
+
+		// #ifndef APP
+		/* 日期行样式 */
+		&-row {
+			@apply flex flex-row;
+		}
+
+		/* 日期单元格样式 */
+		&-cell {
+			@apply flex-1 flex flex-col items-center justify-center relative;
+			height: 40px;
+
+			/* 隐藏状态（相邻月份日期） */
+			&.is-hide {
+				opacity: 0;
+			}
+
+			/* 禁用状态 */
+			&.is-disabled {
+				@apply opacity-50;
+			}
+		}
+		// #endif
+	}
+}
+</style>

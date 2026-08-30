@@ -1,0 +1,104 @@
+---
+title: weapp-tw CLI 使用指南
+description: weapp-tailwindcss 自带一个 weapp-tw 命令行工具，负责辅助生成类名缓存、收集 token 和输出兼容提示。以下内容介绍常用命令及最佳实践。
+keywords:
+  - weapp-tw
+  - CLI
+  - 使用指南
+  - tools
+  - weapp tw cli
+  - weapp-tailwindcss
+  - tailwindcss
+  - 小程序
+  - 微信小程序
+  - uni-app
+  - taro
+  - rax
+  - mpx
+---
+
+`weapp-tailwindcss` 自带一个 `weapp-tw` 命令行工具，负责辅助生成类名缓存、收集 token 和输出兼容提示。`weapp-tailwindcss@5` 已由构建运行时接管 Tailwind CSS 处理，`weapp-tw patch` 不再是必须步骤。
+
+## 常见场景
+
+| 场景 | 命令 | 说明 |
+| --- | --- | --- |
+| 兼容旧脚本中的 patch 调用 | `npx weapp-tw patch` | 仅输出无需执行的提示并跳过；建议从业务项目 `postinstall` 中移除。 |
+| 兼容旧脚本中的状态检查 | `npx weapp-tw status --json` | 输出无需检查的 JSON 报告，便于旧 CI 平滑过渡。 |
+| 收集 Tailwind 产出的类名缓存 | `npx weapp-tw extract --css src/app.css` | 适用于 Tailwind v3/v4，v4 需传入 `--css`，生成 `.tw-patch/tw-class-cache.*`，支持 `--output`/`--format`。 |
+| 输出 Tailwind token 和定位信息 | `npx weapp-tw tokens --format grouped-json` | 调试 `content` 配置时非常有用，可与 `--no-write` 一起纯输出。 |
+
+## `patch` 子命令
+
+:::tip 当前版本无需执行 patch
+如果项目已经使用 `weapp-tailwindcss@5`，Tailwind CSS 由 `WeappTailwindcss` 插件或生成器入口在构建运行时接管，不需要再在业务项目的 `package.json` 中配置 `postinstall: "weapp-tw patch"`。
+
+`weapp-tw patch` 现在是兼容旧脚本的 no-op 命令：会提示无需执行并直接跳过，不再写入目标记录，也不再做 workspace 批量补丁。
+:::
+
+### 功能
+
+- 兼容旧项目或 CI 中残留的 `weapp-tw patch` / `weapp-tw install` 调用。
+- 输出迁移提示，提醒移除 `postinstall` 钩子。
+- `--cwd`、`--clear-cache`、`--record-target`、`--workspace` 仅作为兼容参数保留，不再触发额外写文件或批量补丁。
+
+### 常用参数
+
+| 参数 | 默认值 | 含义 |
+| --- | --- | --- |
+| `--cwd <dir>` | 无 | 兼容旧脚本参数，当前不会用于补丁解析。 |
+| `--record-target` | 无 | 兼容旧脚本参数，当前不会生成目标记录。 |
+| `--clear-cache` | 无 | 兼容旧脚本参数，当前不会清理缓存。 |
+| `--workspace` | 无 | 兼容旧脚本参数，当前不会扫描 workspace。 |
+
+运行日志类似：
+
+```bash
+$ pnpm --filter demo/native-ts weapp-tw patch
+提示：weapp-tailwindcss@5 已由构建运行时接管 Tailwind CSS 处理，weapp-tw patch 已无需执行；请移除 package.json 中的 postinstall 钩子。
+已跳过：当前版本不需要手动执行 Tailwind CSS patch。
+```
+
+## `extract` 子命令
+
+```bash
+npx weapp-tw extract --css src/app.css --format lines
+```
+
+- `--css`：Tailwind 入口 CSS。v4 必填；v3 可省略以沿用 Tailwind 默认入口。
+- `--output`：指定输出文件，默认写入 `.tw-patch/tw-class-cache.json`。
+- `--format`：`json`/`lines`，配合 `--no-write` 可仅打印到终端。
+- `--cwd`：指定加载配置和解析依赖的工作目录。
+
+生成的缓存可以让构建器快速读取 `tailwindcss` 编译结果，减少重复启动的开销。
+
+## `tokens` 子命令
+
+```bash
+npx weapp-tw tokens --format grouped-json --group-key absolute
+```
+
+- `--format`：`json`、`lines` 或 `grouped-json`。后一种会按文件分组，便于排查 `content` 匹配不到的问题。
+- `--group-key`：`relative`(默认)/`absolute`，决定输出路径的基准。
+- `--no-write`：终端预览，不落盘；默认写入 `.tw-patch/tw-token-report.json`。
+
+输出的数据包含扫描到的文件、类名 token、出现位置（行列）、以及被跳过的文件列表。
+
+## `status` 子命令
+
+```bash
+npx weapp-tw status --cwd demo/native-ts
+npx weapp-tw status --json
+```
+
+- `status` 现在同样是兼容 no-op 命令。
+- `--cwd`：兼容旧脚本参数。
+- `--json`：输出 `{ "required": false, "status": "unnecessary" }` 风格的报告，方便 CI 或脚本读取。
+
+## 快速排查指引
+
+1. **先移除安装生命周期里的 patch**：删除 `postinstall: "weapp-tw patch"`。
+2. **类名缺失**：用 `weapp-tw extract` 或 `weapp-tw tokens --no-write` 辅助定位是哪段代码没有被 Tailwind `content` / `@source` 收录。
+3. **任意值不符合预期**：优先检查入口 CSS、`@source`、`cssEntries` 和构建插件是否生效。
+
+配合这些命令，可以更直观地观察 Tailwind 扫描结果，减少“类名没有生成”这类定位成本。

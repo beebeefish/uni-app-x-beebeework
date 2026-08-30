@@ -1,0 +1,23 @@
+@mixin theme-transition($darkSelector: '.dark', $floorZIndex: 1, $ceilingZIndex: 2147483646) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    mix-blend-mode: normal;
+    animation: none;
+  }
+
+  ::view-transition-old(root) {
+    z-index: $floorZIndex;
+  }
+
+  ::view-transition-new(root) {
+    z-index: $ceilingZIndex;
+  }
+
+  #{$darkSelector}::view-transition-old(root) {
+    z-index: $ceilingZIndex;
+  }
+
+  #{$darkSelector}::view-transition-new(root) {
+    z-index: $floorZIndex;
+  }
+}

@@ -1,0 +1,583 @@
+<template>
+	<view class="cl-tree" :class="[pt.className]">
+		<cl-tree-item
+			v-for="item in data"
+			:key="item.id"
+			:item="item"
+			:level="0"
+			:pt="props.pt"
+		></cl-tree-item>
+	</view>
+</template>
+
+<script lang="ts" setup>
+import { computed, watch, ref, type PropType } from "vue";
+import type { ClTreeItem, ClTreeNodeInfo } from "../../types";
+import { first, isEmpty, isEqual, parsePt } from "@/.cool";
+
+defineOptions({
+	name: "cl-tree"
+});
+
+const props = defineProps({
+	pt: {
+		type: Object as PropType<any>,
+		default: () => ({})
+	},
+	// 绑定值
+	modelValue: {
+		type: [Array, String, Number] as PropType<any | null>,
+		default: null
+	},
+	// 树形结构数据
+	list: {
+		type: Array as PropType<ClTreeItem[]>,
+		default: () => []
+	},
+	// 节点图标
+	icon: {
+		type: String,
+		default: "arrow-right-s-fill"
+	},
+	// 展开图标
+	expandIcon: {
+		type: String,
+		default: "arrow-down-s-fill"
+	},
+	// 是否严格的遵循父子不互相关联
+	checkStrictly: {
+		type: Boolean,
+		default: false
+	},
+	// 是否可以选择节点
+	checkable: {
+		type: Boolean,
+		default: true
+	},
+	// 是否允许多选
+	multiple: {
+		type: Boolean,
+		default: false
+	}
+});
+
+const emit = defineEmits(["update:modelValue", "change"]);
+
+// 定义透传类型
+type PassThrough = {
+	className?: string;
+};
+
+// 计算样式穿透对象
+const pt = computed(() => parsePt<PassThrough>(props.pt));
+
+// 树数据
+const data = ref<ClTreeItem[]>(props.list);
+
+/**
+ * 优化的节点搜索算法，使用Map缓存提升查找性能
+ * 创建节点索引映射，O(1)时间复杂度查找节点
+ */
+const nodeMap = computed(() => {
+	// 创建一个Map用于存储节点信息，key为节点id，value为节点信息对象
+	const map = new Map<string | number, ClTreeNodeInfo>();
+
+	// 递归遍历所有节点，构建节点与父节点的映射关系
+	function buildMap(nodes: ClTreeItem[], parent: ClTreeItem | null = null): void {
+		for (let i: number = 0; i < nodes.length; i++) {
+			const node = nodes[i]; // 当前节点
+
+			// 将当前节点的信息存入map，包含节点本身、父节点、在父节点中的索引
+			map.set(node.id, { node, parent, index: i } as ClTreeNodeInfo);
+
+			// 如果当前节点有子节点，则递归处理子节点
+			if (node.children != null && node.children.length > 0) {
+				buildMap(node.children, node);
+			}
+		}
+	}
+
+	// 从根节点开始构建映射
+	buildMap(data.value);
+	return map; // 返回构建好的Map
+});
+
+/**
+ * 根据key查找节点信息
+ * @param key 节点id
+ * @returns 节点信息对象或null
+ */
+function findNodeInfo(key: string | number): ClTreeNodeInfo | null {
+	const result = nodeMap.value.get(key); // 从Map中查找节点信息
+	return result != null ? result : null; // 找到则返回，否则返回null
+}
+
+/**
+ * 获取指定节点的所有祖先节点
+ * @param key 节点id
+ * @returns 祖先节点数组（从根到最近父节点顺序）
+ */
+function getAncestors(key: string | number): ClTreeItem[] {
+	const result: ClTreeItem[] = []; // 用于存储祖先节点
+	let nodeInfo = findNodeInfo(key); // 当前节点信息
+
+	// 循环查找父节点，直到根节点
+	while (nodeInfo != null && nodeInfo.parent != null) {
+		result.unshift(nodeInfo.parent); // 将父节点插入到数组前面
+		nodeInfo = findNodeInfo(nodeInfo.parent.id); // 查找父节点信息
+	}
+
+	return result; // 返回祖先节点数组
+}
+
+/**
+ * 更新所有节点的选中状态（用于批量操作后的状态同步）
+ */
+function updateAllCheckStates(): void {
+	// 递归更新每个节点的选中和半选状态
+	function updateNodeStates(nodes: ClTreeItem[]): void {
+		for (let i: number = 0; i < nodes.length; i++) {
+			const node = nodes[i]; // 当前节点
+			const children = node.children != null ? node.children : []; // 子节点数组
+
+			if (children.length == 0) {
+				// 叶子节点，重置半选状态
+				node.isHalfChecked = false;
+				continue; // 跳过后续处理
+			}
+
+			// 先递归处理子节点
+			updateNodeStates(children);
+
+			// 统计子节点的选中和半选数量
+			let checkedCount = 0; // 选中数量
+			let halfCheckedCount = 0; // 半选数量
+
+			for (let j = 0; j < children.length; j++) {
+				if (children[j].isChecked == true) {
+					checkedCount++;
+				} else if (children[j].isHalfChecked == true) {
+					halfCheckedCount++;
+				}
+			}
+
+			// 根据子节点状态更新当前节点状态
+			if (checkedCount == children.length) {
+				// 全部选中
+				node.isChecked = true;
+				node.isHalfChecked = false;
+			} else if (checkedCount > 0 || halfCheckedCount > 0) {
+				// 部分选中或有半选
+				node.isChecked = false;
+				node.isHalfChecked = true;
+			} else {
+				// 全部未选中
+				node.isChecked = false;
+				node.isHalfChecked = false;
+			}
+		}
+	}
+
+	// 从根节点开始递归更新
+	updateNodeStates(data.value);
+}
+
+/**
+ * 更新指定节点的所有祖先节点的选中状态
+ * @param key 节点id
+ */
+function updateAncestorsCheckState(key: string | number): void {
+	const ancestors = getAncestors(key); // 获取所有祖先节点
+
+	// 从最近的父节点开始向上更新
+	for (let i = ancestors.length - 1; i >= 0; i--) {
+		const ancestor = ancestors[i]; // 当前祖先节点
+		const children = ancestor.children != null ? ancestor.children : ([] as ClTreeItem[]); // 子节点数组
+
+		if (children.length == 0) continue; // 没有子节点则跳过
+
+		let checkedCount = 0; // 选中数量
+		let halfCheckedCount = 0; // 半选数量
+
+		// 统计子节点的选中和半选数量
+		for (let j = 0; j < children.length; j++) {
+			if (children[j].isChecked == true) {
+				checkedCount++;
+			} else if (children[j].isHalfChecked == true) {
+				halfCheckedCount++;
+			}
+		}
+
+		// 根据子节点状态更新当前祖先节点状态
+		if (checkedCount == children.length) {
+			// 全部选中
+			ancestor.isChecked = true;
+			ancestor.isHalfChecked = false;
+		} else if (checkedCount > 0 || halfCheckedCount > 0) {
+			// 部分选中或有半选
+			ancestor.isChecked = false;
+			ancestor.isHalfChecked = true;
+		} else {
+			// 全部未选中
+			ancestor.isChecked = false;
+			ancestor.isHalfChecked = false;
+		}
+	}
+}
+
+/**
+ * 获取指定节点的所有子孙节点
+ * 优化：使用队列实现广度优先遍历，避免递归栈溢出
+ * @param key 节点id
+ * @returns 子孙节点数组
+ */
+function getDescendants(key: string | number): ClTreeItem[] {
+	const nodeInfo = findNodeInfo(key); // 查找节点信息
+	if (nodeInfo == null || nodeInfo.node.children == null) {
+		return []; // 节点不存在或无子节点，返回空数组
+	}
+
+	// 存储所有子孙节点
+	const result: ClTreeItem[] = [];
+
+	// 队列用于广度优先遍历
+	const queue: ClTreeItem[] = [];
+
+	// 将子节点添加到队列中
+	for (let i = 0; i < nodeInfo.node.children.length; i++) {
+		queue.push(nodeInfo.node.children[i]);
+	}
+
+	// 广度优先遍历所有子孙节点
+	while (queue.length > 0) {
+		const node = queue.shift(); // 取出队首节点
+
+		if (node == null) break; // 队列为空则结束
+
+		result.push(node); // 将当前节点加入结果数组
+
+		// 如果有子节点，继续加入队列
+		if (node.children != null && node.children.length > 0) {
+			for (let i = 0; i < node.children.length; i++) {
+				queue.push(node.children[i]);
+			}
+		}
+	}
+
+	return result; // 返回所有子孙节点
+}
+
+/**
+ * 清空所有节点的选中状态
+ */
+function clearChecked(): void {
+	// 遍历所有节点，将 isChecked 和 isHalfChecked 设为 false
+	nodeMap.value.forEach((info: ClTreeNodeInfo) => {
+		info.node.isChecked = false;
+		info.node.isHalfChecked = false;
+	});
+}
+
+/**
+ * 设置指定节点的选中状态
+ * @param key 节点id
+ * @param flag 是否选中
+ */
+function setChecked(key: string | number, flag: boolean): void {
+	const nodeInfo = findNodeInfo(key); // 查找节点信息
+	if (nodeInfo == null) return; // 节点不存在则返回
+
+	// 非多选模式下，清空所有选中状态
+	if (!props.multiple) {
+		clearChecked();
+	}
+
+	// 设置当前节点选中状态
+	nodeInfo.node.isChecked = flag;
+
+	// 多选模式下处理
+	if (props.multiple) {
+		// 非严格模式下处理父子联动
+		if (!props.checkStrictly) {
+			// 设置所有子孙节点的选中状态
+			const descendants = getDescendants(key);
+			for (let i = 0; i < descendants.length; i++) {
+				descendants[i].isChecked = flag;
+			}
+
+			// 更新所有祖先节点的状态
+			updateAncestorsCheckState(key);
+		}
+	}
+}
+
+/**
+ * 批量设置节点选中状态
+ * @param keys 需要设置为选中的节点id数组
+ */
+function setCheckedKeys(keys: (string | number)[]): void {
+	// 遍历所有需要选中的节点
+	for (let i = 0; i < keys.length; i++) {
+		const key: string | number = keys[i];
+		const nodeInfo = findNodeInfo(key); // 查找节点信息
+
+		if (nodeInfo != null) {
+			nodeInfo.node.isChecked = true; // 设置为选中
+
+			// 非严格模式下同时设置所有子孙节点为选中状态
+			if (!props.checkStrictly) {
+				const descendants = getDescendants(key);
+				for (let j = 0; j < descendants.length; j++) {
+					descendants[j].isChecked = true;
+				}
+			}
+		}
+	}
+
+	// 非严格模式下更新所有相关节点的状态
+	if (!props.checkStrictly) {
+		updateAllCheckStates();
+	}
+}
+
+/**
+ * 获取所有选中节点的keys
+ * @returns 选中节点id数组
+ */
+function getCheckedKeys(): (string | number)[] {
+	const result: (string | number)[] = []; // 存储选中节点id
+
+	/**
+	 * 递归收集所有选中节点的id
+	 * @param nodes 当前遍历的节点数组
+	 */
+	function collectCheckedKeys(nodes: ClTreeItem[]): void {
+		for (let i = 0; i < nodes.length; i++) {
+			const node = nodes[i];
+
+			if (node.isChecked == true) {
+				result.push(node.id); // 收集选中节点id
+			}
+
+			if (node.children != null) {
+				collectCheckedKeys(node.children); // 递归处理子节点
+			}
+		}
+	}
+
+	collectCheckedKeys(data.value); // 从根节点开始收集
+	return result; // 返回所有选中节点id
+}
+
+/**
+ * 获取所有半选中节点的keys
+ * @returns 半选节点id数组
+ */
+function getHalfCheckedKeys(): (string | number)[] {
+	const result: (string | number)[] = []; // 存储半选节点id
+
+	/**
+	 * 递归收集所有半选节点的id
+	 * @param nodes 当前遍历的节点数组
+	 */
+	function collectHalfCheckedKeys(nodes: ClTreeItem[]): void {
+		for (let i = 0; i < nodes.length; i++) {
+			const node = nodes[i];
+
+			if (node.isHalfChecked == true) {
+				result.push(node.id); // 收集半选节点id
+			}
+
+			if (node.children != null) {
+				collectHalfCheckedKeys(node.children); // 递归处理子节点
+			}
+		}
+	}
+
+	collectHalfCheckedKeys(data.value); // 从根节点开始收集
+	return result; // 返回所有半选节点id
+}
+
+/**
+ * 设置指定节点的展开状态
+ * @param key 节点id
+ * @param flag 是否展开
+ */
+function setExpanded(key: string | number, flag: boolean): void {
+	const nodeInfo = findNodeInfo(key); // 查找节点信息
+	if (nodeInfo == null) return; // 节点不存在则返回
+
+	nodeInfo.node.isExpand = flag; // 设置节点的展开状态
+}
+
+/**
+ * 批量设置节点展开状态
+ * @param keys 需要展开的节点id数组
+ */
+function setExpandedKeys(keys: (string | number)[]): void {
+	// 设置指定节点为展开状态
+	for (let i = 0; i < keys.length; i++) {
+		const nodeInfo = findNodeInfo(keys[i]);
+
+		if (nodeInfo != null) {
+			nodeInfo.node.isExpand = true;
+		}
+	}
+}
+
+/**
+ * 获取所有展开节点的keys
+ * @returns 展开节点id数组
+ */
+function getExpandedKeys(): (string | number)[] {
+	const result: (string | number)[] = []; // 存储展开节点id
+
+	/**
+	 * 递归收集所有展开节点的id
+	 * @param nodes 当前遍历的节点数组
+	 */
+	function collectExpandedKeys(nodes: ClTreeItem[]): void {
+		for (let i = 0; i < nodes.length; i++) {
+			const node = nodes[i];
+
+			if (node.isExpand == true) {
+				result.push(node.id); // 收集展开节点id
+			}
+
+			if (node.children != null) {
+				collectExpandedKeys(node.children); // 递归处理子节点
+			}
+		}
+	}
+
+	collectExpandedKeys(data.value); // 从根节点开始收集
+	return result; // 返回所有展开节点id
+}
+
+/**
+ * 展开所有节点
+ */
+function expandAll(): void {
+	// 遍历所有节点，如果有子节点则设置为展开
+	nodeMap.value.forEach((info: ClTreeNodeInfo) => {
+		if (info.node.children != null && info.node.children.length > 0) {
+			info.node.isExpand = true;
+		}
+	});
+}
+
+/**
+ * 收起所有节点
+ */
+function collapseAll() {
+	// 遍历所有节点，将isExpand设为false
+	nodeMap.value.forEach((info: ClTreeNodeInfo) => {
+		info.node.isExpand = false;
+	});
+}
+
+/**
+ * 同步绑定值
+ */
+/**
+ * 同步绑定值到外部
+ * 当内部选中状态变化时，更新外部的modelValue，并触发change事件
+ */
+function syncModelValue() {
+	// 如果树数据为空，则不更新绑定值
+	if (isEmpty(data.value)) {
+		return;
+	}
+
+	// 获取当前所有选中的key
+	const checkedKeys = getCheckedKeys();
+
+	// 如果外部modelValue为null，或当前选中key与外部modelValue不一致，则更新
+	if (props.modelValue == null || !isEqual(checkedKeys, props.modelValue!)) {
+		// 如果多选，直接传递数组；否则只传第一个选中的key
+		const value = props.multiple ? checkedKeys : first(checkedKeys);
+
+		emit("update:modelValue", value); // 通知外部更新modelValue
+		emit("change", value); // 触发change事件
+	}
+}
+
+/**
+ * 同步外部modelValue到内部选中状态
+ * 当外部modelValue变化时，更新内部选中状态，并保持与外部一致
+ */
+function syncCheckedState() {
+	// 如果外部modelValue为null，则不处理
+	if (props.modelValue == null) {
+		return;
+	}
+
+	// 获取当前所有选中的key
+	const checkedKeys = getCheckedKeys();
+
+	// 如果当前选中key与外部modelValue不一致，则进行同步
+	if (!isEqual(checkedKeys, props.modelValue!)) {
+		if (Array.isArray(props.modelValue)) {
+			setCheckedKeys(props.modelValue!); // 多选时，设置所有选中key
+		} else {
+			setChecked(props.modelValue!, true); // 单选时，设置单个选中key
+		}
+	}
+
+	syncModelValue(); // 同步绑定值到外部
+}
+
+// 监听props.list变化，同步到内部数据
+watch(
+	computed(() => props.list),
+	(val: ClTreeItem[]) => {
+		data.value = val;
+
+		// 检查选中状态
+		syncCheckedState();
+	},
+	{ immediate: true }
+);
+
+// 监听modelValue变化
+watch(
+	computed(() => [props.modelValue ?? 0]),
+	() => {
+		syncCheckedState();
+	},
+	{ immediate: true, deep: true }
+);
+
+// 监听树数据变化
+watch(
+	data,
+	() => {
+		// 自动更新选中状态
+		if (!props.checkStrictly && props.multiple) {
+			updateAllCheckStates();
+		}
+
+		// 更新绑定值
+		syncModelValue();
+	},
+	{ deep: true }
+);
+
+defineExpose({
+	icon: computed(() => props.icon),
+	expandIcon: computed(() => props.expandIcon),
+	checkStrictly: computed(() => props.checkStrictly),
+	checkable: computed(() => props.checkable),
+	multiple: computed(() => props.multiple),
+	clearChecked,
+	setChecked,
+	setCheckedKeys,
+	getCheckedKeys,
+	getHalfCheckedKeys,
+	setExpanded,
+	setExpandedKeys,
+	getExpandedKeys,
+	expandAll,
+	collapseAll
+});
+</script>

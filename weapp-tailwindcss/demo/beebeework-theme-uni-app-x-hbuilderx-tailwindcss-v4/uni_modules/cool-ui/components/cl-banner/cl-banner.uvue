@@ -1,0 +1,471 @@
+<template>
+	<view
+		class="cl-banner"
+		:class="[pt.className]"
+		:style="{
+			height: getUnit(height)
+		}"
+		@touchstart="onTouchStart"
+		@touchmove="onTouchMove"
+		@touchend="onTouchEnd"
+		@touchcancel="onTouchEnd"
+	>
+		<view
+			class="cl-banner__list"
+			:style="{
+				transform: `translateX(${slideOffset}px)`,
+				transitionDuration: isAnimating ? '0.3s' : '0s'
+			}"
+		>
+			<view
+				class="cl-banner__item"
+				v-for="(item, index) in list"
+				:key="index"
+				:class="[
+					pt.item?.className,
+					`${item.isActive ? `${pt.itemActive?.className}` : ''}`
+				]"
+				:style="{
+					width: `${getSlideWidth(index)}px`
+				}"
+				@tap="handleSlideClick(index)"
+			>
+				<slot :item="item" :index="index">
+					<image
+						:src="item.url"
+						:mode="imageMode"
+						class="cl-banner__item-image"
+						:class="[pt.image?.className]"
+					></image>
+				</slot>
+			</view>
+		</view>
+
+		<view class="cl-banner__dots" :class="[pt.dots?.className]" v-if="showDots">
+			<view
+				class="cl-banner__dots-item"
+				v-for="(item, index) in list"
+				:key="index"
+				:class="[
+					{
+						'is-active': item.isActive
+					},
+					pt.dot?.className,
+					`${item.isActive ? `${pt.dotActive?.className}` : ''}`
+				]"
+			></view>
+		</view>
+	</view>
+</template>
+
+<script setup lang="ts">
+import { computed, ref, onMounted, watch, getCurrentInstance, type PropType } from "vue";
+import { parsePt, getUnit } from "@/.cool";
+import type { PassThroughProps } from "../../types";
+import { useTouch } from "../../hooks";
+
+type Item = {
+	url: string;
+	isActive: boolean;
+};
+
+defineOptions({
+	name: "cl-banner"
+});
+
+defineSlots<{
+	item(props: { item: Item; index: number }): any;
+}>();
+
+const props = defineProps({
+	// 透传属性
+	pt: {
+		type: Object,
+		default: () => ({})
+	},
+	// 轮播项列表
+	list: {
+		type: Array as PropType<string[]>,
+		default: () => []
+	},
+	// 上一个轮播项的左边距
+	previousMargin: {
+		type: Number,
+		default: 0
+	},
+	// 下一个轮播项的右边距
+	nextMargin: {
+		type: Number,
+		default: 0
+	},
+	// 是否自动轮播
+	autoplay: {
+		type: Boolean,
+		default: true
+	},
+	// 自动轮播间隔时间(ms)
+	interval: {
+		type: Number,
+		default: 5000
+	},
+	// 是否显示指示器
+	showDots: {
+		type: Boolean,
+		default: true
+	},
+	// 是否禁用触摸
+	disableTouch: {
+		type: Boolean,
+		default: false
+	},
+	// 高度
+	height: {
+		type: [Number, String],
+		default: 160
+	},
+	// 图片模式
+	imageMode: {
+		type: String,
+		default: "aspectFill"
+	}
+});
+
+const emit = defineEmits(["change", "item-tap"]);
+
+const { proxy } = getCurrentInstance()!;
+const touch = useTouch();
+
+// 透传属性类型定义
+type PassThrough = {
+	className?: string;
+	item?: PassThroughProps;
+	itemActive?: PassThroughProps;
+	image?: PassThroughProps;
+	dots?: PassThroughProps;
+	dot?: PassThroughProps;
+	dotActive?: PassThroughProps;
+};
+
+const pt = computed(() => parsePt<PassThrough>(props.pt));
+
+/** 当前激活的轮播项索引 */
+const activeIndex = ref(0);
+
+/** 轮播项列表 */
+const list = computed<Item[]>(() => {
+	return props.list.map((e, i) => {
+		return {
+			url: e,
+			isActive: i == activeIndex.value
+		} as Item;
+	});
+});
+
+/** 轮播容器的水平偏移量(px) */
+const slideOffset = ref(0);
+
+/** 是否正在执行动画过渡 */
+const isAnimating = ref(false);
+
+/** 轮播容器的总宽度(px) */
+const bannerWidth = ref(0);
+
+/** 单个轮播项的宽度(px) - 用于缓存计算结果 */
+const slideWidth = ref(0);
+
+/** 触摸开始时的X坐标 */
+const touchStartPoint = ref(0);
+
+/** 触摸开始时的时间戳 */
+const touchStartTimestamp = ref(0);
+
+/** 触摸开始时的初始偏移量 */
+const initialOffset = ref(0);
+
+/** 是否正在触摸中 */
+const isTouching = ref(false);
+
+/** 位置更新防抖定时器 */
+let positionUpdateTimer: number = 0;
+
+/**
+ * 更新轮播容器的位置
+ * 根据当前激活索引计算并设置容器的偏移量
+ */
+function updateSlidePosition() {
+	if (bannerWidth.value == 0) return;
+
+	// 防抖处理，避免频繁更新
+	if (positionUpdateTimer != 0) {
+		clearTimeout(positionUpdateTimer);
+	}
+
+	// @ts-ignore
+	positionUpdateTimer = setTimeout(() => {
+		// 计算累积偏移量，考虑每个位置的动态边距
+		let totalOffset = 0;
+
+		// 遍历当前索引之前的所有项，累加它们的宽度
+		for (let i = 0; i < activeIndex.value; i++) {
+			const itemPreviousMargin = i == 0 ? 0 : props.previousMargin;
+			const itemNextMargin = i == props.list.length - 1 ? 0 : props.nextMargin;
+			const itemWidthAtIndex = bannerWidth.value - itemPreviousMargin - itemNextMargin;
+			totalOffset += itemWidthAtIndex;
+		}
+
+		// 当前项的左边距
+		const currentPreviousMargin = activeIndex.value == 0 ? 0 : props.previousMargin;
+
+		// 设置最终的偏移量：负方向移动累积宽度，然后加上当前项的左边距
+		slideOffset.value = -totalOffset + currentPreviousMargin;
+
+		positionUpdateTimer = 0;
+	}, 10);
+}
+
+/**
+ * 获取指定索引轮播项的宽度
+ * @param index 轮播项索引
+ * @returns 轮播项宽度(px)
+ */
+function getSlideWidth(index: number): number {
+	// 动态计算每个项的宽度，考虑边距
+	const itemPreviousMargin = index == 0 ? 0 : props.previousMargin;
+	const itemNextMargin = index == props.list.length - 1 ? 0 : props.nextMargin;
+	return bannerWidth.value - itemPreviousMargin - itemNextMargin;
+}
+
+/**
+ * 计算并缓存轮播项宽度
+ * 使用固定的基础宽度计算，避免动态变化导致的性能问题
+ */
+function calculateSlideWidth() {
+	const baseWidth = bannerWidth.value - props.previousMargin - props.nextMargin;
+	slideWidth.value = baseWidth;
+}
+
+/**
+ * 测量轮播容器的尺寸信息
+ * 获取容器宽度并初始化相关计算
+ */
+function getRect() {
+	uni.createSelectorQuery()
+		.in(proxy)
+		.select(".cl-banner")
+		.boundingClientRect((node) => {
+			bannerWidth.value = (node as NodeInfo).width ?? 0;
+
+			// 重新计算宽度和位置
+			calculateSlideWidth();
+			updateSlidePosition();
+		})
+		.exec();
+}
+
+/** 自动轮播定时器 */
+let autoplayTimer: number = 0;
+
+/**
+ * 清除自动轮播定时器
+ */
+function clearAutoplay() {
+	if (autoplayTimer != 0) {
+		clearInterval(autoplayTimer);
+		autoplayTimer = 0;
+	}
+}
+
+/**
+ * 启动自动轮播
+ */
+function startAutoplay() {
+	if (props.list.length <= 1) return;
+
+	if (props.autoplay) {
+		clearAutoplay();
+
+		// 只有在非触摸状态下才启动自动轮播
+		if (!isTouching.value) {
+			isAnimating.value = true;
+
+			// @ts-ignore
+			autoplayTimer = setInterval(() => {
+				// 再次检查是否在触摸中，避免触摸时自动切换
+				if (!isTouching.value) {
+					if (activeIndex.value >= props.list.length - 1) {
+						activeIndex.value = 0;
+					} else {
+						activeIndex.value++;
+					}
+				}
+			}, props.interval);
+		}
+	}
+}
+
+/**
+ * 处理触摸开始事件
+ * 记录触摸起始状态，准备手势识别
+ * @param e 触摸事件对象
+ */
+function onTouchStart(e: UniTouchEvent) {
+	// 如果禁用触摸，则不进行任何操作
+	if (props.disableTouch) return;
+
+	// 单项或空列表不支持滑动
+	if (props.list.length <= 1) return;
+
+	// 注册触摸开始事件
+	touch.start(e);
+
+	// 设置触摸状态
+	isTouching.value = true;
+
+	// 清除自动轮播
+	clearAutoplay();
+
+	// 禁用动画，开始手势跟踪
+	isAnimating.value = false;
+	touchStartPoint.value = e.touches[0].clientX;
+	touchStartTimestamp.value = Date.now();
+	initialOffset.value = slideOffset.value;
+}
+
+/**
+ * 处理触摸移动事件
+ * 实时更新容器位置，实现跟手效果
+ * @param e 触摸事件对象
+ */
+function onTouchMove(e: UniTouchEvent) {
+	if (props.list.length <= 1 || props.disableTouch || !isTouching.value) return;
+
+	// 注册触摸移动事件
+	touch.move(e);
+
+	// 横向移动时才处理
+	if (touch.horizontal != 1) {
+		return;
+	}
+
+	// 计算手指移动距离，实时更新偏移量
+	const deltaX = e.touches[0].clientX - touchStartPoint.value;
+	slideOffset.value = initialOffset.value + deltaX;
+}
+
+/**
+ * 处理触摸结束事件
+ * 根据滑动距离和速度判断是否切换轮播项
+ */
+function onTouchEnd() {
+	if (props.list.length <= 1 || !isTouching.value) return;
+
+	// 注册触摸结束事件
+	touch.end();
+
+	// 重置触摸状态
+	isTouching.value = false;
+
+	// 恢复动画效果
+	isAnimating.value = true;
+
+	// 计算滑动距离、时间和速度
+	const deltaX = slideOffset.value - initialOffset.value;
+	const deltaTime = Date.now() - touchStartTimestamp.value;
+	const velocity = deltaTime > 0 ? Math.abs(deltaX) / deltaTime : 0; // px/ms
+
+	let newIndex = activeIndex.value;
+
+	// 使用当前项的实际宽度进行滑动判断
+	const currentSlideWidth = getSlideWidth(activeIndex.value);
+
+	// 判断是否需要切换：滑动距离超过30%或速度够快
+	if (Math.abs(deltaX) > currentSlideWidth * 0.3 || velocity > 0.3) {
+		// 向右滑动且不是第一项 -> 上一项
+		if (deltaX > 0 && activeIndex.value > 0) {
+			newIndex = activeIndex.value - 1;
+		}
+		// 向左滑动且不是最后一项 -> 下一项
+		else if (deltaX < 0 && activeIndex.value < props.list.length - 1) {
+			newIndex = activeIndex.value + 1;
+		}
+	}
+
+	// 更新索引 - 如果索引没有变化，需要手动恢复位置
+	if (newIndex == activeIndex.value) {
+		// 索引未变化，恢复到正确位置
+		updateSlidePosition();
+	} else {
+		// 索引变化，watch会自动调用updateSlidePosition
+		activeIndex.value = newIndex;
+	}
+
+	// 恢复自动轮播
+	setTimeout(() => {
+		startAutoplay();
+	}, 300);
+}
+
+/**
+ * 处理轮播项点击事件
+ * @param index 被点击的轮播项索引
+ */
+function handleSlideClick(index: number) {
+	emit("item-tap", index);
+}
+
+/** 监听激活索引变化 */
+watch(activeIndex, (val: number) => {
+	updateSlidePosition();
+	emit("change", val);
+});
+
+onMounted(() => {
+	getRect();
+	startAutoplay();
+});
+
+// 将触摸事件暴露给父组件，支持控制其它view将做touch代理
+defineExpose({
+	onTouchStart,
+	onTouchMove,
+	onTouchEnd
+});
+</script>
+
+<style lang="scss" scoped>
+.cl-banner {
+	@apply relative z-10 rounded-xl;
+
+	&__list {
+		@apply flex flex-row h-full w-full overflow-visible;
+		// HBuilderX 4.8.2 bug，临时处理
+		width: 100000px;
+		transition-property: transform;
+	}
+
+	&__item {
+		@apply relative duration-200;
+		transition-property: transform;
+
+		&-image {
+			@apply w-full h-full rounded-xl;
+		}
+	}
+
+	&__dots {
+		@apply flex flex-row items-center justify-center;
+		@apply absolute bottom-3 left-0 w-full;
+
+		&-item {
+			@apply w-2 h-2 rounded-full mx-1 border border-solid border-gray-500/10;
+			background-color: rgba(255, 255, 255, 0.3);
+			transition-property: width, background-color;
+			transition-duration: 0.3s;
+
+			&.is-active {
+				@apply bg-white w-5;
+			}
+		}
+	}
+}
+</style>

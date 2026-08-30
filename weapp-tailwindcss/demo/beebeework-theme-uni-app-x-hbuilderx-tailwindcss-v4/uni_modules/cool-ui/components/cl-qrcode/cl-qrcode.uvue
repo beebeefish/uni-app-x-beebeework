@@ -1,0 +1,182 @@
+<template>
+	<view :style="{ width: getUnit(width), height: getUnit(height) }">
+		<canvas
+			ref="canvasRef"
+			:canvas-id="qrcodeId"
+			type="2d"
+			:id="qrcodeId"
+			:style="{ width: getUnit(width), height: getUnit(height) }"
+		></canvas>
+	</view>
+</template>
+
+<script lang="ts" setup>
+import {
+	ref,
+	watch,
+	onMounted,
+	getCurrentInstance,
+	nextTick,
+	computed,
+	type PropType,
+	onUnmounted,
+	shallowRef
+} from "vue";
+
+import { drawQrcode, type QrcodeOptions } from "./draw";
+import { canvasToPng, isAppIOS, isHarmony, uuid, getUnit } from "@/.cool";
+import type { ClQrcodeMode } from "../../types";
+
+defineOptions({
+	name: "cl-qrcode"
+});
+
+const props = defineProps({
+	// 二维码宽度，单位 px
+	width: {
+		type: Number,
+		default: 200
+	},
+	// 二维码高度，单位 px
+	height: {
+		type: Number,
+		default: 200
+	},
+	// 二维码前景色
+	foreground: {
+		type: String,
+		default: "#131313"
+	},
+	// 二维码背景色
+	background: {
+		type: String,
+		default: "#FFFFFF"
+	},
+	// 定位点颜色，不填写时与前景色一致
+	pdColor: {
+		type: String as PropType<string | null>,
+		default: null
+	},
+	// 定位图案圆角半径，为0时绘制直角矩形
+	pdRadius: {
+		type: Number,
+		default: 10
+	},
+	// 二维码内容
+	text: {
+		type: String,
+		default: "https://cool-js.com/"
+	},
+	// logo 图片地址，支持网络、本地路径
+	logo: {
+		type: String,
+		default: ""
+	},
+	// logo 大小，单位 px (建议不超过二维码尺寸的20%以确保识别率)
+	logoSize: {
+		type: Number,
+		default: 40
+	},
+	// 二维码边距，单位 px
+	padding: {
+		type: Number,
+		default: 5
+	},
+	// 二维码样式：rect 普通矩形、circular 小圆点、line 线条、rectSmall 小方格
+	mode: {
+		type: String as PropType<ClQrcodeMode>,
+		default: "circular"
+	}
+});
+
+const { proxy } = getCurrentInstance()!;
+
+// 二维码组件id
+const qrcodeId = ref<string>("cl-qrcode-" + uuid());
+
+// 二维码组件画布
+const canvasRef = shallowRef<UniElement | null>(null);
+
+/**
+ * 主绘制方法，根据当前 props 生成二维码并绘制到 canvas。
+ * 支持多平台（APP、H5、微信小程序），自动适配高分屏。
+ * 内部调用 drawQrcode 进行二维码点阵绘制。
+ */
+function drawer() {
+	const data = {
+		text: props.text,
+		size: props.width,
+		foreground: props.foreground,
+		background: props.background,
+		padding: props.padding,
+		logo: props.logo,
+		logoSize: props.logoSize,
+		ecc: "H", // 使用最高纠错级别
+		mode: props.mode,
+		pdColor: props.pdColor,
+		pdRadius: props.pdRadius
+	} as QrcodeOptions;
+
+	nextTick(() => {
+		// #ifdef APP || MP-WEIXIN
+		uni.createCanvasContextAsync({
+			id: qrcodeId.value,
+			component: proxy,
+			success(context) {
+				drawQrcode(context, data);
+			},
+			fail(err) {
+				console.error(err);
+			}
+		});
+		// #endif
+
+		// #ifdef H5
+		// @ts-ignore
+		drawQrcode(canvasRef.value, data);
+		// #endif
+	});
+}
+/**
+ * 获取当前二维码图片的临时文件地址
+ * @param call 回调函数，返回图片路径，失败返回空字符串
+ */
+function toPng(): Promise<string> {
+	return canvasToPng(canvasRef.value!);
+}
+
+// 自动重绘
+const stopWatch = watch(
+	computed(() => [
+		props.pdColor,
+		props.pdRadius,
+		props.foreground,
+		props.background,
+		props.text,
+		props.logo,
+		props.logoSize,
+		props.mode,
+		props.padding
+	]),
+	() => {
+		drawer();
+	}
+);
+
+onMounted(() => {
+	setTimeout(
+		() => {
+			drawer();
+		},
+		isHarmony() || isAppIOS() ? 50 : 0
+	);
+});
+
+onUnmounted(() => {
+	stopWatch();
+});
+
+defineExpose({
+	toPng
+});
+</script>

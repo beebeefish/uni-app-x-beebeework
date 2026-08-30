@@ -1,0 +1,93 @@
+// 导入Android相关类
+import Intent from "android.content.Intent"; // Android意图类，用于启动活动
+import Uri from "android.net.Uri"; // Android URI类，用于解析URL
+import Activity from "android.app.Activity"; // Android活动基类
+import Context from "android.content.Context"; // Android上下文类
+
+/**
+ * 打开网页URL函数
+ *
+ * @param url 要打开的网页地址，必须是有效的URL格式
+ * @returns 返回操作结果，true表示成功，false表示失败
+ *
+ * 功能说明：
+ * 1. 验证URL格式的合法性
+ * 2. 创建Intent意图，指定ACTION_VIEW动作
+ * 3. 获取当前Activity实例
+ * 4. 启动系统默认浏览器打开链接
+ * 5. 提供错误处理和异常捕获
+ *
+ * 注意事项：
+ * - URL必须包含协议头（如http://或https://）
+ * - 需要确保设备已安装浏览器应用
+ * - 在某些情况下可能需要网络权限
+ */
+export function openWeb(url: string): boolean {
+	try {
+		// 1. 参数验证：检查URL是否为空或无效
+		if (url.trim() == "") {
+			console.error("[cool-openurl] URL不能为空");
+			return false;
+		}
+
+		// 2. URL格式验证：确保包含协议头
+		let trimmedUrl = url.trim();
+		if (!trimmedUrl.startsWith("http://") && !trimmedUrl.startsWith("https://")) {
+			console.error("[cool-openurl] URL必须包含协议头（http://或https://）");
+			return false;
+		}
+
+		// 3. 解析URL：将字符串转换为Uri对象
+		let uri: Uri | null;
+		try {
+			uri = Uri.parse(trimmedUrl);
+		} catch (e: any) {
+			console.error("[cool-openurl] URL格式无效：" + trimmedUrl, e);
+			return false;
+		}
+
+		// 4. 验证URI是否解析成功
+		if (uri == null) {
+			console.error("[cool-openurl] URI解析失败：" + trimmedUrl);
+			return false;
+		}
+
+		// 5. 创建Intent意图
+		// ACTION_VIEW表示查看指定数据的通用动作，系统会选择合适的应用来处理
+		let intent = new Intent(Intent.ACTION_VIEW, uri);
+
+		// 6. 设置Intent标志
+		// FLAG_ACTIVITY_NEW_TASK：在新的任务栈中启动活动，确保浏览器在独立的任务中运行
+		intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
+		// 7. 获取当前Activity实例
+		let activity = UTSAndroid.getUniActivity();
+		if (activity == null) {
+			console.error("[cool-openurl] 无法获取当前Activity实例");
+			return false;
+		}
+
+		// 8. 类型安全：将获取的对象转换为Activity类型
+		let currentActivity = activity as Activity;
+
+		// 9. 验证系统中是否有能够处理该Intent的应用
+		let packageManager = currentActivity.getPackageManager();
+		let resolveInfos = packageManager.queryIntentActivities(intent, 0);
+
+		if (resolveInfos.size == 0) {
+			console.error("[cool-openurl] 系统中没有可以打开URL的应用");
+			return false;
+		}
+
+		// 10. 启动Intent，打开URL
+		currentActivity.startActivity(intent);
+
+		// 11. 记录成功日志
+		console.log("[cool-openurl] 成功打开URL：" + trimmedUrl);
+		return true;
+	} catch (error: any) {
+		// 12. 异常处理：捕获并记录所有可能的异常
+		console.error("[cool-openurl] 打开URL时发生异常：", error);
+		return false;
+	}
+}

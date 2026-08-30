@@ -1,0 +1,67 @@
+<template>
+	<cl-image
+		:src="src"
+		:height="size"
+		:width="size"
+		:pt="{
+			className: parseClass([
+				'cl-avatar',
+				{
+					'!rounded-full': rounded
+				},
+				pt.className
+			])
+		}"
+	>
+		<template #loading>
+			<cl-icon
+				:name="pt.icon?.name ?? 'user-smile-fill'"
+				:size="pt.icon?.size ?? 20"
+				:pt="{
+					className: parseClass([
+						[isDark, '!text-gray-50/10', '!text-gray-400/10'],
+						pt.icon?.className
+					])
+				}"
+			></cl-icon>
+		</template>
+
+		<slot></slot>
+	</cl-image>
+</template>
+
+<script setup lang="ts">
+import { isDark, parseClass, parsePt } from "@/.cool";
+import { computed } from "vue";
+import type { ClIconProps } from "../cl-icon/props";
+
+defineOptions({
+	name: "cl-avatar"
+});
+
+const props = defineProps({
+	pt: {
+		type: Object,
+		default: () => ({})
+	},
+	src: {
+		type: String,
+		default: ""
+	},
+	size: {
+		type: Number,
+		default: 40
+	},
+	rounded: {
+		type: Boolean,
+		default: false
+	}
+});
+
+type PassThrough = {
+	className?: string;
+	icon?: ClIconProps;
+};
+
+const pt = computed(() => parsePt<PassThrough>(props.pt));
+</script>

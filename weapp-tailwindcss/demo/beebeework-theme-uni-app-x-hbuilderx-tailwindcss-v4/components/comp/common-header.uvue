@@ -1,0 +1,70 @@
+<template>
+
+    <!-- 左侧：动态按钮组 -->
+    <view class="relative z-20 flex flex-row items-center shrink-0 px-4 pointer-events-none">
+      <slot name="left-actions">
+        <scale-card :class="hasBtn('drawer') ? 'dropdown-pop-base mr-2' : '!w-0'"  @click="$emit('drawer')" class="block shrink-0 w-8 h-8 rounded-full overflow-hidden flex items-center justify-center pointer-events-auto text-gray-700 dark:text-neutral-200">
+          <svg-icon :size="14" class="shrink-0"><text class="i-[mingcute--menu-line] size-[14px] current-color"></text></svg-icon>
+        </scale-card>
+        <scale-card :class="hasBtn('search') ? 'dropdown-pop-base mr-2' : '!w-0'"  @click="$emit('search')" class="block shrink-0 w-8 h-8 rounded-full overflow-hidden flex items-center justify-center pointer-events-auto text-gray-700 dark:text-neutral-200">
+          <svg-icon :size="14" class="shrink-0"><text class="i-[mingcute--search-line] size-[14px] current-color"></text></svg-icon>
+        </scale-card>
+        <scale-card :class="hasBtn('setting') ? 'dropdown-pop-base mr-2' : '!w-0'"  @click="$emit('setting')" class="block shrink-0 w-8 h-8 rounded-full overflow-hidden flex items-center justify-center pointer-events-auto text-gray-700 dark:text-neutral-200">
+          <svg-icon :size="14" class="shrink-0"><text class="i-[mingcute--settings-3-line] size-[14px] current-color"></text></svg-icon>
+        </scale-card>
+        <scale-card :class="hasBtn('share') ? 'dropdown-pop-base mr-2' : '!w-0'"  @click="$emit('share')" class="block shrink-0 w-8 h-8 rounded-full overflow-hidden flex items-center justify-center pointer-events-auto text-gray-700 dark:text-neutral-200">
+          <svg-icon :size="14" class="shrink-0"><text class="i-[mingcute--share-forward-line] size-[14px] current-color"></text></svg-icon>
+        </scale-card>
+      </slot>
+    </view>
+
+    <!-- 中间：多 Tab 切换条 或 单标题 -->
+    <view class="absolute w-full h-full z-10 left-0 right-0 px-1 flex flex-row items-center justify-center pointer-events-auto">
+      <template v-if="tabList && tabList.length > 1">
+        <cl-tabs 
+          v-if="isActive" 
+          :modelValue="currentTab"
+          @update:modelValue="$emit('update:currentTab', $event)"
+          :list="tabList" 
+          :show-line="true"
+          color="#3b82f6"
+          uncolor=""
+          height="36"
+          :gutter="8"
+          :pt="{ text: { className: 'font-medium text-base text-gray-800 dark:text-neutral-200' } }"
+        />
+      </template>
+      <template v-else-if="title">
+        <text class="text-base font-bold text-gray-900 dark:text-neutral-100 truncate">
+          {{ title }}
+        </text>
+      </template>
+    </view>
+
+    <!-- 右侧：小程序胶囊占位 -->
+    <view class="shrink-0 pointer-events-none" :style="{ width: capsuleWidth + 'px' }"></view>
+
+</template>
+
+<script setup lang="uts">
+const props = defineProps({
+  currentTab: { type: String, default: '' },
+  tabList: { type: Array, default: () => [] },
+  title: { type: String, default: '' },
+  leftBtns: { type: Array, default: () => [] },
+  navBarTop: { type: Number, default: 0 },
+  navBarHeight: { type: Number, default: 44 },
+  capsuleWidth: { type: Number, default: 80 },
+  isActive: Boolean
+})
+
+defineEmits(['update:currentTab', 'drawer', 'search', 'setting', 'share'])
+
+const hasBtn = (name : string) : boolean => {
+  const btns = props.leftBtns as string[]
+  if (btns != null && Array.isArray(btns)) {
+    return btns.includes(name)
+  }
+  return false
+}
+</script>

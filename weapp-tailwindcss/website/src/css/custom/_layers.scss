@@ -1,0 +1,28 @@
+@layer components {
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem 1rem;
+    border-radius: 0.25rem;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .btn-pink {
+    background-color: #db2777;
+    color: #ffffff;
+  }
+
+  .btn-pink:hover {
+    background-color: #831843;
+  }
+}
+
+@layer utilities {
+  .inline-flex-center {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+}

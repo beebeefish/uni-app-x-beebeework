@@ -1,0 +1,104 @@
+<script lang="uts">
+	import { initSystemLayout, loadGlobalThemeConfig } from '@/stores/theme.uts'
+	import { installRouteBuilderJS } from '@/utils/router‑sky/register‑route‑builder.js'
+	import { useStore } from "@/.cool";
+	let firstBackTime = 0
+
+	export default {
+		onLaunch: function () {
+			console.log('App Launch')
+			// 初始化主题：从本地存储读取主题设置（默认为 dark 或跟随系统）
+			this.initTheme()
+			this.preloadGlobalData()
+			// #ifdef MP-WEIXIN
+			uni.getSkylineInfo({
+				success(res) {
+					// 💡 修复：使用标准的 getApp().globalData 替代已被废弃的 Vue.prototype
+					const app = getApp() as UTSJSONObject
+					app["isSky"] = res.isSupported
+				},
+				fail: function(res) {
+					console.log(res)
+				}
+			})
+			
+			// 安全调用 Skyline 路由注册
+			try {
+				installRouteBuilderJS()
+			} catch (e) {
+				console.error("registerRouteBuilder 执行异常：", e)
+			}
+			// #endif
+		},
+		onShow: function () {
+			console.log('App Show')
+
+			// 根据业务情况判断是否要预先调用
+			const { user } = useStore();
+
+			// 获取用户信息，未登录不执行
+			user.get();
+			
+		},
+		onHide: function () {
+			console.log('App Hide')
+		},
+		methods: {
+			async preloadGlobalData() {
+				try {
+					initSystemLayout()
+					await loadGlobalThemeConfig()
+				} catch (e) {
+					console.error('全局配置预加载失败', e)
+				}
+			},
+			// 初始化并应用主题的函数
+			initTheme() {
+				// 获取本地存储的主题：'dark' | 'light' | 'system'
+				const currentTheme = uni.getStorageSync('theme') as string
+				if (currentTheme != null && currentTheme != '') {
+					this.applyTheme(currentTheme)
+				} else {
+					// 默认给个暗黑主题或根据需要调整
+					this.applyTheme('dark')
+				}
+			},
+			// 切换或应用主题到全局
+			applyTheme(theme: string) {
+				// 你可以在这里配合全局状态管理，或者通过 uni-app 提供的接口设置主题
+				console.log('当前应用主题:', theme)
+			}
+		},
+		// #ifdef APP-ANDROID
+		onLastPageBackPress: function () {
+			console.log('App LastPageBackPress')
+			if (firstBackTime == 0) {
+				uni.showToast({
+					title: '再按一次退出应用',
+					position: 'bottom',
+				})
+				firstBackTime = Date.now()
+				setTimeout(() => {
+					firstBackTime = 0
+				}, 2000)
+			} else if (Date.now() - firstBackTime < 2000) {
+				firstBackTime = Date.now()
+				uni.exit()
+			}
+		},
+		// #endif
+		onExit: function () {
+			console.log('App Exit')
+		},
+	}
+</script>
+
+<style lang="scss">
+@import './main.css';
+
+/* #ifdef H5 */
+svg {
+  display: initial;
+}
+/* #endif */
+</style>

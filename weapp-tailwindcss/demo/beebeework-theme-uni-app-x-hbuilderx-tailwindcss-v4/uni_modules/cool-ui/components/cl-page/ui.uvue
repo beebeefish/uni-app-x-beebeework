@@ -1,0 +1,68 @@
+<template>
+	<cl-confirm ref="confirmRef"></cl-confirm>
+	<cl-confirm ref="tipsRef"></cl-confirm>
+	<cl-toast ref="toastRef"></cl-toast>
+</template>
+
+<script setup lang="ts">
+import { ref } from "vue";
+import type { ClConfirmAction, ClConfirmOptions, ClToastOptions } from "../../types";
+import { createUi, type UiInstance } from "../../hooks";
+import { t } from "@/.cool";
+
+defineOptions({
+	name: "cl-page-ui"
+});
+
+// 确认弹窗实例
+const confirmRef = ref<ClConfirmComponentPublicInstance | null>(null);
+
+// 提示弹窗实例
+const tipsRef = ref<ClConfirmComponentPublicInstance | null>(null);
+
+// 提示弹窗实例
+const toastRef = ref<ClToastComponentPublicInstance | null>(null);
+
+/**
+ * 显示确认弹窗
+ * @param options ClConfirmOptions 弹窗配置项
+ */
+function showConfirm(options: ClConfirmOptions) {
+	if (confirmRef.value != null) {
+		confirmRef.value!.open(options);
+	}
+}
+
+/**
+ * 显示提示弹窗
+ * @param message 提示消息
+ * @param callback 回调函数
+ */
+function showTips(message: string, callback: (action: ClConfirmAction) => void) {
+	if (tipsRef.value != null) {
+		tipsRef.value!.open({
+			title: t("提示"),
+			message,
+			callback,
+			showCancel: false
+		} as ClConfirmOptions);
+	}
+}
+
+/**
+ * 显示提示弹窗
+ * @param options ClToastOptions 弹窗配置项
+ */
+function showToast(options: ClToastOptions) {
+	if (toastRef.value != null) {
+		toastRef.value!.open(options);
+	}
+}
+
+// 注册当前页面的 UiInstance 实例
+createUi({
+	showConfirm,
+	showTips,
+	showToast
+} as UiInstance);
+</script>

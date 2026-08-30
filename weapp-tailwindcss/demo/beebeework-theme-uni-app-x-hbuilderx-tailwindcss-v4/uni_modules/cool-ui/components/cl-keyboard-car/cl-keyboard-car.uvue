@@ -1,0 +1,345 @@
+<template>
+	<cl-popup
+		:title="title"
+		:swipe-close-threshold="100"
+		:pt="{
+			inner: {
+				className: parseClass([
+					[isDark, '!bg-zinc-700/10', '!bg-gray-100/10'],
+					pt.popup?.className
+				])
+			},
+			mask: {
+				className: '!bg-transparent'
+			}
+		}"
+		v-model="visible"
+	>
+		<view class="cl-keyboard-car" :class="[pt.className]">
+			<slot name="value" :value="value">
+				<view
+					v-if="showValue"
+					class="cl-keyboard-car__value"
+					:class="[pt.value?.className]"
+				>
+					<cl-text v-if="value != ''" :size="24">{{ valueText }}</cl-text>
+
+					<cl-text
+						v-else
+						:size="16"
+						:pt="{
+							className: 'text-gray-400/10'
+						}"
+						>{{ placeholder }}</cl-text
+					>
+				</view>
+			</slot>
+
+			<view class="cl-keyboard-car__list">
+				<view
+					class="cl-keyboard-car__rows"
+					v-for="(row, rowIndex) in list"
+					:key="rowIndex"
+					:class="[`is-mode-${mode}`]"
+				>
+					<view
+						v-for="(item, index) in row"
+						:key="item"
+						class="cl-keyboard-car__item"
+						:class="[
+							`is-keycode-${item}`,
+							{
+								'is-dark': isDark,
+								'is-empty': item == '',
+								'is-fill': rowIndex == 0 || mode == 'plate'
+							},
+							pt.item?.className
+						]"
+						:style="{
+							marginRight: index == row.length - 1 ? '0' : '4px'
+						}"
+						hover-class="opacity-50"
+						:hover-stay-time="250"
+						@touchstart.stop="onCommand(item)"
+					>
+						<slot name="item" :item="item">
+							<cl-icon
+								v-if="item == 'delete'"
+								name="delete-back-2-line"
+								:size="18"
+							></cl-icon>
+
+							<cl-icon
+								v-else-if="item == 'confirm'"
+								name="check-line"
+								:size="18"
+								color="white"
+							></cl-icon>
+
+							<cl-text :size="16" v-else>{{ item }}</cl-text>
+						</slot>
+					</view>
+				</view>
+			</view>
+		</view>
+	</cl-popup>
+</template>
+
+<script setup lang="ts">
+import { useUi } from "../../hooks";
+import type { PassThroughProps } from "../../types";
+import type { ClPopupProps } from "../cl-popup/props";
+import { ref, computed, watch } from "vue";
+import { isDark, parseClass, parsePt, $t, t } from "@/.cool";
+
+defineOptions({
+	name: "cl-keyboard-car"
+});
+
+defineSlots<{
+	value(props: { value: string }): any;
+	item(props: { item: string }): any;
+}>();
+
+const props = defineProps({
+	// 透传样式配置
+	pt: {
+		type: Object,
+		default: () => ({})
+	},
+	// v-model绑定的值
+	modelValue: {
+		type: String,
+		default: ""
+	},
+	// 弹窗标题
+	title: {
+		type: String,
+		default: () => t("车牌键盘")
+	},
+	// 输入框占位符
+	placeholder: {
+		type: String,
+		default: () => t("安全键盘，请放心输入")
+	},
+	// 最大输入长度
+	maxlength: {
+		type: Number,
+		default: 8
+	},
+	// 是否显示输入值
+	showValue: {
+		type: Boolean,
+		default: true
+	},
+	// 是否输入即绑定
+	inputImmediate: {
+		type: Boolean,
+		default: false
+	}
+});
+
+// 定义事件发射器，支持v-model和change事件
+const emit = defineEmits(["update:modelValue", "change"]);
+
+// 样式穿透类型
+type PassThrough = {
+	className?: string;
+	item?: PassThroughProps;
+	value?: PassThroughProps;
+	popup?: ClPopupProps;
+};
+
+// 样式穿透计算
+const pt = computed(() => parsePt<PassThrough>(props.pt));
+
+// 获取UI相关的工具方法
+const ui = useUi();
+
+// 控制弹窗显示/隐藏
+const visible = ref(false);
+
+// 输入框当前值，双向绑定
+const value = ref(props.modelValue);
+
+// 键盘模式，province: 省份简称区，plate: 字母数字及特殊类型区
+const mode = ref<"province" | "plate">("province");
+
+// 输入框显示值
+const valueText = computed(() => {
+	if (value.value.length > 2) {
+		return value.value.substring(0, 2) + " · " + value.value.substring(2);
+	}
+
+	return value.value;
+});
+
+// 数字键盘的按键列表，包含数字、删除、00和小数点
+const list = computed(() => {
+	// 车牌键盘的省份简称区
+	const province: string[][] = [
+		["京", "沪", "粤", "津", "冀", "豫", "云", "辽", "黑", "湘"],
+		["皖", "鲁", "新", "苏", "浙", "赣", "鄂", "桂", "甘"],
+		["晋", "蒙", "陕", "吉", "闽", "贵", "渝", "川"],
+		["青", "藏", "琼", "宁"]
+	];
+
+	// 车牌键盘的字母数字及特殊类型区
+	const plate: string[][] = [
+		["学", "警", "港", "澳", "领", "使", "电", "挂"],
+		["1", "2", "3", "4", "5", "6", "7", "8", "9", "0"],
+		["Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"],
+		["A", "S", "D", "F", "G", "H", "J", "K", "L", "M"],
+		["Z", "X", "C", "V", "B", "N", "M", "delete", "confirm"]
+	];
+
+	// 默认返回省份区，后续可根据输入位数切换键盘区
+	return mode.value == "province" ? province : plate;
+});
+
+// 打开键盘弹窗
+function open() {
+	visible.value = true;
+}
+
+// 关闭键盘弹窗
+function close() {
+	visible.value = false;
+}
+
+// 处理键盘按键点击事件
+function onCommand(key: string) {
+	// 震动
+	uni.$emit("cool.vibrate");
+
+	// 确认按钮逻辑
+	if (key == "confirm") {
+		if (value.value == "") {
+			ui.showToast({
+				message: t("请输入内容")
+			});
+
+			return;
+		}
+
+		// 校验车牌号
+		if (value.value.length < 7) {
+			ui.showToast({
+				message: t("车牌号格式不正确")
+			});
+			return;
+		}
+
+		// 触发v-model和change事件
+		emit("update:modelValue", value.value);
+		emit("change", value.value);
+
+		// 关闭弹窗
+		close();
+
+		return;
+	}
+
+	// 删除键，去掉最后一位
+	if (key == "delete") {
+		value.value = value.value.slice(0, -1);
+		return;
+	}
+
+	// 超过最大输入长度，提示并返回
+	if (value.value.length >= props.maxlength) {
+		ui.showToast({
+			message: $t("最多输入{maxlength}位", {
+				maxlength: props.maxlength
+			})
+		});
+		return;
+	}
+
+	// 其他按键直接拼接到value
+	value.value += key;
+}
+
+watch(value, (val: string) => {
+	// 如果输入即绑定，则立即更新绑定值
+	if (props.inputImmediate) {
+		emit("update:modelValue", val);
+		emit("change", val);
+	}
+
+	// 根据输入位数切换键盘模式
+	mode.value = val.length < 1 ? "province" : "plate";
+});
+
+// 监听外部v-model的变化，保持内部value同步
+watch(
+	computed(() => props.modelValue),
+	(val: string) => {
+		value.value = val;
+	}
+);
+
+defineExpose({
+	open,
+	close
+});
+</script>
+
+<style lang="scss" scoped>
+.cl-keyboard-car {
+	@apply p-3 pt-0;
+
+	&__value {
+		@apply flex flex-row items-center justify-center;
+		@apply mb-3;
+		height: 40px;
+	}
+
+	&__list {
+		@apply relative;
+	}
+
+	&__rows {
+		@apply flex flex-row items-center;
+
+		&.is-mode-province {
+			@apply justify-center;
+		}
+
+		&.is-mode-plate {
+			@apply justify-between;
+		}
+	}
+
+	&__item {
+		@apply flex items-center justify-center rounded-lg bg-white;
+		@apply mt-1;
+		height: 40px;
+		width: 32px;
+
+		&.is-dark {
+			@apply bg-gray-800/10;
+		}
+
+		&.is-fill {
+			@apply flex-1;
+		}
+
+		&.is-keycode-delete {
+			@apply bg-gray-200/10 flex-1;
+
+			&.is-dark {
+				@apply bg-gray-600/10;
+			}
+		}
+
+		&.is-keycode-confirm {
+			@apply bg-teal-500/10 flex-1;
+		}
+
+		&.is-empty {
+			background-color: transparent !important;
+		}
+	}
+}
+</style>

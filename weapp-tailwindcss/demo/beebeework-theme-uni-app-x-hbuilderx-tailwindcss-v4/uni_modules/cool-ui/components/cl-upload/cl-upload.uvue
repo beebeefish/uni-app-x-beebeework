@@ -1,0 +1,451 @@
+<template>
+	<view class="cl-upload-list" :class="[pt.className]">
+		<view
+			v-for="(item, index) in list"
+			:key="item.uid"
+			class="cl-upload"
+			:class="[
+				{
+					'is-dark': isDark,
+					'is-disabled': isDisabled
+				},
+				pt.item?.className
+			]"
+			:style="uploadStyle"
+			@tap="choose(index)"
+		>
+			<image
+				class="cl-upload__image"
+				:class="[
+					{
+						'is-uploading': item.progress < 100
+					},
+					pt.image?.className
+				]"
+				:src="item.preview"
+				mode="aspectFill"
+			></image>
+
+			<cl-icon
+				name="close-line"
+				color="white"
+				:pt="{
+					className: 'cl-upload__close'
+				}"
+				@tap.stop="remove(item.uid)"
+				v-if="!isDisabled"
+			></cl-icon>
+
+			<view class="cl-upload__progress" v-if="item.progress < 100">
+				<cl-progress :value="item.progress" :show-text="false"></cl-progress>
+			</view>
+		</view>
+
+		<view
+			v-if="isAdd"
+			class="cl-upload is-add"
+			:class="[
+				{
+					'is-dark': isDark,
+					'is-disabled': isDisabled
+				},
+				pt.add?.className
+			]"
+			:style="uploadStyle"
+			@tap="choose(-1)"
+		>
+			<cl-icon
+				:name="icon"
+				:size="pt.icon?.size ?? 24"
+				:color="pt.icon?.color"
+				:pt="{
+					className: parseClass([
+						[isDark, 'text-white', 'text-gray-400/10'],
+						pt.icon?.className
+					])
+				}"
+			></cl-icon>
+
+			<cl-text
+				:size="pt.text?.size ?? 10"
+				:color="pt.text?.color"
+				:pt="{
+					className: parseClass([
+						[isDark, 'text-white', 'text-gray-500/10'],
+						'mt-1 text-center',
+						pt.text?.className
+					])
+				}"
+				>{{ text }}</cl-text
+			>
+		</view>
+	</view>
+</template>
+
+<script lang="ts" setup>
+import { forInObject, isDark, parseClass, parsePt, uploadFile, uuid, getUnit, t } from "@/.cool";
+import { computed, reactive, ref, watch, type PropType } from "vue";
+import type { ClUploadItem, PassThroughProps } from "../../types";
+import { useForm } from "../../hooks";
+import type { ClIconProps } from "../cl-icon/props";
+import type { ClTextProps } from "../cl-text/props";
+
+defineOptions({
+	name: "cl-upload"
+});
+
+const props = defineProps({
+	// 透传属性，用于自定义样式类名
+	pt: {
+		type: Object,
+		default: () => ({})
+	},
+	// 双向绑定的值，支持字符串或字符串数组
+	modelValue: {
+		type: [Array, String] as PropType<string[] | string>,
+		default: () => []
+	},
+	// 上传按钮的图标
+	icon: {
+		type: String,
+		default: "camera-fill"
+	},
+	// 上传按钮显示的文本
+	text: {
+		type: String,
+		default: () => t("上传 / 拍摄")
+	},
+	// 图片压缩方式：original原图，compressed压缩图
+	sizeType: {
+		type: [String, Array] as PropType<string[] | string>,
+		default: () => ["original", "compressed"]
+	},
+	// 图片选择来源：album相册，camera拍照
+	sourceType: {
+		type: Array as PropType<string[]>,
+		default: () => ["album", "camera"]
+	},
+	// 上传区域高度
+	height: {
+		type: [Number, String],
+		default: 72
+	},
+	// 上传区域宽度
+	width: {
+		type: [Number, String],
+		default: 72
+	},
+	// 是否支持多选
+	multiple: {
+		type: Boolean,
+		default: false
+	},
+	// 最大上传数量限制
+	limit: {
+		type: Number,
+		default: 9
+	},
+	// 是否禁用组件
+	disabled: {
+		type: Boolean,
+		default: false
+	},
+	// 演示用，本地预览
+	test: {
+		type: Boolean,
+		default: false
+	}
+});
+
+const emit = defineEmits([
+	"update:modelValue", // 更新modelValue值
+	"change", // 值发生变化时触发
+	"exceed", // 超出数量限制时触发
+	"success", // 上传成功时触发
+	"error", // 上传失败时触发
+	"progress" // 上传进度更新时触发
+]);
+
+// cl-form 上下文
+const { disabled } = useForm();
+
+// 是否禁用
+const isDisabled = computed(() => {
+	return disabled.value || props.disabled;
+});
+
+// 透传属性的类型定义
+type PassThrough = {
+	className?: string;
+	item?: PassThroughProps;
+	add?: PassThroughProps;
+	image?: PassThroughProps;
+	icon?: ClIconProps;
+	text?: ClTextProps;
+};
+
+// 解析透传属性
+const pt = computed(() => parsePt<PassThrough>(props.pt));
+
+// 上传文件列表
+const list = ref<ClUploadItem[]>([]);
+
+// 当前操作的文件索引，-1表示新增，其他表示替换指定索引的文件
+const activeIndex = ref(0);
+
+// 计算是否显示添加按钮
+const isAdd = computed(() => {
+	const n = list.value.length;
+
+	if (isDisabled.value) {
+		// 禁用状态下，只有没有文件时才显示添加按钮
+		return n == 0;
+	} else {
+		// 根据multiple模式判断是否可以继续添加
+		return n < (props.multiple ? props.limit : 1);
+	}
+});
+
+// 计算上传区域的样式
+const uploadStyle = computed(() => {
+	return {
+		height: getUnit(props.height),
+		width: getUnit(props.width)
+	};
+});
+
+/**
+ * 获取已成功上传的文件URL列表
+ */
+function getUrls() {
+	return list.value.filter((e) => e.url != "" && e.progress == 100).map((e) => e.url);
+}
+
+/**
+ * 获取当前的值，根据multiple模式返回不同格式
+ */
+function getValue() {
+	const urls = getUrls();
+
+	if (props.multiple) {
+		return urls;
+	} else {
+		return urls[0];
+	}
+}
+
+/**
+ * 添加新的上传项或更新已有项
+ * @param {string} url - 预览图片的本地路径
+ */
+function append(url: string) {
+	// 创建新的上传项
+	const item =
+		activeIndex.value == -1
+			? reactive<ClUploadItem>({
+					uid: uuid(), // 生成唯一ID
+					preview: url, // 预览图片路径
+					url: "", // 最终上传后的URL
+					progress: 0 // 上传进度
+				})
+			: list.value[activeIndex.value];
+
+	// 更新已有项或添加新项
+	if (activeIndex.value == -1) {
+		// 添加新项到列表末尾
+		list.value.push(item);
+	} else {
+		// 替换已有项的内容
+		item.progress = 0;
+		item.preview = url;
+		item.url = "";
+	}
+
+	return item.uid;
+}
+
+/**
+ * 触发值变化事件
+ */
+function change() {
+	const value = getValue();
+
+	emit("update:modelValue", value);
+	emit("change", value);
+}
+
+/**
+ * 更新指定上传项的数据
+ * @param {string} uid - 上传项的唯一ID
+ * @param {any} data - 要更新的数据对象
+ */
+function update(uid: string, data: any) {
+	const item = list.value.find((e) => e.uid == uid);
+
+	if (item != null) {
+		// 遍历更新数据对象的所有属性
+		forInObject(data, (value, key) => {
+			item[key] = value;
+		});
+
+		// 当上传完成且有URL时，触发change事件
+		if (item.progress == 100 && item.url != "") {
+			change();
+		}
+	}
+}
+
+/**
+ * 删除指定的上传项
+ * @param {string} uid - 要删除的上传项唯一ID
+ */
+function remove(uid: string) {
+	list.value.splice(
+		list.value.findIndex((e) => e.uid == uid),
+		1
+	);
+	change();
+}
+
+/**
+ * 选择图片文件
+ * @param {number} index - 操作的索引，-1表示新增，其他表示替换
+ */
+function choose(index: number) {
+	if (isDisabled.value) {
+		return;
+	}
+
+	activeIndex.value = index;
+
+	// 计算可选择的图片数量
+	const count = activeIndex.value == -1 ? props.limit - list.value.length : 1;
+
+	if (count <= 0) {
+		// 超出数量限制
+		emit("exceed", list.value);
+		return;
+	}
+
+	// 调用uni-app的选择图片API
+	uni.chooseImage({
+		count: count, // 最多可以选择的图片张数
+		sizeType: props.sizeType as string[], // 压缩方式
+		sourceType: props.sourceType as string[], // 图片来源
+		success(res) {
+			// 选择成功后处理每个文件
+			if (Array.isArray(res.tempFiles)) {
+				(res.tempFiles as ChooseImageTempFile[]).forEach((file) => {
+					// 添加到列表并获取唯一ID
+					const uid = append(file.path);
+
+					// 测试用，本地预览
+					if (props.test) {
+						update(uid, { url: file.path, progress: 100 });
+						emit("success", file.path, uid);
+						return;
+					}
+
+					// 开始上传文件
+					uploadFile(file, {
+						// 上传进度回调
+						onProgressUpdate: ({ progress }) => {
+							update(uid, { progress });
+							emit("progress", progress);
+						}
+					})
+						.then((url) => {
+							// 上传成功，更新URL和进度
+							update(uid, { url, progress: 100 });
+							emit("success", url, uid);
+						})
+						.catch((err) => {
+							// 上传失败，触发错误事件并删除该项
+							emit("error", err as string);
+							remove(uid);
+						});
+				});
+			}
+		},
+		fail(err) {
+			// 选择图片失败
+			console.error(err);
+			emit("error", err.errMsg);
+		}
+	});
+}
+
+// 监听modelValue的变化，同步更新内部列表
+watch(
+	computed(() => props.modelValue!),
+	(val: string | string[]) => {
+		// 将当前列表的URL转为字符串用于比较
+		const currentUrls = getUrls().join(",");
+
+		// 将传入的值标准化为字符串进行比较
+		const newUrls = Array.isArray(val) ? val.join(",") : val;
+
+		// 如果值发生变化，更新内部列表
+		if (currentUrls != newUrls) {
+			// 标准化为数组格式
+			const urls = Array.isArray(val) ? val : [val];
+
+			// 过滤空值并转换为Item对象
+			list.value = urls
+				.filter((url) => url != "")
+				.map((url) => {
+					return {
+						uid: uuid(),
+						preview: url,
+						url,
+						progress: 100 // 外部传入的URL认为已上传完成
+					} as ClUploadItem;
+				});
+		}
+	},
+	{
+		immediate: true // 立即执行一次
+	}
+);
+</script>
+
+<style lang="scss" scoped>
+.cl-upload-list {
+	@apply flex flex-row flex-wrap;
+
+	.cl-upload {
+		@apply relative bg-gray-100/10 rounded-xl flex flex-col items-center justify-center;
+		@apply mr-2 mb-2;
+
+		&.is-dark {
+			@apply bg-zinc-700/10;
+		}
+
+		&.is-disabled {
+			@apply opacity-50;
+		}
+
+		&.is-add {
+			@apply p-1;
+		}
+
+		&__image {
+			@apply w-full h-full absolute top-0 left-0;
+			transition-property: opacity;
+			transition-duration: 0.2s;
+
+			&.is-uploading {
+				@apply opacity-70;
+			}
+		}
+
+		&__close {
+			@apply absolute top-1 right-1;
+		}
+
+		&__progress {
+			@apply absolute bottom-2 left-0 w-full z-10 px-2;
+		}
+	}
+}
+</style>

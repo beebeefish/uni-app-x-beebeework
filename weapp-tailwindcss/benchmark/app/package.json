@@ -1,0 +1,45 @@
+{
+  "name": "benchmark",
+  "type": "module",
+  "version": "0.0.1",
+  "private": true,
+  "author": "ice breaker <1324318532@qq.com>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sonofmagic/weapp-tailwindcss.git",
+    "directory": "benchmark/app"
+  },
+  "bugs": {
+    "url": "https://github.com/sonofmagic/weapp-tailwindcss/issues"
+  },
+  "engines": {
+    "node": "^20.19.0 || >=22.12.0"
+  },
+  "scripts": {
+    "dev": "pnpm run build:data && vite",
+    "build": "node ./scripts/build.mjs",
+    "build:data": "tsx ./scripts/build-data.ts",
+    "preview": "vite preview",
+    "gen:postcss": "tsx ./scripts/postcss.ts",
+    "gen:vite": "tsx ./scripts/vite.ts",
+    "sync:projects": "node ./scripts/sync-projects.mjs"
+  },
+  "dependencies": {
+    "vue": "catalog:vue3",
+    "vue-router": "^4.6.4"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "catalog:tailwindcss4",
+    "@tailwindcss/vite": "catalog:tailwindcss4",
+    "@vitejs/plugin-vue": "^6.0.7",
+    "echarts": "^6.1.0",
+    "postcss": "catalog:postcss85",
+    "tailwindcss": "catalog:tailwindcss4",
+    "unplugin-vue-router": "^0.19.2",
+    "vite": "catalog:vite724",
+    "vite-plugin-inspect": "catalog:vitePluginInspect",
+    "vue-echarts": "^8.0.1",
+    "vue-tsc": "catalog:vueTsc318",
+    "weapp-tailwindcss": "workspace:*"
+  }
+}

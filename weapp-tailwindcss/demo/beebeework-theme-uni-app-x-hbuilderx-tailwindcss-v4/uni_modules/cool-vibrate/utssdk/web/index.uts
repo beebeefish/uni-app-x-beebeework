@@ -1,0 +1,11 @@
+/**
+ * 震动
+ * @param {number} duration 震动时间单位ms,ios微信失效
+ */
+export function vibrate(duration: number) {
+	try {
+		navigator.vibrate(duration);
+	} catch (error) {
+		console.error("WEB震动失败:", error);
+	}
+}

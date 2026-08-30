@@ -1,0 +1,112 @@
+<template>
+	<view class="cl-collapse" :style="{ height: `${height}px` }">
+		<view class="cl-collapse__content" :class="[pt.className]">
+			<slot></slot>
+		</view>
+	</view>
+</template>
+
+<script setup lang="ts">
+import { getCurrentInstance, ref, computed, watch } from "vue";
+import { parsePt } from "@/.cool";
+
+defineOptions({
+	name: "cl-collapse"
+});
+
+// 定义组件属性
+const props = defineProps({
+	// 透传样式配置
+	pt: {
+		type: Object,
+		default: () => ({})
+	},
+	// 折叠状态值
+	modelValue: {
+		type: Boolean,
+		default: false
+	}
+});
+
+// 获取组件实例
+const { proxy } = getCurrentInstance()!;
+
+// 透传样式类型定义
+type PassThrough = {
+	className?: string;
+};
+
+// 解析透传样式
+const pt = computed(() => parsePt<PassThrough>(props.pt));
+
+// 折叠展开状态
+const isOpened = ref(false);
+
+// 内容高度
+const height = ref(0);
+
+/**
+ * 显示折叠内容
+ */
+function show() {
+	isOpened.value = true;
+
+	// 获取内容区域高度
+	uni.createSelectorQuery()
+		.in(proxy)
+		.select(".cl-collapse__content")
+		.boundingClientRect((node) => {
+			height.value = (node as NodeInfo).height ?? 0;
+		})
+		.exec();
+}
+
+/**
+ * 隐藏折叠内容
+ */
+function hide() {
+	isOpened.value = false;
+	height.value = 0;
+}
+
+/**
+ * 切换折叠状态
+ */
+function toggle() {
+	if (isOpened.value) {
+		hide();
+	} else {
+		show();
+	}
+}
+
+// 监听折叠状态变化
+watch(
+	computed(() => props.modelValue),
+	(val: boolean) => {
+		if (val) {
+			show();
+		} else {
+			hide();
+		}
+	}
+);
+
+defineExpose({
+	show,
+	hide,
+	toggle
+});
+</script>
+
+<style lang="scss" scoped>
+.cl-collapse {
+	@apply relative;
+	transition-property: height;
+	transition-duration: 0.2s;
+
+	&__content {
+		@apply absolute top-0 left-0 w-full pt-3;
+	}
+}
+</style>

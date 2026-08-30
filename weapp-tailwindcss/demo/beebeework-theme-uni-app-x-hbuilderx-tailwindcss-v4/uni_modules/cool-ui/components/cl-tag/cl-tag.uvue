@@ -1,0 +1,185 @@
+<template>
+	<view
+		class="cl-tag"
+		:class="[
+			`cl-tag--${type}`,
+			{
+				'cl-tag--rounded': rounded,
+				'cl-tag--plain': plain,
+				'is-dark': isDark
+			},
+			pt.className
+		]"
+		v-if="!isHide"
+	>
+		<cl-icon
+			:size="12"
+			:name="icon"
+			color="white"
+			:pt="{ className: 'mr-1 ml-[-2px]' }"
+			v-if="icon != ''"
+		></cl-icon>
+
+		<cl-text
+			:size="12"
+			:color="color"
+			:pt="{
+				className: parseClass(['cl-tag__text', pt.text?.className])
+			}"
+		>
+			<slot></slot>
+		</cl-text>
+
+		<cl-icon
+			:size="12"
+			name="close-circle-line"
+			color="white"
+			:pt="{ className: 'ml-1 mr-[-2px]' }"
+			@tap="close"
+			v-if="closable"
+		></cl-icon>
+	</view>
+</template>
+
+<script setup lang="ts">
+import { computed, ref, type PropType } from "vue";
+import type { PassThroughProps, Type } from "../../types";
+import { isDark, parseClass, parsePt } from "@/.cool";
+
+defineOptions({
+	name: "cl-tag"
+});
+
+const props = defineProps({
+	// 透传样式
+	pt: {
+		type: Object,
+		default: () => ({})
+	},
+	// 类型
+	type: {
+		type: String as PropType<Type>,
+		default: "primary"
+	},
+	// 图标
+	icon: {
+		type: String,
+		default: ""
+	},
+	// 圆角
+	rounded: {
+		type: Boolean,
+		default: false
+	},
+	// 可关闭
+	closable: {
+		type: Boolean,
+		default: false
+	},
+	// 镂空
+	plain: {
+		type: Boolean,
+		default: false
+	}
+});
+
+const emits = defineEmits(["close"]);
+
+type PassThrough = {
+	className?: string;
+	text?: PassThroughProps;
+};
+
+const pt = computed(() => parsePt<PassThrough>(props.pt));
+
+// 是否隐藏
+const isHide = ref(false);
+
+// 关闭
+function close() {
+	isHide.value = true;
+	emits("close");
+}
+
+// 颜色
+const color = computed(() => {
+	if (isDark.value && props.type == "info") {
+		return "white";
+	}
+
+	if (props.plain) {
+		return props.type;
+	} else {
+		return "white";
+	}
+});
+</script>
+
+<style lang="scss" scoped>
+.cl-tag {
+	@apply flex flex-row items-center justify-center;
+	@apply px-3 rounded-md;
+	height: 24px;
+	transition-duration: 0.2s;
+	transition-property: background-color, border-color;
+
+	&--rounded {
+		@apply rounded-full;
+	}
+
+	&--primary {
+		@apply bg-teal-500/10;
+	}
+
+	&--success {
+		@apply bg-green-500;
+	}
+
+	&--warn {
+		@apply bg-yellow-500;
+	}
+
+	&--error {
+		@apply bg-red-500;
+	}
+
+	&--info {
+		@apply bg-gray-500/10;
+	}
+
+	&--plain {
+		@apply bg-transparent;
+		@apply border border-solid border-teal-500/10;
+
+		&.cl-tag--primary {
+			@apply border-teal-500/10;
+		}
+
+		&.cl-tag--success {
+			@apply border-green-500;
+		}
+
+		&.cl-tag--warn {
+			@apply border-yellow-500;
+		}
+
+		&.cl-tag--error {
+			@apply border-red-500;
+		}
+
+		&.cl-tag--info {
+			@apply border-gray-500/10;
+
+			&.is-dark {
+				@apply border-gray-300/10;
+			}
+		}
+	}
+}
+
+.cl-tag {
+	& + .cl-tag {
+		@apply ml-2;
+	}
+}
+</style>

@@ -1,0 +1,6 @@
+import { Vibrate } from "../interface.uts";
+import { VibrateNative } from "./vibrate.ets";
+
+export function vibrate(duration: number) {
+	VibrateNative.vibrate(duration);
+}

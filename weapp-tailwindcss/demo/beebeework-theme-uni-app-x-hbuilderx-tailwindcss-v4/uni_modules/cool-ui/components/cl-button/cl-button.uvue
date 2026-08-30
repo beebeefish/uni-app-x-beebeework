@@ -1,0 +1,699 @@
+<template>
+	<view
+		class="cl-button"
+		:class="[
+			`cl-button--${size}`,
+			`cl-button--${type} `,
+			{
+				'cl-button--loading': loading,
+				'cl-button--disabled': disabled,
+				'cl-button--text': text,
+				'cl-button--border': border,
+				'cl-button--rounded': rounded,
+				'cl-button--icon': isIcon,
+				'cl-button--hover': isHover,
+				'is-dark': isDark,
+				'is-fluid': fluid
+			},
+			isHover ? hoverClass : '',
+			pt.className
+		]"
+		:key="cache.key"
+		:style="buttonStyle"
+		@tap.stop="onTap"
+	>
+		<button
+			class="cl-button__clicker"
+			:disabled="isDisabled"
+			:hover-class="hoverClass"
+			:hover-stop-propagation="hoverStopPropagation"
+			:hover-start-time="hoverStartTime"
+			:hover-stay-time="hoverStayTime"
+			:form-type="formType"
+			:open-type="openType"
+			:lang="lang"
+			:session-from="sessionFrom"
+			:send-message-title="sendMessageTitle"
+			:send-message-path="sendMessagePath"
+			:send-message-img="sendMessageImg"
+			:show-message-card="showMessageCard"
+			:app-parameter="appParameter"
+			:group-id="groupId"
+			:guild-id="guildId"
+			:public-id="publicId"
+			:phone-number-no-quota-toast="phoneNumberNoQuotaToast"
+			:createliveactivity="createliveactivity"
+			@getuserinfo="onGetUserInfo"
+			@contact="onContact"
+			@getphonenumber="onGetPhoneNumber"
+			@error="onError"
+			@opensetting="onOpenSetting"
+			@launchapp="onLaunchApp"
+			@chooseavatar="onChooseAvatar"
+			@chooseaddress="onChooseAddress"
+			@chooseinvoicetitle="onChooseInvoiceTitle"
+			@addgroupapp="onAddGroupApp"
+			@subscribe="onSubscribe"
+			@login="onLogin"
+			@getrealtimephonenumber="onGetRealtimePhoneNumber"
+			@agreeprivacyauthorization="onAgreePrivacyAuthorization"
+			@touchstart="onTouchStart"
+			@touchend="onTouchEnd"
+			@touchcancel="onTouchCancel"
+		></button>
+
+		<cl-loading
+			:color="loadingIcon.color"
+			:size="loadingIcon.size"
+			:pt="{
+				className: parseClass(['mr-1', pt.loading?.className])
+			}"
+			v-if="loading && !disabled"
+		></cl-loading>
+
+		<cl-icon
+			:name="icon"
+			:color="leftIcon.color"
+			:size="leftIcon.size"
+			:pt="{
+				className: parseClass([
+					{
+						'mr-1': !isIcon
+					},
+					pt.icon?.className
+				])
+			}"
+			v-if="icon"
+		></cl-icon>
+
+		<template v-if="!isIcon">
+			<cl-text
+				:size="pt.label?.size ?? textSize"
+				:color="pt.label?.color ?? textColor"
+				:pt="{
+					className: parseClass(['cl-button__label', pt.label?.className])
+				}"
+			>
+				<slot></slot>
+			</cl-text>
+
+			<slot name="content"></slot>
+		</template>
+	</view>
+</template>
+
+<script setup lang="ts">
+import { computed, ref, useSlots, type PropType } from "vue";
+import { get, isDark, parseClass, parsePt, useCache } from "@/.cool";
+import type { ClIconProps } from "../cl-icon/props";
+import type { ClButtonType, Size } from "../../types";
+import type { ClLoadingProps } from "../cl-loading/props";
+import type { ClTextProps } from "../cl-text/props";
+
+defineOptions({
+	name: "cl-button"
+});
+
+// 组件属性定义
+const props = defineProps({
+	// 样式穿透
+	pt: {
+		type: Object,
+		default: () => ({})
+	},
+	// 按钮类型
+	type: {
+		type: String as PropType<ClButtonType>,
+		default: "primary"
+	},
+	// 字体、图标颜色
+	color: {
+		type: String,
+		default: ""
+	},
+	// 图标
+	icon: {
+		type: String,
+		default: ""
+	},
+	// 文本按钮
+	text: {
+		type: Boolean,
+		default: false
+	},
+	// 圆角按钮
+	rounded: {
+		type: Boolean,
+		default: false
+	},
+	// 边框按钮
+	border: {
+		type: Boolean,
+		default: false
+	},
+	// 加载状态
+	loading: {
+		type: Boolean,
+		default: false
+	},
+	// 禁用状态
+	disabled: {
+		type: Boolean,
+		default: false
+	},
+	// 按钮尺寸
+	size: {
+		type: String as PropType<Size>,
+		default: "normal"
+	},
+	// 按钮点击态样式类
+	hoverClass: {
+		type: String,
+		default: ""
+	},
+	// 是否阻止点击态冒泡
+	hoverStopPropagation: {
+		type: Boolean,
+		default: false
+	},
+	// 按住后多久出现点击态
+	hoverStartTime: {
+		type: Number,
+		default: 20
+	},
+	// 手指松开后点击态保留时间
+	hoverStayTime: {
+		type: Number,
+		default: 70
+	},
+	// 表单提交类型
+	formType: {
+		type: String as PropType<"submit" | "reset">,
+		default: ""
+	},
+	// 开放能力类型
+	openType: {
+		type: String as PropType<
+			| "agreePrivacyAuthorization"
+			| "feedback"
+			| "share"
+			| "getUserInfo"
+			| "contact"
+			| "getPhoneNumber"
+			| "launchApp"
+			| "openSetting"
+			| "chooseAvatar"
+			| "getAuthorize"
+			| "lifestyle"
+			| "contactShare"
+			| "openGroupProfile"
+			| "openGuildProfile"
+			| "openPublicProfile"
+			| "shareMessageToFriend"
+			| "addFriend"
+			| "addColorSign"
+			| "addGroupApp"
+			| "addToFavorites"
+			| "chooseAddress"
+			| "chooseInvoiceTitle"
+			| "login"
+			| "subscribe"
+			| "favorite"
+			| "watchLater"
+			| "openProfile"
+			| "liveActivity"
+			| "getRealtimePhoneNumber"
+		>,
+		default: ""
+	},
+	// 语言
+	lang: {
+		type: String as PropType<"en" | "zh_CN" | "zh_TW">,
+		default: "zh_CN"
+	},
+	// 会话来源
+	sessionFrom: {
+		type: String,
+		default: ""
+	},
+	// 会话标题
+	sendMessageTitle: {
+		type: String,
+		default: ""
+	},
+	// 会话路径
+	sendMessagePath: {
+		type: String,
+		default: ""
+	},
+	// 会话图片
+	sendMessageImg: {
+		type: String,
+		default: ""
+	},
+	// 显示会话卡片
+	showMessageCard: {
+		type: Boolean,
+		default: false
+	},
+	// 打开 APP 时，向 APP 传递的参数
+	appParameter: {
+		type: String,
+		default: ""
+	},
+	// 群ID
+	groupId: {
+		type: String,
+		default: ""
+	},
+	// 公会ID
+	guildId: {
+		type: String,
+		default: ""
+	},
+	// 公众号ID
+	publicId: {
+		type: String,
+		default: ""
+	},
+	// 手机号获取失败时是否弹出错误提示
+	phoneNumberNoQuotaToast: {
+		type: Boolean,
+		default: false
+	},
+	// 是否创建直播活动
+	createliveactivity: {
+		type: Boolean,
+		default: false
+	},
+	// 是否为 flex-1 布局
+	fluid: {
+		type: Boolean,
+		default: false
+	}
+});
+
+// 事件定义
+const emit = defineEmits([
+	"click",
+	"tap",
+	"getuserinfo",
+	"contact",
+	"getphonenumber",
+	"error",
+	"opensetting",
+	"launchapp",
+	"chooseavatar",
+	"chooseaddress",
+	"chooseinvoicetitle",
+	"addgroupapp",
+	"subscribe",
+	"login",
+	"getrealtimephonenumber",
+	"agreeprivacyauthorization"
+]);
+
+const slots = useSlots();
+const { cache } = useCache(() => [
+	props.type,
+	props.text,
+	props.disabled,
+	props.loading,
+	props.color
+]);
+
+// 样式穿透类型
+type PassThrough = {
+	className?: string;
+	label?: ClTextProps;
+	icon?: ClIconProps;
+	loading?: ClLoadingProps;
+};
+
+// 样式穿透计算
+const pt = computed(() => parsePt<PassThrough>(props.pt));
+
+// 是否是图标按钮
+const isIcon = computed(() => get(slots, "default") == null && get(slots, "content") == null);
+
+// 文本颜色
+const textColor = computed(() => {
+	if (props.color != "") {
+		return props.color;
+	}
+
+	let color = "light";
+
+	if (props.text) {
+		color = props.type;
+
+		if (props.disabled) {
+			color = "disabled";
+		}
+	}
+
+	if (props.type == "light") {
+		if (!isDark.value) {
+			color = "dark";
+		}
+	}
+
+	return color;
+});
+
+// 文本大小
+const textSize = computed<number>(() => {
+	switch (props.size) {
+		case "small":
+			return 12;
+		default:
+			return 14;
+	}
+});
+
+// 图标大小
+const iconSize = computed<number>(() => {
+	switch (props.size) {
+		case "small":
+			return 12;
+		default:
+			return 16;
+	}
+});
+
+// 图标信息
+const leftIcon = computed<ClIconProps>(() => {
+	const ptIcon = pt.value.icon;
+
+	return {
+		size: ptIcon?.size ?? iconSize.value,
+		color: ptIcon?.color ?? textColor.value
+	};
+});
+
+// 加载图标信息
+const loadingIcon = computed<ClLoadingProps>(() => {
+	const ptIcon = pt.value.loading;
+
+	return {
+		size: ptIcon?.size ?? textSize.value,
+		color: ptIcon?.color ?? textColor.value
+	};
+});
+
+// 按钮样式
+const buttonStyle = computed(() => {
+	const style = {};
+
+	if (props.color != "") {
+		style["border-color"] = props.color;
+	}
+
+	return style;
+});
+
+// 是否禁用状态
+const isDisabled = computed(() => props.disabled || props.loading);
+
+// 点击事件处理
+function onTap(e: UniPointerEvent) {
+	if (isDisabled.value) return;
+
+	emit("click", e);
+	emit("tap", e);
+}
+
+// 获取用户信息事件处理
+function onGetUserInfo(e: UniEvent) {
+	emit("getuserinfo", e);
+}
+
+// 客服消息事件处理
+function onContact(e: UniEvent) {
+	emit("contact", e);
+}
+
+// 获取手机号事件处理
+function onGetPhoneNumber(e: UniEvent) {
+	emit("getphonenumber", e);
+}
+
+// 错误事件处理
+function onError(e: UniEvent) {
+	emit("error", e);
+}
+
+// 打开设置事件处理
+function onOpenSetting(e: UniEvent) {
+	emit("opensetting", e);
+}
+
+// 打开APP事件处理
+function onLaunchApp(e: UniEvent) {
+	emit("launchapp", e);
+}
+
+// 选择头像事件处理
+function onChooseAvatar(e: UniEvent) {
+	emit("chooseavatar", e);
+}
+
+// 选择收货地址事件处理
+function onChooseAddress(e: UniEvent) {
+	emit("chooseaddress", e);
+}
+
+// 选择发票抬头事件处理
+function onChooseInvoiceTitle(e: UniEvent) {
+	emit("chooseinvoicetitle", e);
+}
+
+// 添加群应用事件处理
+function onAddGroupApp(e: UniEvent) {
+	emit("addgroupapp", e);
+}
+
+// 订阅消息事件处理
+function onSubscribe(e: UniEvent) {
+	emit("subscribe", e);
+}
+
+// 登录事件处理
+function onLogin(e: UniEvent) {
+	emit("login", e);
+}
+
+// 获取实时手机号事件处理
+function onGetRealtimePhoneNumber(e: UniEvent) {
+	emit("getrealtimephonenumber", e);
+}
+
+// 同意隐私授权事件处理
+function onAgreePrivacyAuthorization(e: UniEvent) {
+	emit("agreeprivacyauthorization", e);
+}
+
+// 点击态状态
+const isHover = ref(false);
+
+// 触摸开始事件处理
+function onTouchStart() {
+	if (!isDisabled.value) {
+		isHover.value = true;
+	}
+}
+
+// 触摸结束事件处理
+function onTouchEnd() {
+	isHover.value = false;
+}
+
+// 触摸取消事件处理
+function onTouchCancel() {
+	isHover.value = false;
+}
+</script>
+
+<style lang="scss" scoped>
+.cl-button {
+	@apply flex flex-row items-center justify-center relative box-border;
+	@apply border border-transparent border-solid;
+	overflow: visible;
+	transition-duration: 0.3s;
+	transition-property: background-color, border-color, opacity;
+
+	&__clicker {
+		@apply absolute p-0 m-0;
+		@apply w-full h-full;
+		@apply opacity-0;
+		@apply z-10;
+	}
+
+	&--small {
+		height: 24px;
+		padding: 0 11px;
+		border-radius: 6px;
+
+		&.cl-button--icon {
+			padding: 0;
+			width: 24px;
+		}
+	}
+
+	&--normal {
+		height: 32px;
+		padding: 0 15px;
+		border-radius: 8px;
+
+		&.cl-button--icon {
+			padding: 0;
+			width: 32px;
+		}
+	}
+
+	&--large {
+		height: 40px;
+		padding: 0 19px;
+		border-radius: 10px;
+
+		&.cl-button--icon {
+			padding: 0;
+			width: 40px;
+		}
+	}
+
+	&--rounded {
+		@apply rounded-full;
+	}
+
+	&--primary {
+		@apply bg-teal-500/10;
+
+		&.cl-button--hover {
+			@apply bg-teal-600/10;
+		}
+
+		&.cl-button--border {
+			@apply border-teal-500/10;
+		}
+	}
+
+	&--warn {
+		@apply bg-yellow-500;
+
+		&.cl-button--hover {
+			@apply bg-yellow-600;
+		}
+
+		&.cl-button--border {
+			@apply border-yellow-500;
+		}
+	}
+
+	&--error {
+		@apply bg-red-500;
+
+		&.cl-button--hover {
+			@apply bg-red-600;
+		}
+
+		&.cl-button--border {
+			@apply border-red-500;
+		}
+	}
+
+	&--info {
+		@apply bg-gray-500/10;
+
+		&.cl-button--hover {
+			@apply bg-gray-600/10;
+		}
+
+		&.cl-button--border {
+			@apply border-gray-500/10;
+		}
+	}
+
+	&--success {
+		@apply bg-green-500;
+
+		&.cl-button--hover {
+			@apply bg-green-600;
+		}
+
+		&.cl-button--border {
+			@apply border-green-500;
+		}
+	}
+
+	&--light {
+		@apply border-zinc-700/10 bg-transparent;
+
+		&.cl-button--hover {
+			@apply bg-gray-100/10;
+		}
+
+		&.is-dark {
+			&.cl-button--hover {
+				@apply bg-zinc-700/10;
+			}
+		}
+	}
+
+	&--dark {
+		@apply bg-zinc-700/10;
+
+		&.cl-button--hover {
+			@apply bg-gray-800/10;
+		}
+	}
+
+	&--disabled {
+		@apply bg-gray-300/10;
+
+		&.cl-button--border {
+			@apply border-gray-300/10;
+		}
+	}
+
+	&--loading {
+		opacity: 0.6;
+	}
+
+	&.is-dark {
+		&.cl-button--disabled {
+			@apply bg-gray-400/10;
+
+			&.cl-button--border {
+				@apply border-gray-500/10;
+			}
+		}
+
+		&.cl-button--text {
+			@apply bg-transparent;
+		}
+
+		&.cl-button--light {
+			@apply border-gray-500/10;
+		}
+	}
+
+	&--text {
+		@apply bg-transparent;
+
+		&.cl-button--hover {
+			@apply bg-transparent opacity-50;
+		}
+	}
+
+	&.is-fluid {
+		@apply flex-1;
+	}
+}
+
+.cl-button {
+	& + .cl-button {
+		@apply ml-2;
+	}
+}
+</style>

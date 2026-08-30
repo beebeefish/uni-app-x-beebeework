@@ -1,0 +1,88 @@
+<template>
+	<!-- #ifdef APP -->
+	<scroll-view
+		:style="{ flex: 1 }"
+		:scroll-top="scrollViewTop"
+		:scroll-with-animation="true"
+		@scroll="onScroll"
+	>
+		<cl-back-top v-if="backTop"></cl-back-top>
+		<theme></theme>
+		<ui></ui>
+		<slot></slot>
+	</scroll-view>
+	<!-- #endif -->
+
+	<!-- #ifndef APP -->
+	<cl-back-top v-if="backTop"></cl-back-top>
+	<theme></theme>
+	<ui></ui>
+	<slot></slot>
+	<!-- #endif -->
+</template>
+
+<script setup lang="ts">
+import { ref } from "vue";
+import Theme from "./theme.uvue";
+import Ui from "./ui.uvue";
+import { config } from "@/config";
+import { scroller } from "@/.cool";
+
+defineOptions({
+	name: "cl-page"
+});
+
+defineProps({
+	// 是否显示回到顶部按钮
+	backTop: {
+		type: Boolean,
+		default: config.backTop
+	}
+});
+
+// 滚动距离
+const scrollTop = ref(0);
+
+// scroll-view 滚动位置
+const scrollViewTop = ref(0);
+
+// view 滚动事件
+function onScroll(e: UniScrollEvent) {
+	// 触发滚动事件
+	scroller.emit(e.detail.scrollTop);
+}
+
+// 页面滚动事件
+scroller.on((top) => {
+	scrollTop.value = top;
+});
+
+// 滚动到指定位置
+function scrollTo(top: number) {
+	// #ifdef H5
+	window.scrollTo({ top, behavior: "smooth" });
+	// #endif
+
+	// #ifdef MP
+	uni.pageScrollTo({
+		scrollTop: top,
+		duration: 300
+	});
+	// #endif
+
+	// #ifdef APP
+	scrollViewTop.value = top;
+	// #endif
+}
+
+// 回到顶部
+function scrollToTop() {
+	scrollTo(0 + Math.random() / 1000);
+}
+
+defineExpose({
+	scrollTop,
+	scrollTo,
+	scrollToTop
+});
+</script>

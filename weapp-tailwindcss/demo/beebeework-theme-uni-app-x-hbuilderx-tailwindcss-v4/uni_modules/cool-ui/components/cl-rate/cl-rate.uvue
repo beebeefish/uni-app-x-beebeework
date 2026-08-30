@@ -1,0 +1,196 @@
+<template>
+	<view class="cl-rate" :class="[{ 'cl-rate--disabled': isDisabled }, pt.className]">
+		<view
+			v-for="(item, index) in max"
+			:key="index"
+			class="cl-rate__item"
+			:class="[
+				{
+					'cl-rate__item--active': item <= modelValue
+				},
+				pt.item?.className
+			]"
+			@touchstart="onTap(index)"
+		>
+			<cl-icon
+				:name="voidIcon"
+				:color="voidColor"
+				:size="size"
+				:pt="{
+					className: `${pt.icon?.className}`
+				}"
+			></cl-icon>
+
+			<cl-icon
+				v-if="getIconActiveWidth(item) > 0"
+				:name="icon"
+				:color="color"
+				:size="size"
+				:width="getIconActiveWidth(item)"
+				:pt="{
+					className: `absolute left-0 ${pt.icon?.className}`
+				}"
+			></cl-icon>
+		</view>
+
+		<cl-text
+			v-if="showScore"
+			:pt="{
+				className: parseClass(['cl-rate__score ml-2 font-bold', pt.score?.className])
+			}"
+			>{{ modelValue }}</cl-text
+		>
+	</view>
+</template>
+
+<script setup lang="ts">
+import { computed } from "vue";
+import { parseClass, parsePt } from "@/.cool";
+import type { PassThroughProps } from "../../types";
+import type { ClIconProps } from "../cl-icon/props";
+import { useForm } from "../../hooks";
+
+defineOptions({
+	name: "cl-rate"
+});
+
+// 组件属性定义
+const props = defineProps({
+	// 样式穿透
+	pt: {
+		type: Object,
+		default: () => ({})
+	},
+	// 评分值
+	modelValue: {
+		type: Number,
+		default: 0
+	},
+	// 最大评分
+	max: {
+		type: Number,
+		default: 5
+	},
+	// 是否禁用
+	disabled: {
+		type: Boolean,
+		default: false
+	},
+	// 是否允许半星
+	allowHalf: {
+		type: Boolean,
+		default: false
+	},
+	// 是否显示分数
+	showScore: {
+		type: Boolean,
+		default: false
+	},
+	// 组件尺寸
+	size: {
+		type: Number,
+		default: 20
+	},
+	// 图标名称
+	icon: {
+		type: String,
+		default: "star-fill"
+	},
+	// 未激活图标
+	voidIcon: {
+		type: String,
+		default: "star-fill"
+	},
+	// 激活颜色
+	color: {
+		type: String,
+		default: "primary"
+	},
+	// 默认颜色
+	voidColor: {
+		type: String,
+		default: "#dddddd"
+	}
+});
+
+// 定义事件
+const emit = defineEmits(["update:modelValue", "change"]);
+
+// 透传样式类型定义
+type PassThrough = {
+	className?: string;
+	item?: PassThroughProps;
+	icon?: ClIconProps;
+	score?: PassThroughProps;
+};
+
+// 解析透传样式
+const pt = computed(() => parsePt<PassThrough>(props.pt));
+
+// cl-form 上下文
+const { disabled } = useForm();
+
+// 是否禁用
+const isDisabled = computed(() => props.disabled || disabled.value);
+
+// 获取图标激活宽度
+function getIconActiveWidth(item: number) {
+	// 如果评分值大于等于当前项,返回null表示完全填充
+	if (props.modelValue >= item) {
+		return props.size;
+	}
+
+	// 如果评分值的整数部分小于当前项,返回0表示不填充
+	if (Math.floor(props.modelValue) < item - 1) {
+		return 0;
+	}
+
+	// 处理小数部分填充
+	return Math.floor((props.modelValue % 1) * props.size);
+}
+
+// 点击事件处理
+function onTap(index: number) {
+	if (isDisabled.value) {
+		return;
+	}
+
+	let value: number;
+
+	if (props.allowHalf) {
+		// 半星逻辑：点击同一位置切换半星和整星
+		const currentValue = index + 1;
+		if (props.modelValue == currentValue) {
+			value = index + 0.5;
+		} else if (props.modelValue == index + 0.5) {
+			value = index;
+		} else {
+			value = currentValue;
+		}
+	} else {
+		value = index + 1;
+	}
+
+	// 确保值在有效范围内
+	value = Math.max(0, Math.min(value, props.max));
+
+	emit("update:modelValue", value);
+	emit("change", value);
+}
+</script>
+
+<style lang="scss" scoped>
+.cl-rate {
+	@apply flex flex-row items-center;
+
+	&--disabled {
+		@apply opacity-50;
+	}
+
+	&__item {
+		@apply flex items-center justify-center relative duration-200 overflow-hidden;
+		transition-property: color;
+		margin-right: 3px;
+	}
+}
+</style>

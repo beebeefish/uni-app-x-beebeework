@@ -1,0 +1,94 @@
+import { Project } from 'ts-morph'
+import { describe, expect, it } from 'vitest'
+
+import {
+  buildApiIndexFrontmatter,
+  buildInterfaceDoc,
+  buildInterfaceSeoFrontmatter,
+  buildOptionsGroupSeoFrontmatter,
+  buildOtherInterfacesSeoFrontmatter,
+  buildUserDefinedOptionsOverviewFrontmatter,
+  renderInterfaceDoc,
+} from './generate-api-docs.ts'
+
+describe('generate-api-docs SEO frontmatter', () => {
+  it('provides strong metadata for interface pages', () => {
+    const frontmatter = buildInterfaceSeoFrontmatter({
+      name: 'ApplyOptions',
+      description: 'Tailwind 运行时补丁行为配置。',
+    })
+
+    expect(frontmatter.description.length).toBeGreaterThanOrEqual(16)
+    expect(frontmatter.keywords.length).toBeGreaterThanOrEqual(8)
+    expect(frontmatter.keywords).toContain('ApplyOptions')
+  })
+
+  it('falls back when interface descriptions are too short', () => {
+    const frontmatter = buildInterfaceSeoFrontmatter({
+      name: 'DisabledOptions',
+      description: '禁用插件功能的细粒度选项。',
+    })
+
+    expect(frontmatter.description).toBe('DisabledOptions 的类型说明，列出公开属性、参数和使用边界。')
+  })
+
+  it('provides strong metadata for generated index pages', () => {
+    const userDefinedOptions = buildUserDefinedOptionsOverviewFrontmatter({
+      description: 'UserDefinedOptions 配置总览，按源码分组列出可传入的插件选项。',
+    })
+    const optionsGroup = buildOptionsGroupSeoFrontmatter({
+      title: '一般配置',
+      sidebarLabel: '⚙️ 一般配置',
+      displayTitle: '⚙️ 一般配置',
+      order: 3,
+    }, 17)
+    const otherInterfaces = buildOtherInterfacesSeoFrontmatter(9)
+    const index = buildApiIndexFrontmatter(true)
+
+    for (const frontmatter of [userDefinedOptions, optionsGroup, otherInterfaces, index]) {
+      expect(frontmatter.description.length).toBeGreaterThanOrEqual(16)
+      expect(frontmatter.keywords.length).toBeGreaterThanOrEqual(8)
+    }
+  })
+})
+
+describe('generate-api-docs source extraction', () => {
+  it('keeps @see URLs intact and does not expand array internals', () => {
+    const project = new Project({ useInMemoryFileSystem: true })
+    const sourceFile = project.createSourceFile('api-fixture.ts', `
+      export interface ApiFixture {
+        /**
+         * 入口文件列表。
+         *
+         * @see https://github.com/sonofmagic/weapp-tailwindcss/issues/7
+         */
+        cssEntries?: string[]
+      }
+    `)
+    const doc = buildInterfaceDoc('ApiFixture', sourceFile.getInterfaceOrThrow('ApiFixture'))
+
+    expect(doc?.properties[0]?.tags.see).toEqual([
+      'https://github.com/sonofmagic/weapp-tailwindcss/issues/7',
+    ])
+    expect(doc?.properties[0]?.nested).toBeUndefined()
+  })
+
+  it('uses Chinese labels for optional interface properties', () => {
+    const project = new Project({ useInMemoryFileSystem: true })
+    const sourceFile = project.createSourceFile('api-fixture.ts', `
+      export interface ApiFixture {
+        /**
+         * 入口文件列表。
+         */
+        cssEntries?: string[]
+      }
+    `)
+    const doc = buildInterfaceDoc('ApiFixture', sourceFile.getInterfaceOrThrow('ApiFixture'))
+    const rendered = renderInterfaceDoc(doc)
+
+    expect(doc?.properties[0]?.optional).toBe(true)
+    expect(doc?.properties[0]?.description).toBe('入口文件列表。')
+    expect(rendered).toContain('> 可选 | **cssEntries**: `string[]`')
+    expect(rendered).not.toContain('`optional`')
+  })
+})

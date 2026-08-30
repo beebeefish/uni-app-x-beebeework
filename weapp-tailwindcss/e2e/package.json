@@ -1,0 +1,15 @@
+{
+  "name": "@weapp-tailwindcss/e2e",
+  "type": "module",
+  "version": "0.0.0",
+  "private": true,
+  "engines": {
+    "node": "^20.19.0 || >=22.12.0"
+  },
+  "scripts": {},
+  "dependencies": {
+    "@tailwindcss-mangle/config": "^7.0.2",
+    "prettier": "catalog:prettier371",
+    "tailwindcss-patch": "catalog:tailwindcssPatch"
+  }
+}

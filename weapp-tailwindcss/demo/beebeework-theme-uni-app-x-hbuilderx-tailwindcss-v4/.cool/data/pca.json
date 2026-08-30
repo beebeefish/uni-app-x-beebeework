@@ -1,0 +1,5294 @@
+[
+	{
+		"label": "安徽省",
+		"index": "A",
+		"children": [
+			{
+				"label": "安庆市",
+				"index": "A",
+				"children": [
+					{ "label": "安徽安庆经济开发区", "index": "A" },
+					{ "label": "大观区", "index": "D" },
+					{ "label": "怀宁县", "index": "H" },
+					{ "label": "潜山市", "index": "Q" },
+					{ "label": "宿松县", "index": "S" },
+					{ "label": "太湖县", "index": "T" },
+					{ "label": "桐城市", "index": "T" },
+					{ "label": "望江县", "index": "W" },
+					{ "label": "迎江区", "index": "Y" },
+					{ "label": "宜秀区", "index": "Y" },
+					{ "label": "岳西县", "index": "Y" }
+				]
+			},
+			{
+				"label": "蚌埠市",
+				"index": "B",
+				"children": [
+					{ "label": "蚌山区", "index": "B" },
+					{ "label": "蚌埠市高新技术开发区", "index": "B" },
+					{ "label": "蚌埠市经济开发区", "index": "B" },
+					{ "label": "固镇县", "index": "G" },
+					{ "label": "淮上区", "index": "H" },
+					{ "label": "怀远县", "index": "H" },
+					{ "label": "龙子湖区", "index": "L" },
+					{ "label": "五河县", "index": "W" },
+					{ "label": "禹会区", "index": "Y" }
+				]
+			},
+			{
+				"label": "亳州市",
+				"index": "B",
+				"children": [
+					{ "label": "利辛县", "index": "L" },
+					{ "label": "蒙城县", "index": "M" },
+					{ "label": "谯城区", "index": "Q" },
+					{ "label": "涡阳县", "index": "W" }
+				]
+			},
+			{
+				"label": "滁州市",
+				"index": "C",
+				"children": [
+					{ "label": "滁州经济技术开发区", "index": "C" },
+					{ "label": "定远县", "index": "D" },
+					{ "label": "凤阳县", "index": "F" },
+					{ "label": "琅琊区", "index": "L" },
+					{ "label": "来安县", "index": "L" },
+					{ "label": "明光市", "index": "M" },
+					{ "label": "南谯区", "index": "N" },
+					{ "label": "全椒县", "index": "Q" },
+					{ "label": "天长市", "index": "T" },
+					{ "label": "中新苏滁高新技术产业开发区", "index": "Z" }
+				]
+			},
+			{
+				"label": "池州市",
+				"index": "C",
+				"children": [
+					{ "label": "东至县", "index": "D" },
+					{ "label": "贵池区", "index": "G" },
+					{ "label": "青阳县", "index": "Q" },
+					{ "label": "石台县", "index": "S" }
+				]
+			},
+			{
+				"label": "阜阳市",
+				"index": "F",
+				"children": [
+					{ "label": "阜南县", "index": "F" },
+					{ "label": "阜阳合肥现代产业园区", "index": "F" },
+					{ "label": "阜阳经济技术开发区", "index": "F" },
+					{ "label": "界首市", "index": "J" },
+					{ "label": "临泉县", "index": "L" },
+					{ "label": "太和县", "index": "T" },
+					{ "label": "颍州区", "index": "Y" },
+					{ "label": "颍东区", "index": "Y" },
+					{ "label": "颍泉区", "index": "Y" },
+					{ "label": "颍上县", "index": "Y" }
+				]
+			},
+			{
+				"label": "合肥市",
+				"index": "H",
+				"children": [
+					{ "label": "包河区", "index": "B" },
+					{ "label": "长丰县", "index": "C" },
+					{ "label": "巢湖市", "index": "C" },
+					{ "label": "肥东县", "index": "F" },
+					{ "label": "肥西县", "index": "F" },
+					{ "label": "合肥高新技术产业开发区", "index": "H" },
+					{ "label": "合肥经济技术开发区", "index": "H" },
+					{ "label": "合肥新站高新技术产业开发区", "index": "H" },
+					{ "label": "庐阳区", "index": "L" },
+					{ "label": "庐江县", "index": "L" },
+					{ "label": "蜀山区", "index": "S" },
+					{ "label": "瑶海区", "index": "Y" }
+				]
+			},
+			{
+				"label": "淮南市",
+				"index": "H",
+				"children": [
+					{ "label": "八公山区", "index": "B" },
+					{ "label": "大通区", "index": "D" },
+					{ "label": "凤台县", "index": "F" },
+					{ "label": "潘集区", "index": "P" },
+					{ "label": "寿县", "index": "S" },
+					{ "label": "田家庵区", "index": "T" },
+					{ "label": "谢家集区", "index": "X" }
+				]
+			},
+			{
+				"label": "淮北市",
+				"index": "H",
+				"children": [
+					{ "label": "杜集区", "index": "D" },
+					{ "label": "烈山区", "index": "L" },
+					{ "label": "濉溪县", "index": "S" },
+					{ "label": "相山区", "index": "X" }
+				]
+			},
+			{
+				"label": "黄山市",
+				"index": "H",
+				"children": [
+					{ "label": "黄山区", "index": "H" },
+					{ "label": "徽州区", "index": "H" },
+					{ "label": "祁门县", "index": "Q" },
+					{ "label": "屯溪区", "index": "T" },
+					{ "label": "歙县", "index": "X" },
+					{ "label": "休宁县", "index": "X" },
+					{ "label": "黟县", "index": "Y" }
+				]
+			},
+			{
+				"label": "六安市",
+				"index": "L",
+				"children": [
+					{ "label": "霍邱县", "index": "H" },
+					{ "label": "霍山县", "index": "H" },
+					{ "label": "金安区", "index": "J" },
+					{ "label": "金寨县", "index": "J" },
+					{ "label": "舒城县", "index": "S" },
+					{ "label": "裕安区", "index": "Y" },
+					{ "label": "叶集区", "index": "Y" }
+				]
+			},
+			{
+				"label": "马鞍山市",
+				"index": "M",
+				"children": [
+					{ "label": "博望区", "index": "B" },
+					{ "label": "当涂县", "index": "D" },
+					{ "label": "花山区", "index": "H" },
+					{ "label": "含山县", "index": "H" },
+					{ "label": "和县", "index": "H" },
+					{ "label": "雨山区", "index": "Y" }
+				]
+			},
+			{
+				"label": "宿州市",
+				"index": "S",
+				"children": [
+					{ "label": "砀山县", "index": "D" },
+					{ "label": "灵璧县", "index": "L" },
+					{ "label": "泗县", "index": "S" },
+					{ "label": "宿州马鞍山现代产业园区", "index": "S" },
+					{ "label": "宿州经济技术开发区", "index": "S" },
+					{ "label": "萧县", "index": "X" },
+					{ "label": "埇桥区", "index": "Y" }
+				]
+			},
+			{
+				"label": "铜陵市",
+				"index": "T",
+				"children": [
+					{ "label": "枞阳县", "index": "C" },
+					{ "label": "郊区", "index": "J" },
+					{ "label": "铜官区", "index": "T" },
+					{ "label": "义安区", "index": "Y" }
+				]
+			},
+			{
+				"label": "芜湖市",
+				"index": "W",
+				"children": [
+					{ "label": "安徽芜湖三山经济开发区", "index": "A" },
+					{ "label": "繁昌区", "index": "F" },
+					{ "label": "镜湖区", "index": "J" },
+					{ "label": "鸠江区", "index": "J" },
+					{ "label": "南陵县", "index": "N" },
+					{ "label": "湾沚区", "index": "W" },
+					{ "label": "芜湖经济技术开发区", "index": "W" },
+					{ "label": "无为市", "index": "W" },
+					{ "label": "弋江区", "index": "Y" }
+				]
+			},
+			{
+				"label": "宣城市",
+				"index": "X",
+				"children": [
+					{ "label": "广德市", "index": "G" },
+					{ "label": "泾县", "index": "J" },
+					{ "label": "绩溪县", "index": "J" },
+					{ "label": "旌德县", "index": "J" },
+					{ "label": "郎溪县", "index": "L" },
+					{ "label": "宁国市", "index": "N" },
+					{ "label": "宣州区", "index": "X" },
+					{ "label": "宣城市经济开发区", "index": "X" }
+				]
+			}
+		]
+	},
+	{
+		"label": "北京市",
+		"index": "B",
+		"children": [
+			{
+				"label": "市辖区",
+				"index": "S",
+				"children": [
+					{ "label": "昌平区", "index": "C" },
+					{ "label": "东城区", "index": "D" },
+					{ "label": "大兴区", "index": "D" },
+					{ "label": "丰台区", "index": "F" },
+					{ "label": "房山区", "index": "F" },
+					{ "label": "海淀区", "index": "H" },
+					{ "label": "怀柔区", "index": "H" },
+					{ "label": "门头沟区", "index": "M" },
+					{ "label": "密云区", "index": "M" },
+					{ "label": "平谷区", "index": "P" },
+					{ "label": "石景山区", "index": "S" },
+					{ "label": "顺义区", "index": "S" },
+					{ "label": "通州区", "index": "T" },
+					{ "label": "西城区", "index": "X" },
+					{ "label": "延庆区", "index": "Y" },
+					{ "label": "朝阳区", "index": "Z" }
+				]
+			}
+		]
+	},
+	{
+		"label": "福建省",
+		"index": "F",
+		"children": [
+			{
+				"label": "福州市",
+				"index": "F",
+				"children": [
+					{ "label": "仓山区", "index": "C" },
+					{ "label": "长乐区", "index": "C" },
+					{ "label": "福清市", "index": "F" },
+					{ "label": "鼓楼区", "index": "G" },
+					{ "label": "晋安区", "index": "J" },
+					{ "label": "连江县", "index": "L" },
+					{ "label": "罗源县", "index": "L" },
+					{ "label": "马尾区", "index": "M" },
+					{ "label": "闽侯县", "index": "M" },
+					{ "label": "闽清县", "index": "M" },
+					{ "label": "平潭县", "index": "P" },
+					{ "label": "台江区", "index": "T" },
+					{ "label": "永泰县", "index": "Y" }
+				]
+			},
+			{
+				"label": "龙岩市",
+				"index": "L",
+				"children": [
+					{ "label": "长汀县", "index": "C" },
+					{ "label": "连城县", "index": "L" },
+					{ "label": "上杭县", "index": "S" },
+					{ "label": "武平县", "index": "W" },
+					{ "label": "新罗区", "index": "X" },
+					{ "label": "永定区", "index": "Y" },
+					{ "label": "漳平市", "index": "Z" }
+				]
+			},
+			{
+				"label": "南平市",
+				"index": "N",
+				"children": [
+					{ "label": "光泽县", "index": "G" },
+					{ "label": "建阳区", "index": "J" },
+					{ "label": "建瓯市", "index": "J" },
+					{ "label": "浦城县", "index": "P" },
+					{ "label": "顺昌县", "index": "S" },
+					{ "label": "松溪县", "index": "S" },
+					{ "label": "邵武市", "index": "S" },
+					{ "label": "武夷山市", "index": "W" },
+					{ "label": "延平区", "index": "Y" },
+					{ "label": "政和县", "index": "Z" }
+				]
+			},
+			{
+				"label": "宁德市",
+				"index": "N",
+				"children": [
+					{ "label": "福安市", "index": "F" },
+					{ "label": "福鼎市", "index": "F" },
+					{ "label": "古田县", "index": "G" },
+					{ "label": "蕉城区", "index": "J" },
+					{ "label": "屏南县", "index": "P" },
+					{ "label": "寿宁县", "index": "S" },
+					{ "label": "霞浦县", "index": "X" },
+					{ "label": "周宁县", "index": "Z" },
+					{ "label": "柘荣县", "index": "Z" }
+				]
+			},
+			{
+				"label": "莆田市",
+				"index": "P",
+				"children": [
+					{ "label": "城厢区", "index": "C" },
+					{ "label": "涵江区", "index": "H" },
+					{ "label": "荔城区", "index": "L" },
+					{ "label": "秀屿区", "index": "X" },
+					{ "label": "仙游县", "index": "X" }
+				]
+			},
+			{
+				"label": "泉州市",
+				"index": "Q",
+				"children": [
+					{ "label": "安溪县", "index": "A" },
+					{ "label": "德化县", "index": "D" },
+					{ "label": "丰泽区", "index": "F" },
+					{ "label": "惠安县", "index": "H" },
+					{ "label": "金门县", "index": "J" },
+					{ "label": "晋江市", "index": "J" },
+					{ "label": "鲤城区", "index": "L" },
+					{ "label": "洛江区", "index": "L" },
+					{ "label": "南安市", "index": "N" },
+					{ "label": "泉港区", "index": "Q" },
+					{ "label": "石狮市", "index": "S" },
+					{ "label": "永春县", "index": "Y" }
+				]
+			},
+			{
+				"label": "厦门市",
+				"index": "S",
+				"children": [
+					{ "label": "海沧区", "index": "H" },
+					{ "label": "湖里区", "index": "H" },
+					{ "label": "集美区", "index": "J" },
+					{ "label": "思明区", "index": "S" },
+					{ "label": "同安区", "index": "T" },
+					{ "label": "翔安区", "index": "X" }
+				]
+			},
+			{
+				"label": "三明市",
+				"index": "S",
+				"children": [
+					{ "label": "大田县", "index": "D" },
+					{ "label": "将乐县", "index": "J" },
+					{ "label": "建宁县", "index": "J" },
+					{ "label": "明溪县", "index": "M" },
+					{ "label": "宁化县", "index": "N" },
+					{ "label": "清流县", "index": "Q" },
+					{ "label": "三元区", "index": "S" },
+					{ "label": "沙县区", "index": "S" },
+					{ "label": "泰宁县", "index": "T" },
+					{ "label": "尤溪县", "index": "Y" },
+					{ "label": "永安市", "index": "Y" }
+				]
+			},
+			{
+				"label": "漳州市",
+				"index": "Z",
+				"children": [
+					{ "label": "长泰区", "index": "C" },
+					{ "label": "东山县", "index": "D" },
+					{ "label": "华安县", "index": "H" },
+					{ "label": "龙文区", "index": "L" },
+					{ "label": "龙海区", "index": "L" },
+					{ "label": "南靖县", "index": "N" },
+					{ "label": "平和县", "index": "P" },
+					{ "label": "芗城区", "index": "X" },
+					{ "label": "云霄县", "index": "Y" },
+					{ "label": "漳浦县", "index": "Z" },
+					{ "label": "诏安县", "index": "Z" }
+				]
+			}
+		]
+	},
+	{
+		"label": "广东省",
+		"index": "G",
+		"children": [
+			{
+				"label": "潮州市",
+				"index": "C",
+				"children": [
+					{ "label": "潮安区", "index": "C" },
+					{ "label": "饶平县", "index": "R" },
+					{ "label": "湘桥区", "index": "X" }
+				]
+			},
+			{
+				"label": "东莞市",
+				"index": "D",
+				"children": [
+					{ "label": "茶山镇", "index": "C" },
+					{ "label": "常平镇", "index": "C" },
+					{ "label": "长安镇", "index": "C" },
+					{ "label": "东城街道", "index": "D" },
+					{ "label": "东坑镇", "index": "D" },
+					{ "label": "大朗镇", "index": "D" },
+					{ "label": "大岭山镇", "index": "D" },
+					{ "label": "道滘镇", "index": "D" },
+					{ "label": "东莞港", "index": "D" },
+					{ "label": "东莞生态园", "index": "D" },
+					{ "label": "东莞滨海湾新区", "index": "D" },
+					{ "label": "凤岗镇", "index": "F" },
+					{ "label": "莞城街道", "index": "G" },
+					{ "label": "高埗镇", "index": "G" },
+					{ "label": "横沥镇", "index": "H" },
+					{ "label": "黄江镇", "index": "H" },
+					{ "label": "虎门镇", "index": "H" },
+					{ "label": "厚街镇", "index": "H" },
+					{ "label": "洪梅镇", "index": "H" },
+					{ "label": "寮步镇", "index": "L" },
+					{ "label": "麻涌镇", "index": "M" },
+					{ "label": "南城街道", "index": "N" },
+					{ "label": "企石镇", "index": "Q" },
+					{ "label": "桥头镇", "index": "Q" },
+					{ "label": "清溪镇", "index": "Q" },
+					{ "label": "石碣镇", "index": "S" },
+					{ "label": "石龙镇", "index": "S" },
+					{ "label": "石排镇", "index": "S" },
+					{ "label": "沙田镇", "index": "S" },
+					{ "label": "松山湖", "index": "S" },
+					{ "label": "塘厦镇", "index": "T" },
+					{ "label": "万江街道", "index": "W" },
+					{ "label": "望牛墩镇", "index": "W" },
+					{ "label": "谢岗镇", "index": "X" },
+					{ "label": "樟木头镇", "index": "Z" },
+					{ "label": "中堂镇", "index": "Z" }
+				]
+			},
+			{
+				"label": "佛山市",
+				"index": "F",
+				"children": [
+					{ "label": "禅城区", "index": "C" },
+					{ "label": "高明区", "index": "G" },
+					{ "label": "南海区", "index": "N" },
+					{ "label": "顺德区", "index": "S" },
+					{ "label": "三水区", "index": "S" }
+				]
+			},
+			{
+				"label": "广州市",
+				"index": "G",
+				"children": [
+					{ "label": "白云区", "index": "B" },
+					{ "label": "从化区", "index": "C" },
+					{ "label": "番禺区", "index": "F" },
+					{ "label": "海珠区", "index": "H" },
+					{ "label": "黄埔区", "index": "H" },
+					{ "label": "花都区", "index": "H" },
+					{ "label": "荔湾区", "index": "L" },
+					{ "label": "南沙区", "index": "N" },
+					{ "label": "天河区", "index": "T" },
+					{ "label": "越秀区", "index": "Y" },
+					{ "label": "增城区", "index": "Z" }
+				]
+			},
+			{
+				"label": "惠州市",
+				"index": "H",
+				"children": [
+					{ "label": "博罗县", "index": "B" },
+					{ "label": "惠城区", "index": "H" },
+					{ "label": "惠阳区", "index": "H" },
+					{ "label": "惠东县", "index": "H" },
+					{ "label": "龙门县", "index": "L" }
+				]
+			},
+			{
+				"label": "河源市",
+				"index": "H",
+				"children": [
+					{ "label": "东源县", "index": "D" },
+					{ "label": "和平县", "index": "H" },
+					{ "label": "龙川县", "index": "L" },
+					{ "label": "连平县", "index": "L" },
+					{ "label": "源城区", "index": "Y" },
+					{ "label": "紫金县", "index": "Z" }
+				]
+			},
+			{
+				"label": "江门市",
+				"index": "J",
+				"children": [
+					{ "label": "恩平市", "index": "E" },
+					{ "label": "鹤山市", "index": "H" },
+					{ "label": "江海区", "index": "J" },
+					{ "label": "开平市", "index": "K" },
+					{ "label": "蓬江区", "index": "P" },
+					{ "label": "台山市", "index": "T" },
+					{ "label": "新会区", "index": "X" }
+				]
+			},
+			{
+				"label": "揭阳市",
+				"index": "J",
+				"children": [
+					{ "label": "惠来县", "index": "H" },
+					{ "label": "揭东区", "index": "J" },
+					{ "label": "揭西县", "index": "J" },
+					{ "label": "普宁市", "index": "P" },
+					{ "label": "榕城区", "index": "R" }
+				]
+			},
+			{
+				"label": "茂名市",
+				"index": "M",
+				"children": [
+					{ "label": "电白区", "index": "D" },
+					{ "label": "高州市", "index": "G" },
+					{ "label": "化州市", "index": "H" },
+					{ "label": "茂南区", "index": "M" },
+					{ "label": "信宜市", "index": "X" }
+				]
+			},
+			{
+				"label": "梅州市",
+				"index": "M",
+				"children": [
+					{ "label": "大埔县", "index": "D" },
+					{ "label": "丰顺县", "index": "F" },
+					{ "label": "蕉岭县", "index": "J" },
+					{ "label": "梅江区", "index": "M" },
+					{ "label": "梅县区", "index": "M" },
+					{ "label": "平远县", "index": "P" },
+					{ "label": "五华县", "index": "W" },
+					{ "label": "兴宁市", "index": "X" }
+				]
+			},
+			{
+				"label": "清远市",
+				"index": "Q",
+				"children": [
+					{ "label": "佛冈县", "index": "F" },
+					{ "label": "连山壮族瑶族自治县", "index": "L" },
+					{ "label": "连南瑶族自治县", "index": "L" },
+					{ "label": "连州市", "index": "L" },
+					{ "label": "清城区", "index": "Q" },
+					{ "label": "清新区", "index": "Q" },
+					{ "label": "阳山县", "index": "Y" },
+					{ "label": "英德市", "index": "Y" }
+				]
+			},
+			{
+				"label": "韶关市",
+				"index": "S",
+				"children": [
+					{ "label": "乐昌市", "index": "L" },
+					{ "label": "南雄市", "index": "N" },
+					{ "label": "曲江区", "index": "Q" },
+					{ "label": "仁化县", "index": "R" },
+					{ "label": "乳源瑶族自治县", "index": "R" },
+					{ "label": "始兴县", "index": "S" },
+					{ "label": "武江区", "index": "W" },
+					{ "label": "翁源县", "index": "W" },
+					{ "label": "新丰县", "index": "X" },
+					{ "label": "浈江区", "index": "Z" }
+				]
+			},
+			{
+				"label": "深圳市",
+				"index": "S",
+				"children": [
+					{ "label": "宝安区", "index": "B" },
+					{ "label": "福田区", "index": "F" },
+					{ "label": "光明区", "index": "G" },
+					{ "label": "罗湖区", "index": "L" },
+					{ "label": "龙岗区", "index": "L" },
+					{ "label": "龙华区", "index": "L" },
+					{ "label": "南山区", "index": "N" },
+					{ "label": "坪山区", "index": "P" },
+					{ "label": "盐田区", "index": "Y" }
+				]
+			},
+			{
+				"label": "汕头市",
+				"index": "S",
+				"children": [
+					{ "label": "潮阳区", "index": "C" },
+					{ "label": "潮南区", "index": "C" },
+					{ "label": "澄海区", "index": "C" },
+					{ "label": "濠江区", "index": "H" },
+					{ "label": "金平区", "index": "J" },
+					{ "label": "龙湖区", "index": "L" },
+					{ "label": "南澳县", "index": "N" }
+				]
+			},
+			{
+				"label": "汕尾市",
+				"index": "S",
+				"children": [
+					{ "label": "城区", "index": "C" },
+					{ "label": "海丰县", "index": "H" },
+					{ "label": "陆河县", "index": "L" },
+					{ "label": "陆丰市", "index": "L" }
+				]
+			},
+			{
+				"label": "阳江市",
+				"index": "Y",
+				"children": [
+					{ "label": "江城区", "index": "J" },
+					{ "label": "阳东区", "index": "Y" },
+					{ "label": "阳西县", "index": "Y" },
+					{ "label": "阳春市", "index": "Y" }
+				]
+			},
+			{
+				"label": "云浮市",
+				"index": "Y",
+				"children": [
+					{ "label": "罗定市", "index": "L" },
+					{ "label": "新兴县", "index": "X" },
+					{ "label": "云城区", "index": "Y" },
+					{ "label": "云安区", "index": "Y" },
+					{ "label": "郁南县", "index": "Y" }
+				]
+			},
+			{
+				"label": "珠海市",
+				"index": "Z",
+				"children": [
+					{ "label": "斗门区", "index": "D" },
+					{ "label": "金湾区", "index": "J" },
+					{ "label": "香洲区", "index": "X" }
+				]
+			},
+			{
+				"label": "湛江市",
+				"index": "Z",
+				"children": [
+					{ "label": "赤坎区", "index": "C" },
+					{ "label": "廉江市", "index": "L" },
+					{ "label": "雷州市", "index": "L" },
+					{ "label": "麻章区", "index": "M" },
+					{ "label": "坡头区", "index": "P" },
+					{ "label": "遂溪县", "index": "S" },
+					{ "label": "吴川市", "index": "W" },
+					{ "label": "霞山区", "index": "X" },
+					{ "label": "徐闻县", "index": "X" }
+				]
+			},
+			{
+				"label": "肇庆市",
+				"index": "Z",
+				"children": [
+					{ "label": "端州区", "index": "D" },
+					{ "label": "鼎湖区", "index": "D" },
+					{ "label": "德庆县", "index": "D" },
+					{ "label": "封开县", "index": "F" },
+					{ "label": "高要区", "index": "G" },
+					{ "label": "广宁县", "index": "G" },
+					{ "label": "怀集县", "index": "H" },
+					{ "label": "四会市", "index": "S" }
+				]
+			},
+			{
+				"label": "中山市",
+				"index": "Z",
+				"children": [
+					{ "label": "板芙镇", "index": "B" },
+					{ "label": "东区街道", "index": "D" },
+					{ "label": "东凤镇", "index": "D" },
+					{ "label": "大涌镇", "index": "D" },
+					{ "label": "阜沙镇", "index": "F" },
+					{ "label": "古镇镇", "index": "G" },
+					{ "label": "港口镇", "index": "G" },
+					{ "label": "黄圃镇", "index": "H" },
+					{ "label": "横栏镇", "index": "H" },
+					{ "label": "民众街道", "index": "M" },
+					{ "label": "南区街道", "index": "N" },
+					{ "label": "南朗街道", "index": "N" },
+					{ "label": "南头镇", "index": "N" },
+					{ "label": "石岐街道", "index": "S" },
+					{ "label": "沙溪镇", "index": "S" },
+					{ "label": "三角镇", "index": "S" },
+					{ "label": "三乡镇", "index": "S" },
+					{ "label": "神湾镇", "index": "S" },
+					{ "label": "坦洲镇", "index": "T" },
+					{ "label": "五桂山街道", "index": "W" },
+					{ "label": "西区街道", "index": "X" },
+					{ "label": "小榄镇", "index": "X" },
+					{ "label": "中山港街道", "index": "Z" }
+				]
+			}
+		]
+	},
+	{
+		"label": "广西壮族自治区",
+		"index": "G",
+		"children": [
+			{
+				"label": "北海市",
+				"index": "B",
+				"children": [
+					{ "label": "海城区", "index": "H" },
+					{ "label": "合浦县", "index": "H" },
+					{ "label": "铁山港区", "index": "T" },
+					{ "label": "银海区", "index": "Y" }
+				]
+			},
+			{
+				"label": "百色市",
+				"index": "B",
+				"children": [
+					{ "label": "德保县", "index": "D" },
+					{ "label": "靖西市", "index": "J" },
+					{ "label": "凌云县", "index": "L" },
+					{ "label": "乐业县", "index": "L" },
+					{ "label": "隆林各族自治县", "index": "L" },
+					{ "label": "那坡县", "index": "N" },
+					{ "label": "平果市", "index": "P" },
+					{ "label": "田阳区", "index": "T" },
+					{ "label": "田东县", "index": "T" },
+					{ "label": "田林县", "index": "T" },
+					{ "label": "西林县", "index": "X" },
+					{ "label": "右江区", "index": "Y" }
+				]
+			},
+			{
+				"label": "崇左市",
+				"index": "C",
+				"children": [
+					{ "label": "大新县", "index": "D" },
+					{ "label": "扶绥县", "index": "F" },
+					{ "label": "江州区", "index": "J" },
+					{ "label": "龙州县", "index": "L" },
+					{ "label": "宁明县", "index": "N" },
+					{ "label": "凭祥市", "index": "P" },
+					{ "label": "天等县", "index": "T" }
+				]
+			},
+			{
+				"label": "防城港市",
+				"index": "F",
+				"children": [
+					{ "label": "东兴市", "index": "D" },
+					{ "label": "防城区", "index": "F" },
+					{ "label": "港口区", "index": "G" },
+					{ "label": "上思县", "index": "S" }
+				]
+			},
+			{
+				"label": "桂林市",
+				"index": "G",
+				"children": [
+					{ "label": "叠彩区", "index": "D" },
+					{ "label": "灌阳县", "index": "G" },
+					{ "label": "恭城瑶族自治县", "index": "G" },
+					{ "label": "临桂区", "index": "L" },
+					{ "label": "灵川县", "index": "L" },
+					{ "label": "龙胜各族自治县", "index": "L" },
+					{ "label": "荔浦市", "index": "L" },
+					{ "label": "平乐县", "index": "P" },
+					{ "label": "七星区", "index": "Q" },
+					{ "label": "全州县", "index": "Q" },
+					{ "label": "秀峰区", "index": "X" },
+					{ "label": "象山区", "index": "X" },
+					{ "label": "兴安县", "index": "X" },
+					{ "label": "雁山区", "index": "Y" },
+					{ "label": "阳朔县", "index": "Y" },
+					{ "label": "永福县", "index": "Y" },
+					{ "label": "资源县", "index": "Z" }
+				]
+			},
+			{
+				"label": "贵港市",
+				"index": "G",
+				"children": [
+					{ "label": "港北区", "index": "G" },
+					{ "label": "港南区", "index": "G" },
+					{ "label": "桂平市", "index": "G" },
+					{ "label": "平南县", "index": "P" },
+					{ "label": "覃塘区", "index": "T" }
+				]
+			},
+			{
+				"label": "贺州市",
+				"index": "H",
+				"children": [
+					{ "label": "八步区", "index": "B" },
+					{ "label": "富川瑶族自治县", "index": "F" },
+					{ "label": "平桂区", "index": "P" },
+					{ "label": "昭平县", "index": "Z" },
+					{ "label": "钟山县", "index": "Z" }
+				]
+			},
+			{
+				"label": "河池市",
+				"index": "H",
+				"children": [
+					{ "label": "巴马瑶族自治县", "index": "B" },
+					{ "label": "东兰县", "index": "D" },
+					{ "label": "都安瑶族自治县", "index": "D" },
+					{ "label": "大化瑶族自治县", "index": "D" },
+					{ "label": "凤山县", "index": "F" },
+					{ "label": "环江毛南族自治县", "index": "H" },
+					{ "label": "金城江区", "index": "J" },
+					{ "label": "罗城仫佬族自治县", "index": "L" },
+					{ "label": "南丹县", "index": "N" },
+					{ "label": "天峨县", "index": "T" },
+					{ "label": "宜州区", "index": "Y" }
+				]
+			},
+			{
+				"label": "柳州市",
+				"index": "L",
+				"children": [
+					{ "label": "城中区", "index": "C" },
+					{ "label": "柳南区", "index": "L" },
+					{ "label": "柳北区", "index": "L" },
+					{ "label": "柳江区", "index": "L" },
+					{ "label": "柳城县", "index": "L" },
+					{ "label": "鹿寨县", "index": "L" },
+					{ "label": "融安县", "index": "R" },
+					{ "label": "融水苗族自治县", "index": "R" },
+					{ "label": "三江侗族自治县", "index": "S" },
+					{ "label": "鱼峰区", "index": "Y" }
+				]
+			},
+			{
+				"label": "来宾市",
+				"index": "L",
+				"children": [
+					{ "label": "合山市", "index": "H" },
+					{ "label": "金秀瑶族自治县", "index": "J" },
+					{ "label": "武宣县", "index": "W" },
+					{ "label": "兴宾区", "index": "X" },
+					{ "label": "忻城县", "index": "X" },
+					{ "label": "象州县", "index": "X" }
+				]
+			},
+			{
+				"label": "南宁市",
+				"index": "N",
+				"children": [
+					{ "label": "宾阳县", "index": "B" },
+					{ "label": "横州市", "index": "H" },
+					{ "label": "江南区", "index": "J" },
+					{ "label": "良庆区", "index": "L" },
+					{ "label": "隆安县", "index": "L" },
+					{ "label": "马山县", "index": "M" },
+					{ "label": "青秀区", "index": "Q" },
+					{ "label": "上林县", "index": "S" },
+					{ "label": "武鸣区", "index": "W" },
+					{ "label": "兴宁区", "index": "X" },
+					{ "label": "西乡塘区", "index": "X" },
+					{ "label": "邕宁区", "index": "Y" }
+				]
+			},
+			{
+				"label": "钦州市",
+				"index": "Q",
+				"children": [
+					{ "label": "灵山县", "index": "L" },
+					{ "label": "浦北县", "index": "P" },
+					{ "label": "钦南区", "index": "Q" },
+					{ "label": "钦北区", "index": "Q" }
+				]
+			},
+			{
+				"label": "梧州市",
+				"index": "W",
+				"children": [
+					{ "label": "长洲区", "index": "C" },
+					{ "label": "苍梧县", "index": "C" },
+					{ "label": "岑溪市", "index": "C" },
+					{ "label": "龙圩区", "index": "L" },
+					{ "label": "蒙山县", "index": "M" },
+					{ "label": "藤县", "index": "T" },
+					{ "label": "万秀区", "index": "W" }
+				]
+			},
+			{
+				"label": "玉林市",
+				"index": "Y",
+				"children": [
+					{ "label": "博白县", "index": "B" },
+					{ "label": "北流市", "index": "B" },
+					{ "label": "福绵区", "index": "F" },
+					{ "label": "陆川县", "index": "L" },
+					{ "label": "容县", "index": "R" },
+					{ "label": "兴业县", "index": "X" },
+					{ "label": "玉州区", "index": "Y" }
+				]
+			}
+		]
+	},
+	{
+		"label": "贵州省",
+		"index": "G",
+		"children": [
+			{
+				"label": "安顺市",
+				"index": "A",
+				"children": [
+					{ "label": "关岭布依族苗族自治县", "index": "G" },
+					{ "label": "平坝区", "index": "P" },
+					{ "label": "普定县", "index": "P" },
+					{ "label": "西秀区", "index": "X" },
+					{ "label": "镇宁布依族苗族自治县", "index": "Z" },
+					{ "label": "紫云苗族布依族自治县", "index": "Z" }
+				]
+			},
+			{
+				"label": "毕节市",
+				"index": "B",
+				"children": [
+					{ "label": "大方县", "index": "D" },
+					{ "label": "赫章县", "index": "H" },
+					{ "label": "金沙县", "index": "J" },
+					{ "label": "纳雍县", "index": "N" },
+					{ "label": "七星关区", "index": "Q" },
+					{ "label": "黔西市", "index": "Q" },
+					{ "label": "威宁彝族回族苗族自治县", "index": "W" },
+					{ "label": "织金县", "index": "Z" }
+				]
+			},
+			{
+				"label": "贵阳市",
+				"index": "G",
+				"children": [
+					{ "label": "白云区", "index": "B" },
+					{ "label": "观山湖区", "index": "G" },
+					{ "label": "花溪区", "index": "H" },
+					{ "label": "开阳县", "index": "K" },
+					{ "label": "南明区", "index": "N" },
+					{ "label": "清镇市", "index": "Q" },
+					{ "label": "乌当区", "index": "W" },
+					{ "label": "息烽县", "index": "X" },
+					{ "label": "修文县", "index": "X" },
+					{ "label": "云岩区", "index": "Y" }
+				]
+			},
+			{
+				"label": "六盘水市",
+				"index": "L",
+				"children": [
+					{ "label": "六枝特区", "index": "L" },
+					{ "label": "盘州市", "index": "P" },
+					{ "label": "水城区", "index": "S" },
+					{ "label": "钟山区", "index": "Z" }
+				]
+			},
+			{
+				"label": "黔西南布依族苗族自治州",
+				"index": "Q",
+				"children": [
+					{ "label": "安龙县", "index": "A" },
+					{ "label": "册亨县", "index": "C" },
+					{ "label": "普安县", "index": "P" },
+					{ "label": "晴隆县", "index": "Q" },
+					{ "label": "望谟县", "index": "W" },
+					{ "label": "兴义市", "index": "X" },
+					{ "label": "兴仁市", "index": "X" },
+					{ "label": "贞丰县", "index": "Z" }
+				]
+			},
+			{
+				"label": "黔东南苗族侗族自治州",
+				"index": "Q",
+				"children": [
+					{ "label": "岑巩县", "index": "C" },
+					{ "label": "从江县", "index": "C" },
+					{ "label": "丹寨县", "index": "D" },
+					{ "label": "黄平县", "index": "H" },
+					{ "label": "锦屏县", "index": "J" },
+					{ "label": "剑河县", "index": "J" },
+					{ "label": "凯里市", "index": "K" },
+					{ "label": "黎平县", "index": "L" },
+					{ "label": "雷山县", "index": "L" },
+					{ "label": "麻江县", "index": "M" },
+					{ "label": "榕江县", "index": "R" },
+					{ "label": "施秉县", "index": "S" },
+					{ "label": "三穗县", "index": "S" },
+					{ "label": "天柱县", "index": "T" },
+					{ "label": "台江县", "index": "T" },
+					{ "label": "镇远县", "index": "Z" }
+				]
+			},
+			{
+				"label": "黔南布依族苗族自治州",
+				"index": "Q",
+				"children": [
+					{ "label": "长顺县", "index": "C" },
+					{ "label": "都匀市", "index": "D" },
+					{ "label": "独山县", "index": "D" },
+					{ "label": "福泉市", "index": "F" },
+					{ "label": "贵定县", "index": "G" },
+					{ "label": "惠水县", "index": "H" },
+					{ "label": "荔波县", "index": "L" },
+					{ "label": "罗甸县", "index": "L" },
+					{ "label": "龙里县", "index": "L" },
+					{ "label": "平塘县", "index": "P" },
+					{ "label": "三都水族自治县", "index": "S" },
+					{ "label": "瓮安县", "index": "W" }
+				]
+			},
+			{
+				"label": "铜仁市",
+				"index": "T",
+				"children": [
+					{ "label": "碧江区", "index": "B" },
+					{ "label": "德江县", "index": "D" },
+					{ "label": "江口县", "index": "J" },
+					{ "label": "石阡县", "index": "S" },
+					{ "label": "思南县", "index": "S" },
+					{ "label": "松桃苗族自治县", "index": "S" },
+					{ "label": "万山区", "index": "W" },
+					{ "label": "玉屏侗族自治县", "index": "Y" },
+					{ "label": "印江土家族苗族自治县", "index": "Y" },
+					{ "label": "沿河土家族自治县", "index": "Y" }
+				]
+			},
+			{
+				"label": "遵义市",
+				"index": "Z",
+				"children": [
+					{ "label": "播州区", "index": "B" },
+					{ "label": "赤水市", "index": "C" },
+					{ "label": "道真仡佬族苗族自治县", "index": "D" },
+					{ "label": "凤冈县", "index": "F" },
+					{ "label": "红花岗区", "index": "H" },
+					{ "label": "汇川区", "index": "H" },
+					{ "label": "湄潭县", "index": "M" },
+					{ "label": "仁怀市", "index": "R" },
+					{ "label": "绥阳县", "index": "S" },
+					{ "label": "桐梓县", "index": "T" },
+					{ "label": "务川仡佬族苗族自治县", "index": "W" },
+					{ "label": "习水县", "index": "X" },
+					{ "label": "余庆县", "index": "Y" },
+					{ "label": "正安县", "index": "Z" }
+				]
+			}
+		]
+	},
+	{
+		"label": "甘肃省",
+		"index": "G",
+		"children": [
+			{
+				"label": "白银市",
+				"index": "B",
+				"children": [
+					{ "label": "白银区", "index": "B" },
+					{ "label": "会宁县", "index": "H" },
+					{ "label": "靖远县", "index": "J" },
+					{ "label": "景泰县", "index": "J" },
+					{ "label": "平川区", "index": "P" }
+				]
+			},
+			{
+				"label": "定西市",
+				"index": "D",
+				"children": [
+					{ "label": "安定区", "index": "A" },
+					{ "label": "陇西县", "index": "L" },
+					{ "label": "临洮县", "index": "L" },
+					{ "label": "岷县", "index": "M" },
+					{ "label": "通渭县", "index": "T" },
+					{ "label": "渭源县", "index": "W" },
+					{ "label": "漳县", "index": "Z" }
+				]
+			},
+			{
+				"label": "甘南藏族自治州",
+				"index": "G",
+				"children": [
+					{ "label": "迭部县", "index": "D" },
+					{ "label": "合作市", "index": "H" },
+					{ "label": "临潭县", "index": "L" },
+					{ "label": "碌曲县", "index": "L" },
+					{ "label": "玛曲县", "index": "M" },
+					{ "label": "夏河县", "index": "X" },
+					{ "label": "卓尼县", "index": "Z" },
+					{ "label": "舟曲县", "index": "Z" }
+				]
+			},
+			{
+				"label": "嘉峪关市",
+				"index": "J",
+				"children": [
+					{ "label": "钢城街道", "index": "G" },
+					{ "label": "文殊镇", "index": "W" },
+					{ "label": "雄关街道", "index": "X" },
+					{ "label": "新城镇", "index": "X" },
+					{ "label": "峪泉镇", "index": "Y" }
+				]
+			},
+			{
+				"label": "金昌市",
+				"index": "J",
+				"children": [
+					{ "label": "金川区", "index": "J" },
+					{ "label": "永昌县", "index": "Y" }
+				]
+			},
+			{
+				"label": "酒泉市",
+				"index": "J",
+				"children": [
+					{ "label": "阿克塞哈萨克族自治县", "index": "A" },
+					{ "label": "敦煌市", "index": "D" },
+					{ "label": "瓜州县", "index": "G" },
+					{ "label": "金塔县", "index": "J" },
+					{ "label": "肃州区", "index": "S" },
+					{ "label": "肃北蒙古族自治县", "index": "S" },
+					{ "label": "玉门市", "index": "Y" }
+				]
+			},
+			{
+				"label": "兰州市",
+				"index": "L",
+				"children": [
+					{ "label": "安宁区", "index": "A" },
+					{ "label": "城关区", "index": "C" },
+					{ "label": "皋兰县", "index": "G" },
+					{ "label": "红古区", "index": "H" },
+					{ "label": "兰州新区", "index": "L" },
+					{ "label": "七里河区", "index": "Q" },
+					{ "label": "西固区", "index": "X" },
+					{ "label": "永登县", "index": "Y" },
+					{ "label": "榆中县", "index": "Y" }
+				]
+			},
+			{
+				"label": "陇南市",
+				"index": "L",
+				"children": [
+					{ "label": "成县", "index": "C" },
+					{ "label": "宕昌县", "index": "D" },
+					{ "label": "徽县", "index": "H" },
+					{ "label": "康县", "index": "K" },
+					{ "label": "礼县", "index": "L" },
+					{ "label": "两当县", "index": "L" },
+					{ "label": "武都区", "index": "W" },
+					{ "label": "文县", "index": "W" },
+					{ "label": "西和县", "index": "X" }
+				]
+			},
+			{
+				"label": "临夏回族自治州",
+				"index": "L",
+				"children": [
+					{ "label": "东乡族自治县", "index": "D" },
+					{ "label": "广河县", "index": "G" },
+					{ "label": "和政县", "index": "H" },
+					{ "label": "积石山保安族东乡族撒拉族自治县", "index": "J" },
+					{ "label": "康乐县", "index": "K" },
+					{ "label": "临夏市", "index": "L" },
+					{ "label": "临夏县", "index": "L" },
+					{ "label": "永靖县", "index": "Y" }
+				]
+			},
+			{
+				"label": "平凉市",
+				"index": "P",
+				"children": [
+					{ "label": "崇信县", "index": "C" },
+					{ "label": "华亭市", "index": "H" },
+					{ "label": "泾川县", "index": "J" },
+					{ "label": "静宁县", "index": "J" },
+					{ "label": "崆峒区", "index": "K" },
+					{ "label": "灵台县", "index": "L" },
+					{ "label": "庄浪县", "index": "Z" }
+				]
+			},
+			{
+				"label": "庆阳市",
+				"index": "Q",
+				"children": [
+					{ "label": "环县", "index": "H" },
+					{ "label": "华池县", "index": "H" },
+					{ "label": "合水县", "index": "H" },
+					{ "label": "宁县", "index": "N" },
+					{ "label": "庆城县", "index": "Q" },
+					{ "label": "西峰区", "index": "X" },
+					{ "label": "正宁县", "index": "Z" },
+					{ "label": "镇原县", "index": "Z" }
+				]
+			},
+			{
+				"label": "天水市",
+				"index": "T",
+				"children": [
+					{ "label": "甘谷县", "index": "G" },
+					{ "label": "麦积区", "index": "M" },
+					{ "label": "秦州区", "index": "Q" },
+					{ "label": "清水县", "index": "Q" },
+					{ "label": "秦安县", "index": "Q" },
+					{ "label": "武山县", "index": "W" },
+					{ "label": "张家川回族自治县", "index": "Z" }
+				]
+			},
+			{
+				"label": "武威市",
+				"index": "W",
+				"children": [
+					{ "label": "古浪县", "index": "G" },
+					{ "label": "凉州区", "index": "L" },
+					{ "label": "民勤县", "index": "M" },
+					{ "label": "天祝藏族自治县", "index": "T" }
+				]
+			},
+			{
+				"label": "张掖市",
+				"index": "Z",
+				"children": [
+					{ "label": "甘州区", "index": "G" },
+					{ "label": "高台县", "index": "G" },
+					{ "label": "临泽县", "index": "L" },
+					{ "label": "民乐县", "index": "M" },
+					{ "label": "肃南裕固族自治县", "index": "S" },
+					{ "label": "山丹县", "index": "S" }
+				]
+			}
+		]
+	},
+	{
+		"label": "河北省",
+		"index": "H",
+		"children": [
+			{
+				"label": "保定市",
+				"index": "B",
+				"children": [
+					{ "label": "安新县", "index": "A" },
+					{ "label": "安国市", "index": "A" },
+					{ "label": "博野县", "index": "B" },
+					{ "label": "保定高新技术产业开发区", "index": "B" },
+					{ "label": "保定白沟新城", "index": "B" },
+					{ "label": "定兴县", "index": "D" },
+					{ "label": "定州市", "index": "D" },
+					{ "label": "阜平县", "index": "F" },
+					{ "label": "高阳县", "index": "G" },
+					{ "label": "高碑店市", "index": "G" },
+					{ "label": "竞秀区", "index": "J" },
+					{ "label": "莲池区", "index": "L" },
+					{ "label": "涞水县", "index": "L" },
+					{ "label": "涞源县", "index": "L" },
+					{ "label": "蠡县", "index": "L" },
+					{ "label": "满城区", "index": "M" },
+					{ "label": "清苑区", "index": "Q" },
+					{ "label": "曲阳县", "index": "Q" },
+					{ "label": "容城县", "index": "R" },
+					{ "label": "顺平县", "index": "S" },
+					{ "label": "唐县", "index": "T" },
+					{ "label": "望都县", "index": "W" },
+					{ "label": "徐水区", "index": "X" },
+					{ "label": "雄县", "index": "X" },
+					{ "label": "易县", "index": "Y" },
+					{ "label": "涿州市", "index": "Z" }
+				]
+			},
+			{
+				"label": "承德市",
+				"index": "C",
+				"children": [
+					{ "label": "承德县", "index": "C" },
+					{ "label": "承德高新技术产业开发区", "index": "C" },
+					{ "label": "丰宁满族自治县", "index": "F" },
+					{ "label": "宽城满族自治县", "index": "K" },
+					{ "label": "滦平县", "index": "L" },
+					{ "label": "隆化县", "index": "L" },
+					{ "label": "平泉市", "index": "P" },
+					{ "label": "双桥区", "index": "S" },
+					{ "label": "双滦区", "index": "S" },
+					{ "label": "围场满族蒙古族自治县", "index": "W" },
+					{ "label": "兴隆县", "index": "X" },
+					{ "label": "鹰手营子矿区", "index": "Y" }
+				]
+			},
+			{
+				"label": "沧州市",
+				"index": "C",
+				"children": [
+					{ "label": "泊头市", "index": "B" },
+					{ "label": "沧县", "index": "C" },
+					{ "label": "沧州高新技术产业开发区", "index": "C" },
+					{ "label": "沧州渤海新区", "index": "C" },
+					{ "label": "东光县", "index": "D" },
+					{ "label": "海兴县", "index": "H" },
+					{ "label": "河北沧州经济开发区", "index": "H" },
+					{ "label": "黄骅市", "index": "H" },
+					{ "label": "河间市", "index": "H" },
+					{ "label": "孟村回族自治县", "index": "M" },
+					{ "label": "南皮县", "index": "N" },
+					{ "label": "青县", "index": "Q" },
+					{ "label": "任丘市", "index": "R" },
+					{ "label": "肃宁县", "index": "S" },
+					{ "label": "吴桥县", "index": "W" },
+					{ "label": "新华区", "index": "X" },
+					{ "label": "献县", "index": "X" },
+					{ "label": "运河区", "index": "Y" },
+					{ "label": "盐山县", "index": "Y" }
+				]
+			},
+			{
+				"label": "邯郸市",
+				"index": "H",
+				"children": [
+					{ "label": "丛台区", "index": "C" },
+					{ "label": "成安县", "index": "C" },
+					{ "label": "磁县", "index": "C" },
+					{ "label": "大名县", "index": "D" },
+					{ "label": "复兴区", "index": "F" },
+					{ "label": "峰峰矿区", "index": "F" },
+					{ "label": "肥乡区", "index": "F" },
+					{ "label": "广平县", "index": "G" },
+					{ "label": "馆陶县", "index": "G" },
+					{ "label": "邯山区", "index": "H" },
+					{ "label": "邯郸经济技术开发区", "index": "H" },
+					{ "label": "邯郸冀南新区", "index": "H" },
+					{ "label": "鸡泽县", "index": "J" },
+					{ "label": "临漳县", "index": "L" },
+					{ "label": "邱县", "index": "Q" },
+					{ "label": "曲周县", "index": "Q" },
+					{ "label": "涉县", "index": "S" },
+					{ "label": "魏县", "index": "W" },
+					{ "label": "武安市", "index": "W" },
+					{ "label": "永年区", "index": "Y" }
+				]
+			},
+			{
+				"label": "衡水市",
+				"index": "H",
+				"children": [
+					{ "label": "安平县", "index": "A" },
+					{ "label": "阜城县", "index": "F" },
+					{ "label": "故城县", "index": "G" },
+					{ "label": "河北衡水高新技术产业开发区", "index": "H" },
+					{ "label": "衡水滨湖新区", "index": "H" },
+					{ "label": "冀州区", "index": "J" },
+					{ "label": "景县", "index": "J" },
+					{ "label": "饶阳县", "index": "R" },
+					{ "label": "深州市", "index": "S" },
+					{ "label": "桃城区", "index": "T" },
+					{ "label": "武邑县", "index": "W" },
+					{ "label": "武强县", "index": "W" },
+					{ "label": "枣强县", "index": "Z" }
+				]
+			},
+			{
+				"label": "廊坊市",
+				"index": "L",
+				"children": [
+					{ "label": "安次区", "index": "A" },
+					{ "label": "霸州市", "index": "B" },
+					{ "label": "大城县", "index": "D" },
+					{ "label": "大厂回族自治县", "index": "D" },
+					{ "label": "广阳区", "index": "G" },
+					{ "label": "固安县", "index": "G" },
+					{ "label": "廊坊经济技术开发区", "index": "L" },
+					{ "label": "三河市", "index": "S" },
+					{ "label": "文安县", "index": "W" },
+					{ "label": "香河县", "index": "X" },
+					{ "label": "永清县", "index": "Y" }
+				]
+			},
+			{
+				"label": "秦皇岛市",
+				"index": "Q",
+				"children": [
+					{ "label": "北戴河区", "index": "B" },
+					{ "label": "北戴河新区", "index": "B" },
+					{ "label": "昌黎县", "index": "C" },
+					{ "label": "抚宁区", "index": "F" },
+					{ "label": "海港区", "index": "H" },
+					{ "label": "卢龙县", "index": "L" },
+					{ "label": "青龙满族自治县", "index": "Q" },
+					{ "label": "秦皇岛市经济技术开发区", "index": "Q" },
+					{ "label": "山海关区", "index": "S" }
+				]
+			},
+			{
+				"label": "石家庄市",
+				"index": "S",
+				"children": [
+					{ "label": "长安区", "index": "C" },
+					{ "label": "藁城区", "index": "G" },
+					{ "label": "高邑县", "index": "G" },
+					{ "label": "行唐县", "index": "H" },
+					{ "label": "井陉矿区", "index": "J" },
+					{ "label": "井陉县", "index": "J" },
+					{ "label": "晋州市", "index": "J" },
+					{ "label": "鹿泉区", "index": "L" },
+					{ "label": "栾城区", "index": "L" },
+					{ "label": "灵寿县", "index": "L" },
+					{ "label": "平山县", "index": "P" },
+					{ "label": "桥西区", "index": "Q" },
+					{ "label": "深泽县", "index": "S" },
+					{ "label": "石家庄高新技术产业开发区", "index": "S" },
+					{ "label": "石家庄循环化工园区", "index": "S" },
+					{ "label": "无极县", "index": "W" },
+					{ "label": "新华区", "index": "X" },
+					{ "label": "辛集市", "index": "X" },
+					{ "label": "新乐市", "index": "X" },
+					{ "label": "裕华区", "index": "Y" },
+					{ "label": "元氏县", "index": "Y" },
+					{ "label": "正定县", "index": "Z" },
+					{ "label": "赞皇县", "index": "Z" },
+					{ "label": "赵县", "index": "Z" }
+				]
+			},
+			{
+				"label": "唐山市",
+				"index": "T",
+				"children": [
+					{ "label": "曹妃甸区", "index": "C" },
+					{ "label": "丰南区", "index": "F" },
+					{ "label": "丰润区", "index": "F" },
+					{ "label": "古冶区", "index": "G" },
+					{ "label": "河北唐山芦台经济开发区", "index": "H" },
+					{ "label": "河北唐山海港经济开发区", "index": "H" },
+					{ "label": "开平区", "index": "K" },
+					{ "label": "路南区", "index": "L" },
+					{ "label": "路北区", "index": "L" },
+					{ "label": "滦南县", "index": "L" },
+					{ "label": "乐亭县", "index": "L" },
+					{ "label": "滦州市", "index": "L" },
+					{ "label": "迁西县", "index": "Q" },
+					{ "label": "迁安市", "index": "Q" },
+					{ "label": "唐山市汉沽管理区", "index": "T" },
+					{ "label": "唐山高新技术产业开发区", "index": "T" },
+					{ "label": "玉田县", "index": "Y" },
+					{ "label": "遵化市", "index": "Z" }
+				]
+			},
+			{
+				"label": "邢台市",
+				"index": "X",
+				"children": [
+					{ "label": "柏乡县", "index": "B" },
+					{ "label": "广宗县", "index": "G" },
+					{ "label": "河北邢台经济开发区", "index": "H" },
+					{ "label": "巨鹿县", "index": "J" },
+					{ "label": "临城县", "index": "L" },
+					{ "label": "隆尧县", "index": "L" },
+					{ "label": "临西县", "index": "L" },
+					{ "label": "南和区", "index": "N" },
+					{ "label": "内丘县", "index": "N" },
+					{ "label": "宁晋县", "index": "N" },
+					{ "label": "南宫市", "index": "N" },
+					{ "label": "平乡县", "index": "P" },
+					{ "label": "清河县", "index": "Q" },
+					{ "label": "任泽区", "index": "R" },
+					{ "label": "沙河市", "index": "S" },
+					{ "label": "威县", "index": "W" },
+					{ "label": "襄都区", "index": "X" },
+					{ "label": "信都区", "index": "X" },
+					{ "label": "新河县", "index": "X" }
+				]
+			},
+			{
+				"label": "张家口市",
+				"index": "Z",
+				"children": [
+					{ "label": "崇礼区", "index": "C" },
+					{ "label": "赤城县", "index": "C" },
+					{ "label": "沽源县", "index": "G" },
+					{ "label": "怀安县", "index": "H" },
+					{ "label": "怀来县", "index": "H" },
+					{ "label": "康保县", "index": "K" },
+					{ "label": "桥东区", "index": "Q" },
+					{ "label": "桥西区", "index": "Q" },
+					{ "label": "尚义县", "index": "S" },
+					{ "label": "万全区", "index": "W" },
+					{ "label": "蔚县", "index": "W" },
+					{ "label": "宣化区", "index": "X" },
+					{ "label": "下花园区", "index": "X" },
+					{ "label": "阳原县", "index": "Y" },
+					{ "label": "张北县", "index": "Z" },
+					{ "label": "涿鹿县", "index": "Z" },
+					{ "label": "张家口经济开发区", "index": "Z" },
+					{ "label": "张家口市察北管理区", "index": "Z" },
+					{ "label": "张家口市塞北管理区", "index": "Z" }
+				]
+			}
+		]
+	},
+	{
+		"label": "黑龙江省",
+		"index": "H",
+		"children": [
+			{
+				"label": "大庆市",
+				"index": "D",
+				"children": [
+					{ "label": "大同区", "index": "D" },
+					{ "label": "杜尔伯特蒙古族自治县", "index": "D" },
+					{ "label": "大庆高新技术产业开发区", "index": "D" },
+					{ "label": "红岗区", "index": "H" },
+					{ "label": "龙凤区", "index": "L" },
+					{ "label": "林甸县", "index": "L" },
+					{ "label": "让胡路区", "index": "R" },
+					{ "label": "萨尔图区", "index": "S" },
+					{ "label": "肇州县", "index": "Z" },
+					{ "label": "肇源县", "index": "Z" }
+				]
+			},
+			{
+				"label": "大兴安岭地区",
+				"index": "D",
+				"children": [
+					{ "label": "呼玛县", "index": "H" },
+					{ "label": "呼中区", "index": "H" },
+					{ "label": "加格达奇区", "index": "J" },
+					{ "label": "漠河市", "index": "M" },
+					{ "label": "松岭区", "index": "S" },
+					{ "label": "塔河县", "index": "T" },
+					{ "label": "新林区", "index": "X" }
+				]
+			},
+			{
+				"label": "哈尔滨市",
+				"index": "H",
+				"children": [
+					{ "label": "阿城区", "index": "A" },
+					{ "label": "宾县", "index": "B" },
+					{ "label": "巴彦县", "index": "B" },
+					{ "label": "道里区", "index": "D" },
+					{ "label": "道外区", "index": "D" },
+					{ "label": "方正县", "index": "F" },
+					{ "label": "呼兰区", "index": "H" },
+					{ "label": "木兰县", "index": "M" },
+					{ "label": "南岗区", "index": "N" },
+					{ "label": "平房区", "index": "P" },
+					{ "label": "松北区", "index": "S" },
+					{ "label": "双城区", "index": "S" },
+					{ "label": "尚志市", "index": "S" },
+					{ "label": "通河县", "index": "T" },
+					{ "label": "五常市", "index": "W" },
+					{ "label": "香坊区", "index": "X" },
+					{ "label": "依兰县", "index": "Y" },
+					{ "label": "延寿县", "index": "Y" }
+				]
+			},
+			{
+				"label": "鹤岗市",
+				"index": "H",
+				"children": [
+					{ "label": "东山区", "index": "D" },
+					{ "label": "工农区", "index": "G" },
+					{ "label": "萝北县", "index": "L" },
+					{ "label": "南山区", "index": "N" },
+					{ "label": "绥滨县", "index": "S" },
+					{ "label": "向阳区", "index": "X" },
+					{ "label": "兴安区", "index": "X" },
+					{ "label": "兴山区", "index": "X" }
+				]
+			},
+			{
+				"label": "黑河市",
+				"index": "H",
+				"children": [
+					{ "label": "爱辉区", "index": "A" },
+					{ "label": "北安市", "index": "B" },
+					{ "label": "嫩江市", "index": "N" },
+					{ "label": "孙吴县", "index": "S" },
+					{ "label": "五大连池市", "index": "W" },
+					{ "label": "逊克县", "index": "X" }
+				]
+			},
+			{
+				"label": "鸡西市",
+				"index": "J",
+				"children": [
+					{ "label": "城子河区", "index": "C" },
+					{ "label": "滴道区", "index": "D" },
+					{ "label": "恒山区", "index": "H" },
+					{ "label": "虎林市", "index": "H" },
+					{ "label": "鸡冠区", "index": "J" },
+					{ "label": "鸡东县", "index": "J" },
+					{ "label": "梨树区", "index": "L" },
+					{ "label": "麻山区", "index": "M" },
+					{ "label": "密山市", "index": "M" }
+				]
+			},
+			{
+				"label": "佳木斯市",
+				"index": "J",
+				"children": [
+					{ "label": "东风区", "index": "D" },
+					{ "label": "富锦市", "index": "F" },
+					{ "label": "抚远市", "index": "F" },
+					{ "label": "桦南县", "index": "H" },
+					{ "label": "桦川县", "index": "H" },
+					{ "label": "郊区", "index": "J" },
+					{ "label": "前进区", "index": "Q" },
+					{ "label": "汤原县", "index": "T" },
+					{ "label": "同江市", "index": "T" },
+					{ "label": "向阳区", "index": "X" }
+				]
+			},
+			{
+				"label": "牡丹江市",
+				"index": "M",
+				"children": [
+					{ "label": "爱民区", "index": "A" },
+					{ "label": "东安区", "index": "D" },
+					{ "label": "东宁市", "index": "D" },
+					{ "label": "海林市", "index": "H" },
+					{ "label": "林口县", "index": "L" },
+					{ "label": "穆棱市", "index": "M" },
+					{ "label": "宁安市", "index": "N" },
+					{ "label": "绥芬河市", "index": "S" },
+					{ "label": "西安区", "index": "X" },
+					{ "label": "阳明区", "index": "Y" }
+				]
+			},
+			{
+				"label": "齐齐哈尔市",
+				"index": "Q",
+				"children": [
+					{ "label": "昂昂溪区", "index": "A" },
+					{ "label": "拜泉县", "index": "B" },
+					{ "label": "富拉尔基区", "index": "F" },
+					{ "label": "富裕县", "index": "F" },
+					{ "label": "甘南县", "index": "G" },
+					{ "label": "建华区", "index": "J" },
+					{ "label": "克山县", "index": "K" },
+					{ "label": "克东县", "index": "K" },
+					{ "label": "龙沙区", "index": "L" },
+					{ "label": "龙江县", "index": "L" },
+					{ "label": "梅里斯达斡尔族区", "index": "M" },
+					{ "label": "碾子山区", "index": "N" },
+					{ "label": "讷河市", "index": "N" },
+					{ "label": "铁锋区", "index": "T" },
+					{ "label": "泰来县", "index": "T" },
+					{ "label": "依安县", "index": "Y" }
+				]
+			},
+			{
+				"label": "七台河市",
+				"index": "Q",
+				"children": [
+					{ "label": "勃利县", "index": "B" },
+					{ "label": "茄子河区", "index": "Q" },
+					{ "label": "桃山区", "index": "T" },
+					{ "label": "新兴区", "index": "X" }
+				]
+			},
+			{
+				"label": "双鸭山市",
+				"index": "S",
+				"children": [
+					{ "label": "宝山区", "index": "B" },
+					{ "label": "宝清县", "index": "B" },
+					{ "label": "尖山区", "index": "J" },
+					{ "label": "集贤县", "index": "J" },
+					{ "label": "岭东区", "index": "L" },
+					{ "label": "饶河县", "index": "R" },
+					{ "label": "四方台区", "index": "S" },
+					{ "label": "友谊县", "index": "Y" }
+				]
+			},
+			{
+				"label": "绥化市",
+				"index": "S",
+				"children": [
+					{ "label": "安达市", "index": "A" },
+					{ "label": "北林区", "index": "B" },
+					{ "label": "海伦市", "index": "H" },
+					{ "label": "兰西县", "index": "L" },
+					{ "label": "明水县", "index": "M" },
+					{ "label": "青冈县", "index": "Q" },
+					{ "label": "庆安县", "index": "Q" },
+					{ "label": "绥棱县", "index": "S" },
+					{ "label": "望奎县", "index": "W" },
+					{ "label": "肇东市", "index": "Z" }
+				]
+			},
+			{
+				"label": "伊春市",
+				"index": "Y",
+				"children": [
+					{ "label": "大箐山县", "index": "D" },
+					{ "label": "丰林县", "index": "F" },
+					{ "label": "嘉荫县", "index": "J" },
+					{ "label": "金林区", "index": "J" },
+					{ "label": "南岔县", "index": "N" },
+					{ "label": "汤旺县", "index": "T" },
+					{ "label": "铁力市", "index": "T" },
+					{ "label": "乌翠区", "index": "W" },
+					{ "label": "伊美区", "index": "Y" },
+					{ "label": "友好区", "index": "Y" }
+				]
+			}
+		]
+	},
+	{
+		"label": "河南省",
+		"index": "H",
+		"children": [
+			{
+				"label": "安阳市",
+				"index": "A",
+				"children": [
+					{ "label": "安阳县", "index": "A" },
+					{ "label": "安阳高新技术产业开发区", "index": "A" },
+					{ "label": "北关区", "index": "B" },
+					{ "label": "滑县", "index": "H" },
+					{ "label": "龙安区", "index": "L" },
+					{ "label": "林州市", "index": "L" },
+					{ "label": "内黄县", "index": "N" },
+					{ "label": "汤阴县", "index": "T" },
+					{ "label": "文峰区", "index": "W" },
+					{ "label": "殷都区", "index": "Y" }
+				]
+			},
+			{
+				"label": "鹤壁市",
+				"index": "H",
+				"children": [
+					{ "label": "鹤山区", "index": "H" },
+					{ "label": "鹤壁经济技术开发区", "index": "H" },
+					{ "label": "浚县", "index": "J" },
+					{ "label": "淇滨区", "index": "Q" },
+					{ "label": "淇县", "index": "Q" },
+					{ "label": "山城区", "index": "S" }
+				]
+			},
+			{
+				"label": "焦作市",
+				"index": "J",
+				"children": [
+					{ "label": "博爱县", "index": "B" },
+					{ "label": "解放区", "index": "J" },
+					{ "label": "焦作城乡一体化示范区", "index": "J" },
+					{ "label": "马村区", "index": "M" },
+					{ "label": "孟州市", "index": "M" },
+					{ "label": "沁阳市", "index": "Q" },
+					{ "label": "山阳区", "index": "S" },
+					{ "label": "武陟县", "index": "W" },
+					{ "label": "温县", "index": "W" },
+					{ "label": "修武县", "index": "X" },
+					{ "label": "中站区", "index": "Z" }
+				]
+			},
+			{
+				"label": "开封市",
+				"index": "K",
+				"children": [
+					{ "label": "鼓楼区", "index": "G" },
+					{ "label": "龙亭区", "index": "L" },
+					{ "label": "兰考县", "index": "L" },
+					{ "label": "杞县", "index": "Q" },
+					{ "label": "顺河回族区", "index": "S" },
+					{ "label": "通许县", "index": "T" },
+					{ "label": "尉氏县", "index": "W" },
+					{ "label": "祥符区", "index": "X" },
+					{ "label": "禹王台区", "index": "Y" }
+				]
+			},
+			{
+				"label": "洛阳市",
+				"index": "L",
+				"children": [
+					{ "label": "瀍河回族区", "index": "C" },
+					{ "label": "涧西区", "index": "J" },
+					{ "label": "老城区", "index": "L" },
+					{ "label": "洛龙区", "index": "L" },
+					{ "label": "栾川县", "index": "L" },
+					{ "label": "洛宁县", "index": "L" },
+					{ "label": "洛阳高新技术产业开发区", "index": "L" },
+					{ "label": "孟津区", "index": "M" },
+					{ "label": "汝阳县", "index": "R" },
+					{ "label": "嵩县", "index": "S" },
+					{ "label": "西工区", "index": "X" },
+					{ "label": "新安县", "index": "X" },
+					{ "label": "偃师区", "index": "Y" },
+					{ "label": "宜阳县", "index": "Y" },
+					{ "label": "伊川县", "index": "Y" }
+				]
+			},
+			{
+				"label": "漯河市",
+				"index": "L",
+				"children": [
+					{ "label": "临颍县", "index": "L" },
+					{ "label": "漯河经济技术开发区", "index": "L" },
+					{ "label": "舞阳县", "index": "W" },
+					{ "label": "源汇区", "index": "Y" },
+					{ "label": "郾城区", "index": "Y" },
+					{ "label": "召陵区", "index": "Z" }
+				]
+			},
+			{
+				"label": "南阳市",
+				"index": "N",
+				"children": [
+					{ "label": "邓州市", "index": "D" },
+					{ "label": "方城县", "index": "F" },
+					{ "label": "南召县", "index": "N" },
+					{ "label": "内乡县", "index": "N" },
+					{ "label": "南阳高新技术产业开发区", "index": "N" },
+					{ "label": "南阳市城乡一体化示范区", "index": "N" },
+					{ "label": "社旗县", "index": "S" },
+					{ "label": "唐河县", "index": "T" },
+					{ "label": "桐柏县", "index": "T" },
+					{ "label": "宛城区", "index": "W" },
+					{ "label": "卧龙区", "index": "W" },
+					{ "label": "西峡县", "index": "X" },
+					{ "label": "淅川县", "index": "X" },
+					{ "label": "新野县", "index": "X" },
+					{ "label": "镇平县", "index": "Z" }
+				]
+			},
+			{
+				"label": "平顶山市",
+				"index": "P",
+				"children": [
+					{ "label": "宝丰县", "index": "B" },
+					{ "label": "郏县", "index": "J" },
+					{ "label": "鲁山县", "index": "L" },
+					{ "label": "平顶山高新技术产业开发区", "index": "P" },
+					{ "label": "平顶山市城乡一体化示范区", "index": "P" },
+					{ "label": "汝州市", "index": "R" },
+					{ "label": "石龙区", "index": "S" },
+					{ "label": "卫东区", "index": "W" },
+					{ "label": "舞钢市", "index": "W" },
+					{ "label": "新华区", "index": "X" },
+					{ "label": "叶县", "index": "Y" },
+					{ "label": "湛河区", "index": "Z" }
+				]
+			},
+			{
+				"label": "濮阳市",
+				"index": "P",
+				"children": [
+					{ "label": "范县", "index": "F" },
+					{ "label": "华龙区", "index": "H" },
+					{ "label": "河南濮阳工业园区", "index": "H" },
+					{ "label": "南乐县", "index": "N" },
+					{ "label": "濮阳县", "index": "P" },
+					{ "label": "濮阳经济技术开发区", "index": "P" },
+					{ "label": "清丰县", "index": "Q" },
+					{ "label": "台前县", "index": "T" }
+				]
+			},
+			{
+				"label": "三门峡市",
+				"index": "S",
+				"children": [
+					{ "label": "湖滨区", "index": "H" },
+					{ "label": "河南三门峡经济开发区", "index": "H" },
+					{ "label": "卢氏县", "index": "L" },
+					{ "label": "灵宝市", "index": "L" },
+					{ "label": "渑池县", "index": "M" },
+					{ "label": "陕州区", "index": "S" },
+					{ "label": "义马市", "index": "Y" }
+				]
+			},
+			{
+				"label": "商丘市",
+				"index": "S",
+				"children": [
+					{ "label": "睢阳区", "index": "H" },
+					{ "label": "睢县", "index": "H" },
+					{ "label": "河南商丘经济开发区", "index": "H" },
+					{ "label": "梁园区", "index": "L" },
+					{ "label": "民权县", "index": "M" },
+					{ "label": "宁陵县", "index": "N" },
+					{ "label": "夏邑县", "index": "X" },
+					{ "label": "虞城县", "index": "Y" },
+					{ "label": "豫东综合物流产业聚集区", "index": "Y" },
+					{ "label": "永城市", "index": "Y" },
+					{ "label": "柘城县", "index": "Z" }
+				]
+			},
+			{
+				"label": "省直辖县级行政区划",
+				"index": "S",
+				"children": [{ "label": "济源市", "index": "J" }]
+			},
+			{
+				"label": "新乡市",
+				"index": "X",
+				"children": [
+					{ "label": "长垣市", "index": "C" },
+					{ "label": "凤泉区", "index": "F" },
+					{ "label": "封丘县", "index": "F" },
+					{ "label": "红旗区", "index": "H" },
+					{ "label": "获嘉县", "index": "H" },
+					{ "label": "辉县市", "index": "H" },
+					{ "label": "牧野区", "index": "M" },
+					{ "label": "卫滨区", "index": "W" },
+					{ "label": "卫辉市", "index": "W" },
+					{ "label": "新乡县", "index": "X" },
+					{ "label": "新乡高新技术产业开发区", "index": "X" },
+					{ "label": "新乡经济技术开发区", "index": "X" },
+					{ "label": "新乡市平原城乡一体化示范区", "index": "X" },
+					{ "label": "原阳县", "index": "Y" },
+					{ "label": "延津县", "index": "Y" }
+				]
+			},
+			{
+				"label": "许昌市",
+				"index": "X",
+				"children": [
+					{ "label": "长葛市", "index": "C" },
+					{ "label": "建安区", "index": "J" },
+					{ "label": "魏都区", "index": "W" },
+					{ "label": "襄城县", "index": "X" },
+					{ "label": "许昌经济技术开发区", "index": "X" },
+					{ "label": "鄢陵县", "index": "Y" },
+					{ "label": "禹州市", "index": "Y" }
+				]
+			},
+			{
+				"label": "信阳市",
+				"index": "X",
+				"children": [
+					{ "label": "光山县", "index": "G" },
+					{ "label": "固始县", "index": "G" },
+					{ "label": "潢川县", "index": "H" },
+					{ "label": "淮滨县", "index": "H" },
+					{ "label": "罗山县", "index": "L" },
+					{ "label": "平桥区", "index": "P" },
+					{ "label": "浉河区", "index": "S" },
+					{ "label": "商城县", "index": "S" },
+					{ "label": "新县", "index": "X" },
+					{ "label": "息县", "index": "X" },
+					{ "label": "信阳高新技术产业开发区", "index": "X" }
+				]
+			},
+			{
+				"label": "郑州市",
+				"index": "Z",
+				"children": [
+					{ "label": "登封市", "index": "D" },
+					{ "label": "二七区", "index": "E" },
+					{ "label": "管城回族区", "index": "G" },
+					{ "label": "巩义市", "index": "G" },
+					{ "label": "惠济区", "index": "H" },
+					{ "label": "金水区", "index": "J" },
+					{ "label": "上街区", "index": "S" },
+					{ "label": "荥阳市", "index": "X" },
+					{ "label": "新密市", "index": "X" },
+					{ "label": "新郑市", "index": "X" },
+					{ "label": "中原区", "index": "Z" },
+					{ "label": "中牟县", "index": "Z" },
+					{ "label": "郑州经济技术开发区", "index": "Z" },
+					{ "label": "郑州高新技术产业开发区", "index": "Z" },
+					{ "label": "郑州航空港经济综合实验区", "index": "Z" }
+				]
+			},
+			{
+				"label": "周口市",
+				"index": "Z",
+				"children": [
+					{ "label": "川汇区", "index": "C" },
+					{ "label": "郸城县", "index": "D" },
+					{ "label": "扶沟县", "index": "F" },
+					{ "label": "淮阳区", "index": "H" },
+					{ "label": "鹿邑县", "index": "L" },
+					{ "label": "商水县", "index": "S" },
+					{ "label": "沈丘县", "index": "S" },
+					{ "label": "太康县", "index": "T" },
+					{ "label": "西华县", "index": "X" },
+					{ "label": "项城市", "index": "X" },
+					{ "label": "周口临港开发区", "index": "Z" }
+				]
+			},
+			{
+				"label": "驻马店市",
+				"index": "Z",
+				"children": [
+					{ "label": "河南驻马店经济开发区", "index": "H" },
+					{ "label": "泌阳县", "index": "M" },
+					{ "label": "平舆县", "index": "P" },
+					{ "label": "确山县", "index": "Q" },
+					{ "label": "汝南县", "index": "R" },
+					{ "label": "上蔡县", "index": "S" },
+					{ "label": "遂平县", "index": "S" },
+					{ "label": "西平县", "index": "X" },
+					{ "label": "新蔡县", "index": "X" },
+					{ "label": "驿城区", "index": "Y" },
+					{ "label": "正阳县", "index": "Z" }
+				]
+			}
+		]
+	},
+	{
+		"label": "湖北省",
+		"index": "H",
+		"children": [
+			{
+				"label": "鄂州市",
+				"index": "E",
+				"children": [
+					{ "label": "鄂城区", "index": "E" },
+					{ "label": "华容区", "index": "H" },
+					{ "label": "梁子湖区", "index": "L" }
+				]
+			},
+			{
+				"label": "恩施土家族苗族自治州",
+				"index": "E",
+				"children": [
+					{ "label": "巴东县", "index": "B" },
+					{ "label": "恩施市", "index": "E" },
+					{ "label": "鹤峰县", "index": "H" },
+					{ "label": "建始县", "index": "J" },
+					{ "label": "利川市", "index": "L" },
+					{ "label": "来凤县", "index": "L" },
+					{ "label": "宣恩县", "index": "X" },
+					{ "label": "咸丰县", "index": "X" }
+				]
+			},
+			{
+				"label": "黄石市",
+				"index": "H",
+				"children": [
+					{ "label": "大冶市", "index": "D" },
+					{ "label": "黄石港区", "index": "H" },
+					{ "label": "铁山区", "index": "T" },
+					{ "label": "西塞山区", "index": "X" },
+					{ "label": "下陆区", "index": "X" },
+					{ "label": "阳新县", "index": "Y" }
+				]
+			},
+			{
+				"label": "黄冈市",
+				"index": "H",
+				"children": [
+					{ "label": "黄州区", "index": "H" },
+					{ "label": "红安县", "index": "H" },
+					{ "label": "黄梅县", "index": "H" },
+					{ "label": "罗田县", "index": "L" },
+					{ "label": "龙感湖管理区", "index": "L" },
+					{ "label": "麻城市", "index": "M" },
+					{ "label": "蕲春县", "index": "Q" },
+					{ "label": "团风县", "index": "T" },
+					{ "label": "武穴市", "index": "W" },
+					{ "label": "浠水县", "index": "X" },
+					{ "label": "英山县", "index": "Y" }
+				]
+			},
+			{
+				"label": "荆门市",
+				"index": "J",
+				"children": [
+					{ "label": "东宝区", "index": "D" },
+					{ "label": "掇刀区", "index": "D" },
+					{ "label": "京山市", "index": "J" },
+					{ "label": "沙洋县", "index": "S" },
+					{ "label": "钟祥市", "index": "Z" }
+				]
+			},
+			{
+				"label": "荆州市",
+				"index": "J",
+				"children": [
+					{ "label": "公安县", "index": "G" },
+					{ "label": "洪湖市", "index": "H" },
+					{ "label": "荆州区", "index": "J" },
+					{ "label": "江陵县", "index": "J" },
+					{ "label": "荆州经济技术开发区", "index": "J" },
+					{ "label": "监利市", "index": "J" },
+					{ "label": "沙市区", "index": "S" },
+					{ "label": "石首市", "index": "S" },
+					{ "label": "松滋市", "index": "S" }
+				]
+			},
+			{
+				"label": "十堰市",
+				"index": "S",
+				"children": [
+					{ "label": "丹江口市", "index": "D" },
+					{ "label": "房县", "index": "F" },
+					{ "label": "茅箭区", "index": "M" },
+					{ "label": "郧阳区", "index": "Y" },
+					{ "label": "郧西县", "index": "Y" },
+					{ "label": "张湾区", "index": "Z" },
+					{ "label": "竹山县", "index": "Z" },
+					{ "label": "竹溪县", "index": "Z" }
+				]
+			},
+			{
+				"label": "随州市",
+				"index": "S",
+				"children": [
+					{ "label": "广水市", "index": "G" },
+					{ "label": "随县", "index": "S" },
+					{ "label": "曾都区", "index": "Z" }
+				]
+			},
+			{
+				"label": "省直辖县级行政区划",
+				"index": "S",
+				"children": [
+					{ "label": "潜江市", "index": "Q" },
+					{ "label": "神农架林区", "index": "S" },
+					{ "label": "天门市", "index": "T" },
+					{ "label": "仙桃市", "index": "X" }
+				]
+			},
+			{
+				"label": "武汉市",
+				"index": "W",
+				"children": [
+					{ "label": "蔡甸区", "index": "C" },
+					{ "label": "东西湖区", "index": "D" },
+					{ "label": "汉阳区", "index": "H" },
+					{ "label": "洪山区", "index": "H" },
+					{ "label": "汉南区", "index": "H" },
+					{ "label": "黄陂区", "index": "H" },
+					{ "label": "江岸区", "index": "J" },
+					{ "label": "江汉区", "index": "J" },
+					{ "label": "江夏区", "index": "J" },
+					{ "label": "硚口区", "index": "Q" },
+					{ "label": "青山区", "index": "Q" },
+					{ "label": "武昌区", "index": "W" },
+					{ "label": "新洲区", "index": "X" }
+				]
+			},
+			{
+				"label": "襄阳市",
+				"index": "X",
+				"children": [
+					{ "label": "保康县", "index": "B" },
+					{ "label": "樊城区", "index": "F" },
+					{ "label": "谷城县", "index": "G" },
+					{ "label": "老河口市", "index": "L" },
+					{ "label": "南漳县", "index": "N" },
+					{ "label": "襄城区", "index": "X" },
+					{ "label": "襄州区", "index": "X" },
+					{ "label": "宜城市", "index": "Y" },
+					{ "label": "枣阳市", "index": "Z" }
+				]
+			},
+			{
+				"label": "孝感市",
+				"index": "X",
+				"children": [
+					{ "label": "安陆市", "index": "A" },
+					{ "label": "大悟县", "index": "D" },
+					{ "label": "汉川市", "index": "H" },
+					{ "label": "孝南区", "index": "X" },
+					{ "label": "孝昌县", "index": "X" },
+					{ "label": "云梦县", "index": "Y" },
+					{ "label": "应城市", "index": "Y" }
+				]
+			},
+			{
+				"label": "咸宁市",
+				"index": "X",
+				"children": [
+					{ "label": "崇阳县", "index": "C" },
+					{ "label": "赤壁市", "index": "C" },
+					{ "label": "嘉鱼县", "index": "J" },
+					{ "label": "通城县", "index": "T" },
+					{ "label": "通山县", "index": "T" },
+					{ "label": "咸安区", "index": "X" }
+				]
+			},
+			{
+				"label": "宜昌市",
+				"index": "Y",
+				"children": [
+					{ "label": "长阳土家族自治县", "index": "C" },
+					{ "label": "点军区", "index": "D" },
+					{ "label": "当阳市", "index": "D" },
+					{ "label": "伍家岗区", "index": "W" },
+					{ "label": "五峰土家族自治县", "index": "W" },
+					{ "label": "西陵区", "index": "X" },
+					{ "label": "猇亭区", "index": "X" },
+					{ "label": "兴山县", "index": "X" },
+					{ "label": "夷陵区", "index": "Y" },
+					{ "label": "远安县", "index": "Y" },
+					{ "label": "宜都市", "index": "Y" },
+					{ "label": "秭归县", "index": "Z" },
+					{ "label": "枝江市", "index": "Z" }
+				]
+			}
+		]
+	},
+	{
+		"label": "湖南省",
+		"index": "H",
+		"children": [
+			{
+				"label": "长沙市",
+				"index": "C",
+				"children": [
+					{ "label": "长沙县", "index": "C" },
+					{ "label": "芙蓉区", "index": "F" },
+					{ "label": "开福区", "index": "K" },
+					{ "label": "浏阳市", "index": "L" },
+					{ "label": "宁乡市", "index": "N" },
+					{ "label": "天心区", "index": "T" },
+					{ "label": "望城区", "index": "W" },
+					{ "label": "岳麓区", "index": "Y" },
+					{ "label": "雨花区", "index": "Y" }
+				]
+			},
+			{
+				"label": "常德市",
+				"index": "C",
+				"children": [
+					{ "label": "安乡县", "index": "A" },
+					{ "label": "常德市西洞庭管理区", "index": "C" },
+					{ "label": "鼎城区", "index": "D" },
+					{ "label": "汉寿县", "index": "H" },
+					{ "label": "津市市", "index": "J" },
+					{ "label": "澧县", "index": "L" },
+					{ "label": "临澧县", "index": "L" },
+					{ "label": "石门县", "index": "S" },
+					{ "label": "桃源县", "index": "T" },
+					{ "label": "武陵区", "index": "W" }
+				]
+			},
+			{
+				"label": "郴州市",
+				"index": "C",
+				"children": [
+					{ "label": "安仁县", "index": "A" },
+					{ "label": "北湖区", "index": "B" },
+					{ "label": "桂阳县", "index": "G" },
+					{ "label": "桂东县", "index": "G" },
+					{ "label": "嘉禾县", "index": "J" },
+					{ "label": "临武县", "index": "L" },
+					{ "label": "汝城县", "index": "R" },
+					{ "label": "苏仙区", "index": "S" },
+					{ "label": "宜章县", "index": "Y" },
+					{ "label": "永兴县", "index": "Y" },
+					{ "label": "资兴市", "index": "Z" }
+				]
+			},
+			{
+				"label": "衡阳市",
+				"index": "H",
+				"children": [
+					{ "label": "常宁市", "index": "C" },
+					{ "label": "衡阳县", "index": "H" },
+					{ "label": "衡南县", "index": "H" },
+					{ "label": "衡山县", "index": "H" },
+					{ "label": "衡东县", "index": "H" },
+					{ "label": "湖南衡阳松木经济开发区", "index": "H" },
+					{ "label": "湖南衡阳高新技术产业园区", "index": "H" },
+					{ "label": "耒阳市", "index": "L" },
+					{ "label": "南岳区", "index": "N" },
+					{ "label": "祁东县", "index": "Q" },
+					{ "label": "石鼓区", "index": "S" },
+					{ "label": "雁峰区", "index": "Y" },
+					{ "label": "珠晖区", "index": "Z" },
+					{ "label": "蒸湘区", "index": "Z" }
+				]
+			},
+			{
+				"label": "怀化市",
+				"index": "H",
+				"children": [
+					{ "label": "辰溪县", "index": "C" },
+					{ "label": "鹤城区", "index": "H" },
+					{ "label": "会同县", "index": "H" },
+					{ "label": "怀化市洪江管理区", "index": "H" },
+					{ "label": "洪江市", "index": "H" },
+					{ "label": "靖州苗族侗族自治县", "index": "J" },
+					{ "label": "麻阳苗族自治县", "index": "M" },
+					{ "label": "通道侗族自治县", "index": "T" },
+					{ "label": "溆浦县", "index": "X" },
+					{ "label": "新晃侗族自治县", "index": "X" },
+					{ "label": "沅陵县", "index": "Y" },
+					{ "label": "中方县", "index": "Z" },
+					{ "label": "芷江侗族自治县", "index": "Z" }
+				]
+			},
+			{
+				"label": "娄底市",
+				"index": "L",
+				"children": [
+					{ "label": "娄星区", "index": "L" },
+					{ "label": "冷水江市", "index": "L" },
+					{ "label": "涟源市", "index": "L" },
+					{ "label": "双峰县", "index": "S" },
+					{ "label": "新化县", "index": "X" }
+				]
+			},
+			{
+				"label": "邵阳市",
+				"index": "S",
+				"children": [
+					{ "label": "北塔区", "index": "B" },
+					{ "label": "城步苗族自治县", "index": "C" },
+					{ "label": "大祥区", "index": "D" },
+					{ "label": "洞口县", "index": "D" },
+					{ "label": "隆回县", "index": "L" },
+					{ "label": "双清区", "index": "S" },
+					{ "label": "邵阳县", "index": "S" },
+					{ "label": "绥宁县", "index": "S" },
+					{ "label": "邵东市", "index": "S" },
+					{ "label": "武冈市", "index": "W" },
+					{ "label": "新邵县", "index": "X" },
+					{ "label": "新宁县", "index": "X" }
+				]
+			},
+			{
+				"label": "湘潭市",
+				"index": "X",
+				"children": [
+					{ "label": "湖南湘潭高新技术产业园区", "index": "H" },
+					{ "label": "韶山市", "index": "S" },
+					{ "label": "湘潭县", "index": "X" },
+					{ "label": "湘潭昭山示范区", "index": "X" },
+					{ "label": "湘潭九华示范区", "index": "X" },
+					{ "label": "湘乡市", "index": "X" },
+					{ "label": "雨湖区", "index": "Y" },
+					{ "label": "岳塘区", "index": "Y" }
+				]
+			},
+			{
+				"label": "湘西土家族苗族自治州",
+				"index": "X",
+				"children": [
+					{ "label": "保靖县", "index": "B" },
+					{ "label": "凤凰县", "index": "F" },
+					{ "label": "古丈县", "index": "G" },
+					{ "label": "花垣县", "index": "H" },
+					{ "label": "吉首市", "index": "J" },
+					{ "label": "泸溪县", "index": "L" },
+					{ "label": "龙山县", "index": "L" },
+					{ "label": "永顺县", "index": "Y" }
+				]
+			},
+			{
+				"label": "岳阳市",
+				"index": "Y",
+				"children": [
+					{ "label": "华容县", "index": "H" },
+					{ "label": "君山区", "index": "J" },
+					{ "label": "临湘市", "index": "L" },
+					{ "label": "汨罗市", "index": "M" },
+					{ "label": "平江县", "index": "P" },
+					{ "label": "湘阴县", "index": "X" },
+					{ "label": "岳阳楼区", "index": "Y" },
+					{ "label": "云溪区", "index": "Y" },
+					{ "label": "岳阳县", "index": "Y" },
+					{ "label": "岳阳市屈原管理区", "index": "Y" }
+				]
+			},
+			{
+				"label": "益阳市",
+				"index": "Y",
+				"children": [
+					{ "label": "安化县", "index": "A" },
+					{ "label": "赫山区", "index": "H" },
+					{ "label": "湖南益阳高新技术产业园区", "index": "H" },
+					{ "label": "南县", "index": "N" },
+					{ "label": "桃江县", "index": "T" },
+					{ "label": "益阳市大通湖管理区", "index": "Y" },
+					{ "label": "沅江市", "index": "Y" },
+					{ "label": "资阳区", "index": "Z" }
+				]
+			},
+			{
+				"label": "永州市",
+				"index": "Y",
+				"children": [
+					{ "label": "东安县", "index": "D" },
+					{ "label": "道县", "index": "D" },
+					{ "label": "江永县", "index": "J" },
+					{ "label": "江华瑶族自治县", "index": "J" },
+					{ "label": "零陵区", "index": "L" },
+					{ "label": "冷水滩区", "index": "L" },
+					{ "label": "蓝山县", "index": "L" },
+					{ "label": "宁远县", "index": "N" },
+					{ "label": "祁阳市", "index": "Q" },
+					{ "label": "双牌县", "index": "S" },
+					{ "label": "新田县", "index": "X" },
+					{ "label": "永州经济技术开发区", "index": "Y" },
+					{ "label": "永州市回龙圩管理区", "index": "Y" }
+				]
+			},
+			{
+				"label": "株洲市",
+				"index": "Z",
+				"children": [
+					{ "label": "茶陵县", "index": "C" },
+					{ "label": "荷塘区", "index": "H" },
+					{ "label": "芦淞区", "index": "L" },
+					{ "label": "渌口区", "index": "L" },
+					{ "label": "醴陵市", "index": "L" },
+					{ "label": "石峰区", "index": "S" },
+					{ "label": "天元区", "index": "T" },
+					{ "label": "攸县", "index": "Y" },
+					{ "label": "炎陵县", "index": "Y" }
+				]
+			},
+			{
+				"label": "张家界市",
+				"index": "Z",
+				"children": [
+					{ "label": "慈利县", "index": "C" },
+					{ "label": "桑植县", "index": "S" },
+					{ "label": "武陵源区", "index": "W" },
+					{ "label": "永定区", "index": "Y" }
+				]
+			}
+		]
+	},
+	{
+		"label": "海南省",
+		"index": "H",
+		"children": [
+			{
+				"label": "儋州市",
+				"index": "D",
+				"children": [
+					{ "label": "白马井镇", "index": "B" },
+					{ "label": "大成镇", "index": "D" },
+					{ "label": "东成镇", "index": "D" },
+					{ "label": "峨蔓镇", "index": "E" },
+					{ "label": "光村镇", "index": "G" },
+					{ "label": "和庆镇", "index": "H" },
+					{ "label": "海头镇", "index": "H" },
+					{ "label": "华南热作学院", "index": "H" },
+					{ "label": "兰洋镇", "index": "L" },
+					{ "label": "木棠镇", "index": "M" },
+					{ "label": "那大镇", "index": "N" },
+					{ "label": "南丰镇", "index": "N" },
+					{ "label": "排浦镇", "index": "P" },
+					{ "label": "王五镇", "index": "W" },
+					{ "label": "新州镇", "index": "X" },
+					{ "label": "雅星镇", "index": "Y" },
+					{ "label": "洋浦经济开发区", "index": "Y" },
+					{ "label": "中和镇", "index": "Z" }
+				]
+			},
+			{
+				"label": "海口市",
+				"index": "H",
+				"children": [
+					{ "label": "龙华区", "index": "L" },
+					{ "label": "美兰区", "index": "M" },
+					{ "label": "琼山区", "index": "Q" },
+					{ "label": "秀英区", "index": "X" }
+				]
+			},
+			{
+				"label": "三亚市",
+				"index": "S",
+				"children": [
+					{ "label": "海棠区", "index": "H" },
+					{ "label": "吉阳区", "index": "J" },
+					{ "label": "天涯区", "index": "T" },
+					{ "label": "崖州区", "index": "Y" }
+				]
+			},
+			{
+				"label": "三沙市",
+				"index": "S",
+				"children": [
+					{ "label": "南沙群岛", "index": "N" },
+					{ "label": "西沙群岛", "index": "X" },
+					{ "label": "中沙群岛的岛礁及其海域", "index": "Z" }
+				]
+			},
+			{
+				"label": "省直辖县级行政区划",
+				"index": "S",
+				"children": [
+					{ "label": "白沙黎族自治县", "index": "B" },
+					{ "label": "保亭黎族苗族自治县", "index": "B" },
+					{ "label": "澄迈县", "index": "C" },
+					{ "label": "昌江黎族自治县", "index": "C" },
+					{ "label": "东方市", "index": "D" },
+					{ "label": "定安县", "index": "D" },
+					{ "label": "临高县", "index": "L" },
+					{ "label": "乐东黎族自治县", "index": "L" },
+					{ "label": "陵水黎族自治县", "index": "L" },
+					{ "label": "琼海市", "index": "Q" },
+					{ "label": "琼中黎族苗族自治县", "index": "Q" },
+					{ "label": "屯昌县", "index": "T" },
+					{ "label": "五指山市", "index": "W" },
+					{ "label": "文昌市", "index": "W" },
+					{ "label": "万宁市", "index": "W" }
+				]
+			}
+		]
+	},
+	{
+		"label": "吉林省",
+		"index": "J",
+		"children": [
+			{
+				"label": "白山市",
+				"index": "B",
+				"children": [
+					{ "label": "长白朝鲜族自治县", "index": "C" },
+					{ "label": "抚松县", "index": "F" },
+					{ "label": "浑江区", "index": "H" },
+					{ "label": "江源区", "index": "J" },
+					{ "label": "靖宇县", "index": "J" },
+					{ "label": "临江市", "index": "L" }
+				]
+			},
+			{
+				"label": "白城市",
+				"index": "B",
+				"children": [
+					{ "label": "大安市", "index": "D" },
+					{ "label": "吉林白城经济开发区", "index": "J" },
+					{ "label": "洮北区", "index": "T" },
+					{ "label": "通榆县", "index": "T" },
+					{ "label": "洮南市", "index": "T" },
+					{ "label": "镇赉县", "index": "Z" }
+				]
+			},
+			{
+				"label": "长春市",
+				"index": "C",
+				"children": [
+					{ "label": "长春经济技术开发区", "index": "C" },
+					{ "label": "长春净月高新技术产业开发区", "index": "C" },
+					{ "label": "长春高新技术产业开发区", "index": "C" },
+					{ "label": "长春汽车经济技术开发区", "index": "C" },
+					{ "label": "德惠市", "index": "D" },
+					{ "label": "二道区", "index": "E" },
+					{ "label": "公主岭市", "index": "G" },
+					{ "label": "九台区", "index": "J" },
+					{ "label": "宽城区", "index": "K" },
+					{ "label": "绿园区", "index": "L" },
+					{ "label": "南关区", "index": "N" },
+					{ "label": "农安县", "index": "N" },
+					{ "label": "双阳区", "index": "S" },
+					{ "label": "榆树市", "index": "Y" },
+					{ "label": "朝阳区", "index": "Z" }
+				]
+			},
+			{
+				"label": "吉林市",
+				"index": "J",
+				"children": [
+					{ "label": "昌邑区", "index": "C" },
+					{ "label": "船营区", "index": "C" },
+					{ "label": "丰满区", "index": "F" },
+					{ "label": "桦甸市", "index": "H" },
+					{ "label": "吉林经济开发区", "index": "J" },
+					{ "label": "吉林高新技术产业开发区", "index": "J" },
+					{ "label": "吉林中国新加坡食品区", "index": "J" },
+					{ "label": "蛟河市", "index": "J" },
+					{ "label": "龙潭区", "index": "L" },
+					{ "label": "磐石市", "index": "P" },
+					{ "label": "舒兰市", "index": "S" },
+					{ "label": "永吉县", "index": "Y" }
+				]
+			},
+			{
+				"label": "辽源市",
+				"index": "L",
+				"children": [
+					{ "label": "东丰县", "index": "D" },
+					{ "label": "东辽县", "index": "D" },
+					{ "label": "龙山区", "index": "L" },
+					{ "label": "西安区", "index": "X" }
+				]
+			},
+			{
+				"label": "四平市",
+				"index": "S",
+				"children": [
+					{ "label": "梨树县", "index": "L" },
+					{ "label": "双辽市", "index": "S" },
+					{ "label": "铁西区", "index": "T" },
+					{ "label": "铁东区", "index": "T" },
+					{ "label": "伊通满族自治县", "index": "Y" }
+				]
+			},
+			{
+				"label": "松原市",
+				"index": "S",
+				"children": [
+					{ "label": "长岭县", "index": "C" },
+					{ "label": "扶余市", "index": "F" },
+					{ "label": "吉林松原经济开发区", "index": "J" },
+					{ "label": "宁江区", "index": "N" },
+					{ "label": "前郭尔罗斯蒙古族自治县", "index": "Q" },
+					{ "label": "乾安县", "index": "Q" }
+				]
+			},
+			{
+				"label": "通化市",
+				"index": "T",
+				"children": [
+					{ "label": "东昌区", "index": "D" },
+					{ "label": "二道江区", "index": "E" },
+					{ "label": "辉南县", "index": "H" },
+					{ "label": "集安市", "index": "J" },
+					{ "label": "柳河县", "index": "L" },
+					{ "label": "梅河口市", "index": "M" },
+					{ "label": "通化县", "index": "T" }
+				]
+			},
+			{
+				"label": "延边朝鲜族自治州",
+				"index": "Y",
+				"children": [
+					{ "label": "安图县", "index": "A" },
+					{ "label": "敦化市", "index": "D" },
+					{ "label": "珲春市", "index": "H" },
+					{ "label": "和龙市", "index": "H" },
+					{ "label": "龙井市", "index": "L" },
+					{ "label": "图们市", "index": "T" },
+					{ "label": "汪清县", "index": "W" },
+					{ "label": "延吉市", "index": "Y" }
+				]
+			}
+		]
+	},
+	{
+		"label": "江苏省",
+		"index": "J",
+		"children": [
+			{
+				"label": "常州市",
+				"index": "C",
+				"children": [
+					{ "label": "金坛区", "index": "J" },
+					{ "label": "溧阳市", "index": "L" },
+					{ "label": "天宁区", "index": "T" },
+					{ "label": "武进区", "index": "W" },
+					{ "label": "新北区", "index": "X" },
+					{ "label": "钟楼区", "index": "Z" }
+				]
+			},
+			{
+				"label": "淮安市",
+				"index": "H",
+				"children": [
+					{ "label": "淮安区", "index": "H" },
+					{ "label": "淮阴区", "index": "H" },
+					{ "label": "洪泽区", "index": "H" },
+					{ "label": "淮安经济技术开发区", "index": "H" },
+					{ "label": "金湖县", "index": "J" },
+					{ "label": "涟水县", "index": "L" },
+					{ "label": "清江浦区", "index": "Q" },
+					{ "label": "盱眙县", "index": "X" }
+				]
+			},
+			{
+				"label": "连云港市",
+				"index": "L",
+				"children": [
+					{ "label": "东海县", "index": "D" },
+					{ "label": "赣榆区", "index": "G" },
+					{ "label": "灌云县", "index": "G" },
+					{ "label": "灌南县", "index": "G" },
+					{ "label": "海州区", "index": "H" },
+					{ "label": "连云区", "index": "L" },
+					{ "label": "连云港经济技术开发区", "index": "L" }
+				]
+			},
+			{
+				"label": "南京市",
+				"index": "N",
+				"children": [
+					{ "label": "鼓楼区", "index": "G" },
+					{ "label": "高淳区", "index": "G" },
+					{ "label": "建邺区", "index": "J" },
+					{ "label": "江宁区", "index": "J" },
+					{ "label": "六合区", "index": "L" },
+					{ "label": "溧水区", "index": "L" },
+					{ "label": "浦口区", "index": "P" },
+					{ "label": "秦淮区", "index": "Q" },
+					{ "label": "栖霞区", "index": "Q" },
+					{ "label": "玄武区", "index": "X" },
+					{ "label": "雨花台区", "index": "Y" }
+				]
+			},
+			{
+				"label": "南通市",
+				"index": "N",
+				"children": [
+					{ "label": "崇川区", "index": "C" },
+					{ "label": "海门区", "index": "H" },
+					{ "label": "海安市", "index": "H" },
+					{ "label": "南通经济技术开发区", "index": "N" },
+					{ "label": "启东市", "index": "Q" },
+					{ "label": "如东县", "index": "R" },
+					{ "label": "如皋市", "index": "R" },
+					{ "label": "通州区", "index": "T" }
+				]
+			},
+			{
+				"label": "苏州市",
+				"index": "S",
+				"children": [
+					{ "label": "常熟市", "index": "C" },
+					{ "label": "姑苏区", "index": "G" },
+					{ "label": "虎丘区", "index": "H" },
+					{ "label": "昆山市", "index": "K" },
+					{ "label": "苏州工业园区", "index": "S" },
+					{ "label": "太仓市", "index": "T" },
+					{ "label": "吴中区", "index": "W" },
+					{ "label": "吴江区", "index": "W" },
+					{ "label": "相城区", "index": "X" },
+					{ "label": "张家港市", "index": "Z" }
+				]
+			},
+			{
+				"label": "宿迁市",
+				"index": "S",
+				"children": [
+					{ "label": "宿城区", "index": "S" },
+					{ "label": "宿豫区", "index": "S" },
+					{ "label": "沭阳县", "index": "S" },
+					{ "label": "泗阳县", "index": "S" },
+					{ "label": "泗洪县", "index": "S" },
+					{ "label": "宿迁经济技术开发区", "index": "S" }
+				]
+			},
+			{
+				"label": "泰州市",
+				"index": "T",
+				"children": [
+					{ "label": "高港区", "index": "G" },
+					{ "label": "海陵区", "index": "H" },
+					{ "label": "姜堰区", "index": "J" },
+					{ "label": "靖江市", "index": "J" },
+					{ "label": "泰兴市", "index": "T" },
+					{ "label": "兴化市", "index": "X" }
+				]
+			},
+			{
+				"label": "无锡市",
+				"index": "W",
+				"children": [
+					{ "label": "滨湖区", "index": "B" },
+					{ "label": "惠山区", "index": "H" },
+					{ "label": "江阴市", "index": "J" },
+					{ "label": "梁溪区", "index": "L" },
+					{ "label": "锡山区", "index": "X" },
+					{ "label": "新吴区", "index": "X" },
+					{ "label": "宜兴市", "index": "Y" }
+				]
+			},
+			{
+				"label": "徐州市",
+				"index": "X",
+				"children": [
+					{ "label": "丰县", "index": "F" },
+					{ "label": "鼓楼区", "index": "G" },
+					{ "label": "睢宁县", "index": "H" },
+					{ "label": "贾汪区", "index": "J" },
+					{ "label": "沛县", "index": "P" },
+					{ "label": "邳州市", "index": "P" },
+					{ "label": "泉山区", "index": "Q" },
+					{ "label": "铜山区", "index": "T" },
+					{ "label": "徐州经济技术开发区", "index": "X" },
+					{ "label": "新沂市", "index": "X" },
+					{ "label": "云龙区", "index": "Y" }
+				]
+			},
+			{
+				"label": "盐城市",
+				"index": "Y",
+				"children": [
+					{ "label": "滨海县", "index": "B" },
+					{ "label": "大丰区", "index": "D" },
+					{ "label": "东台市", "index": "D" },
+					{ "label": "阜宁县", "index": "F" },
+					{ "label": "建湖县", "index": "J" },
+					{ "label": "射阳县", "index": "S" },
+					{ "label": "亭湖区", "index": "T" },
+					{ "label": "响水县", "index": "X" },
+					{ "label": "盐都区", "index": "Y" },
+					{ "label": "盐城经济技术开发区", "index": "Y" }
+				]
+			},
+			{
+				"label": "扬州市",
+				"index": "Y",
+				"children": [
+					{ "label": "宝应县", "index": "B" },
+					{ "label": "广陵区", "index": "G" },
+					{ "label": "高邮市", "index": "G" },
+					{ "label": "邗江区", "index": "H" },
+					{ "label": "江都区", "index": "J" },
+					{ "label": "扬州经济技术开发区", "index": "Y" },
+					{ "label": "仪征市", "index": "Y" }
+				]
+			},
+			{
+				"label": "镇江市",
+				"index": "Z",
+				"children": [
+					{ "label": "丹徒区", "index": "D" },
+					{ "label": "丹阳市", "index": "D" },
+					{ "label": "京口区", "index": "J" },
+					{ "label": "句容市", "index": "J" },
+					{ "label": "润州区", "index": "R" },
+					{ "label": "扬中市", "index": "Y" },
+					{ "label": "镇江新区", "index": "Z" }
+				]
+			}
+		]
+	},
+	{
+		"label": "江西省",
+		"index": "J",
+		"children": [
+			{
+				"label": "抚州市",
+				"index": "F",
+				"children": [
+					{ "label": "崇仁县", "index": "C" },
+					{ "label": "东乡区", "index": "D" },
+					{ "label": "广昌县", "index": "G" },
+					{ "label": "金溪县", "index": "J" },
+					{ "label": "临川区", "index": "L" },
+					{ "label": "黎川县", "index": "L" },
+					{ "label": "乐安县", "index": "L" },
+					{ "label": "南城县", "index": "N" },
+					{ "label": "南丰县", "index": "N" },
+					{ "label": "宜黄县", "index": "Y" },
+					{ "label": "资溪县", "index": "Z" }
+				]
+			},
+			{
+				"label": "赣州市",
+				"index": "G",
+				"children": [
+					{ "label": "安远县", "index": "A" },
+					{ "label": "崇义县", "index": "C" },
+					{ "label": "大余县", "index": "D" },
+					{ "label": "定南县", "index": "D" },
+					{ "label": "赣县区", "index": "G" },
+					{ "label": "会昌县", "index": "H" },
+					{ "label": "龙南市", "index": "L" },
+					{ "label": "南康区", "index": "N" },
+					{ "label": "宁都县", "index": "N" },
+					{ "label": "全南县", "index": "Q" },
+					{ "label": "瑞金市", "index": "R" },
+					{ "label": "上犹县", "index": "S" },
+					{ "label": "石城县", "index": "S" },
+					{ "label": "信丰县", "index": "X" },
+					{ "label": "兴国县", "index": "X" },
+					{ "label": "寻乌县", "index": "X" },
+					{ "label": "于都县", "index": "Y" },
+					{ "label": "章贡区", "index": "Z" }
+				]
+			},
+			{
+				"label": "景德镇市",
+				"index": "J",
+				"children": [
+					{ "label": "昌江区", "index": "C" },
+					{ "label": "浮梁县", "index": "F" },
+					{ "label": "乐平市", "index": "L" },
+					{ "label": "珠山区", "index": "Z" }
+				]
+			},
+			{
+				"label": "九江市",
+				"index": "J",
+				"children": [
+					{ "label": "柴桑区", "index": "C" },
+					{ "label": "德安县", "index": "D" },
+					{ "label": "都昌县", "index": "D" },
+					{ "label": "共青城市", "index": "G" },
+					{ "label": "湖口县", "index": "H" },
+					{ "label": "濂溪区", "index": "L" },
+					{ "label": "庐山市", "index": "L" },
+					{ "label": "彭泽县", "index": "P" },
+					{ "label": "瑞昌市", "index": "R" },
+					{ "label": "武宁县", "index": "W" },
+					{ "label": "浔阳区", "index": "X" },
+					{ "label": "修水县", "index": "X" },
+					{ "label": "永修县", "index": "Y" }
+				]
+			},
+			{
+				"label": "吉安市",
+				"index": "J",
+				"children": [
+					{ "label": "安福县", "index": "A" },
+					{ "label": "吉州区", "index": "J" },
+					{ "label": "吉安县", "index": "J" },
+					{ "label": "吉水县", "index": "J" },
+					{ "label": "井冈山市", "index": "J" },
+					{ "label": "青原区", "index": "Q" },
+					{ "label": "遂川县", "index": "S" },
+					{ "label": "泰和县", "index": "T" },
+					{ "label": "万安县", "index": "W" },
+					{ "label": "峡江县", "index": "X" },
+					{ "label": "新干县", "index": "X" },
+					{ "label": "永丰县", "index": "Y" },
+					{ "label": "永新县", "index": "Y" }
+				]
+			},
+			{
+				"label": "南昌市",
+				"index": "N",
+				"children": [
+					{ "label": "安义县", "index": "A" },
+					{ "label": "东湖区", "index": "D" },
+					{ "label": "红谷滩区", "index": "H" },
+					{ "label": "进贤县", "index": "J" },
+					{ "label": "南昌县", "index": "N" },
+					{ "label": "青云谱区", "index": "Q" },
+					{ "label": "青山湖区", "index": "Q" },
+					{ "label": "西湖区", "index": "X" },
+					{ "label": "新建区", "index": "X" }
+				]
+			},
+			{
+				"label": "萍乡市",
+				"index": "P",
+				"children": [
+					{ "label": "安源区", "index": "A" },
+					{ "label": "莲花县", "index": "L" },
+					{ "label": "芦溪县", "index": "L" },
+					{ "label": "上栗县", "index": "S" },
+					{ "label": "湘东区", "index": "X" }
+				]
+			},
+			{
+				"label": "上饶市",
+				"index": "S",
+				"children": [
+					{ "label": "德兴市", "index": "D" },
+					{ "label": "广丰区", "index": "G" },
+					{ "label": "广信区", "index": "G" },
+					{ "label": "横峰县", "index": "H" },
+					{ "label": "鄱阳县", "index": "P" },
+					{ "label": "铅山县", "index": "Q" },
+					{ "label": "万年县", "index": "W" },
+					{ "label": "婺源县", "index": "W" },
+					{ "label": "信州区", "index": "X" },
+					{ "label": "玉山县", "index": "Y" },
+					{ "label": "弋阳县", "index": "Y" },
+					{ "label": "余干县", "index": "Y" }
+				]
+			},
+			{
+				"label": "新余市",
+				"index": "X",
+				"children": [
+					{ "label": "分宜县", "index": "F" },
+					{ "label": "渝水区", "index": "Y" }
+				]
+			},
+			{
+				"label": "鹰潭市",
+				"index": "Y",
+				"children": [
+					{ "label": "贵溪市", "index": "G" },
+					{ "label": "月湖区", "index": "Y" },
+					{ "label": "余江区", "index": "Y" }
+				]
+			},
+			{
+				"label": "宜春市",
+				"index": "Y",
+				"children": [
+					{ "label": "奉新县", "index": "F" },
+					{ "label": "丰城市", "index": "F" },
+					{ "label": "高安市", "index": "G" },
+					{ "label": "靖安县", "index": "J" },
+					{ "label": "上高县", "index": "S" },
+					{ "label": "铜鼓县", "index": "T" },
+					{ "label": "万载县", "index": "W" },
+					{ "label": "袁州区", "index": "Y" },
+					{ "label": "宜丰县", "index": "Y" },
+					{ "label": "樟树市", "index": "Z" }
+				]
+			}
+		]
+	},
+	{
+		"label": "辽宁省",
+		"index": "L",
+		"children": [
+			{
+				"label": "鞍山市",
+				"index": "A",
+				"children": [
+					{ "label": "海城市", "index": "H" },
+					{ "label": "立山区", "index": "L" },
+					{ "label": "千山区", "index": "Q" },
+					{ "label": "铁东区", "index": "T" },
+					{ "label": "铁西区", "index": "T" },
+					{ "label": "台安县", "index": "T" },
+					{ "label": "岫岩满族自治县", "index": "X" }
+				]
+			},
+			{
+				"label": "本溪市",
+				"index": "B",
+				"children": [
+					{ "label": "本溪满族自治县", "index": "B" },
+					{ "label": "桓仁满族自治县", "index": "H" },
+					{ "label": "明山区", "index": "M" },
+					{ "label": "南芬区", "index": "N" },
+					{ "label": "平山区", "index": "P" },
+					{ "label": "溪湖区", "index": "X" }
+				]
+			},
+			{
+				"label": "大连市",
+				"index": "D",
+				"children": [
+					{ "label": "长海县", "index": "C" },
+					{ "label": "甘井子区", "index": "G" },
+					{ "label": "金州区", "index": "J" },
+					{ "label": "旅顺口区", "index": "L" },
+					{ "label": "普兰店区", "index": "P" },
+					{ "label": "沙河口区", "index": "S" },
+					{ "label": "瓦房店市", "index": "W" },
+					{ "label": "西岗区", "index": "X" },
+					{ "label": "中山区", "index": "Z" },
+					{ "label": "庄河市", "index": "Z" }
+				]
+			},
+			{
+				"label": "丹东市",
+				"index": "D",
+				"children": [
+					{ "label": "东港市", "index": "D" },
+					{ "label": "凤城市", "index": "F" },
+					{ "label": "宽甸满族自治县", "index": "K" },
+					{ "label": "元宝区", "index": "Y" },
+					{ "label": "振兴区", "index": "Z" },
+					{ "label": "振安区", "index": "Z" }
+				]
+			},
+			{
+				"label": "抚顺市",
+				"index": "F",
+				"children": [
+					{ "label": "东洲区", "index": "D" },
+					{ "label": "抚顺县", "index": "F" },
+					{ "label": "清原满族自治县", "index": "Q" },
+					{ "label": "顺城区", "index": "S" },
+					{ "label": "望花区", "index": "W" },
+					{ "label": "新抚区", "index": "X" },
+					{ "label": "新宾满族自治县", "index": "X" }
+				]
+			},
+			{
+				"label": "阜新市",
+				"index": "F",
+				"children": [
+					{ "label": "阜新蒙古族自治县", "index": "F" },
+					{ "label": "海州区", "index": "H" },
+					{ "label": "清河门区", "index": "Q" },
+					{ "label": "太平区", "index": "T" },
+					{ "label": "新邱区", "index": "X" },
+					{ "label": "细河区", "index": "X" },
+					{ "label": "彰武县", "index": "Z" }
+				]
+			},
+			{
+				"label": "葫芦岛市",
+				"index": "H",
+				"children": [
+					{ "label": "建昌县", "index": "J" },
+					{ "label": "连山区", "index": "L" },
+					{ "label": "龙港区", "index": "L" },
+					{ "label": "南票区", "index": "N" },
+					{ "label": "绥中县", "index": "S" },
+					{ "label": "兴城市", "index": "X" }
+				]
+			},
+			{
+				"label": "锦州市",
+				"index": "J",
+				"children": [
+					{ "label": "北镇市", "index": "B" },
+					{ "label": "古塔区", "index": "G" },
+					{ "label": "黑山县", "index": "H" },
+					{ "label": "凌河区", "index": "L" },
+					{ "label": "凌海市", "index": "L" },
+					{ "label": "太和区", "index": "T" },
+					{ "label": "义县", "index": "Y" }
+				]
+			},
+			{
+				"label": "辽阳市",
+				"index": "L",
+				"children": [
+					{ "label": "白塔区", "index": "B" },
+					{ "label": "灯塔市", "index": "D" },
+					{ "label": "弓长岭区", "index": "G" },
+					{ "label": "宏伟区", "index": "H" },
+					{ "label": "辽阳县", "index": "L" },
+					{ "label": "太子河区", "index": "T" },
+					{ "label": "文圣区", "index": "W" }
+				]
+			},
+			{
+				"label": "盘锦市",
+				"index": "P",
+				"children": [
+					{ "label": "大洼区", "index": "D" },
+					{ "label": "盘山县", "index": "P" },
+					{ "label": "双台子区", "index": "S" },
+					{ "label": "兴隆台区", "index": "X" }
+				]
+			},
+			{
+				"label": "沈阳市",
+				"index": "S",
+				"children": [
+					{ "label": "大东区", "index": "D" },
+					{ "label": "法库县", "index": "F" },
+					{ "label": "和平区", "index": "H" },
+					{ "label": "皇姑区", "index": "H" },
+					{ "label": "浑南区", "index": "H" },
+					{ "label": "康平县", "index": "K" },
+					{ "label": "辽中区", "index": "L" },
+					{ "label": "沈河区", "index": "S" },
+					{ "label": "苏家屯区", "index": "S" },
+					{ "label": "沈北新区", "index": "S" },
+					{ "label": "铁西区", "index": "T" },
+					{ "label": "新民市", "index": "X" },
+					{ "label": "于洪区", "index": "Y" }
+				]
+			},
+			{
+				"label": "铁岭市",
+				"index": "T",
+				"children": [
+					{ "label": "昌图县", "index": "C" },
+					{ "label": "开原市", "index": "K" },
+					{ "label": "清河区", "index": "Q" },
+					{ "label": "铁岭县", "index": "T" },
+					{ "label": "调兵山市", "index": "T" },
+					{ "label": "西丰县", "index": "X" },
+					{ "label": "银州区", "index": "Y" }
+				]
+			},
+			{
+				"label": "营口市",
+				"index": "Y",
+				"children": [
+					{ "label": "鲅鱼圈区", "index": "B" },
+					{ "label": "大石桥市", "index": "D" },
+					{ "label": "盖州市", "index": "G" },
+					{ "label": "老边区", "index": "L" },
+					{ "label": "西市区", "index": "X" },
+					{ "label": "站前区", "index": "Z" }
+				]
+			},
+			{
+				"label": "朝阳市",
+				"index": "Z",
+				"children": [
+					{ "label": "北票市", "index": "B" },
+					{ "label": "建平县", "index": "J" },
+					{ "label": "喀喇沁左翼蒙古族自治县", "index": "K" },
+					{ "label": "龙城区", "index": "L" },
+					{ "label": "凌源市", "index": "L" },
+					{ "label": "双塔区", "index": "S" },
+					{ "label": "朝阳县", "index": "Z" }
+				]
+			}
+		]
+	},
+	{
+		"label": "内蒙古自治区",
+		"index": "N",
+		"children": [
+			{
+				"label": "阿拉善盟",
+				"index": "A",
+				"children": [
+					{ "label": "阿拉善左旗", "index": "A" },
+					{ "label": "阿拉善右旗", "index": "A" },
+					{ "label": "额济纳旗", "index": "E" },
+					{ "label": "内蒙古阿拉善高新技术产业开发区", "index": "N" }
+				]
+			},
+			{
+				"label": "包头市",
+				"index": "B",
+				"children": [
+					{ "label": "白云鄂博矿区", "index": "B" },
+					{ "label": "包头稀土高新技术产业开发区", "index": "B" },
+					{ "label": "东河区", "index": "D" },
+					{ "label": "达尔罕茂明安联合旗", "index": "D" },
+					{ "label": "固阳县", "index": "G" },
+					{ "label": "九原区", "index": "J" },
+					{ "label": "昆都仑区", "index": "K" },
+					{ "label": "青山区", "index": "Q" },
+					{ "label": "石拐区", "index": "S" },
+					{ "label": "土默特右旗", "index": "T" }
+				]
+			},
+			{
+				"label": "巴彦淖尔市",
+				"index": "B",
+				"children": [
+					{ "label": "磴口县", "index": "D" },
+					{ "label": "杭锦后旗", "index": "H" },
+					{ "label": "临河区", "index": "L" },
+					{ "label": "五原县", "index": "W" },
+					{ "label": "乌拉特前旗", "index": "W" },
+					{ "label": "乌拉特中旗", "index": "W" },
+					{ "label": "乌拉特后旗", "index": "W" }
+				]
+			},
+			{
+				"label": "赤峰市",
+				"index": "C",
+				"children": [
+					{ "label": "阿鲁科尔沁旗", "index": "A" },
+					{ "label": "敖汉旗", "index": "A" },
+					{ "label": "巴林左旗", "index": "B" },
+					{ "label": "巴林右旗", "index": "B" },
+					{ "label": "红山区", "index": "H" },
+					{ "label": "克什克腾旗", "index": "K" },
+					{ "label": "喀喇沁旗", "index": "K" },
+					{ "label": "林西县", "index": "L" },
+					{ "label": "宁城县", "index": "N" },
+					{ "label": "松山区", "index": "S" },
+					{ "label": "翁牛特旗", "index": "W" },
+					{ "label": "元宝山区", "index": "Y" }
+				]
+			},
+			{
+				"label": "鄂尔多斯市",
+				"index": "E",
+				"children": [
+					{ "label": "东胜区", "index": "D" },
+					{ "label": "达拉特旗", "index": "D" },
+					{ "label": "鄂托克前旗", "index": "E" },
+					{ "label": "鄂托克旗", "index": "E" },
+					{ "label": "杭锦旗", "index": "H" },
+					{ "label": "康巴什区", "index": "K" },
+					{ "label": "乌审旗", "index": "W" },
+					{ "label": "伊金霍洛旗", "index": "Y" },
+					{ "label": "准格尔旗", "index": "Z" }
+				]
+			},
+			{
+				"label": "呼和浩特市",
+				"index": "H",
+				"children": [
+					{ "label": "回民区", "index": "H" },
+					{ "label": "和林格尔县", "index": "H" },
+					{ "label": "呼和浩特经济技术开发区", "index": "H" },
+					{ "label": "清水河县", "index": "Q" },
+					{ "label": "赛罕区", "index": "S" },
+					{ "label": "土默特左旗", "index": "T" },
+					{ "label": "托克托县", "index": "T" },
+					{ "label": "武川县", "index": "W" },
+					{ "label": "新城区", "index": "X" },
+					{ "label": "玉泉区", "index": "Y" }
+				]
+			},
+			{
+				"label": "呼伦贝尔市",
+				"index": "H",
+				"children": [
+					{ "label": "阿荣旗", "index": "A" },
+					{ "label": "陈巴尔虎旗", "index": "C" },
+					{ "label": "鄂伦春自治旗", "index": "E" },
+					{ "label": "鄂温克族自治旗", "index": "E" },
+					{ "label": "额尔古纳市", "index": "E" },
+					{ "label": "根河市", "index": "G" },
+					{ "label": "海拉尔区", "index": "H" },
+					{ "label": "莫力达瓦达斡尔族自治旗", "index": "M" },
+					{ "label": "满洲里市", "index": "M" },
+					{ "label": "新巴尔虎左旗", "index": "X" },
+					{ "label": "新巴尔虎右旗", "index": "X" },
+					{ "label": "牙克石市", "index": "Y" },
+					{ "label": "扎赉诺尔区", "index": "Z" },
+					{ "label": "扎兰屯市", "index": "Z" }
+				]
+			},
+			{
+				"label": "通辽市",
+				"index": "T",
+				"children": [
+					{ "label": "霍林郭勒市", "index": "H" },
+					{ "label": "科尔沁区", "index": "K" },
+					{ "label": "科尔沁左翼中旗", "index": "K" },
+					{ "label": "科尔沁左翼后旗", "index": "K" },
+					{ "label": "开鲁县", "index": "K" },
+					{ "label": "库伦旗", "index": "K" },
+					{ "label": "奈曼旗", "index": "N" },
+					{ "label": "通辽经济技术开发区", "index": "T" },
+					{ "label": "扎鲁特旗", "index": "Z" }
+				]
+			},
+			{
+				"label": "乌海市",
+				"index": "W",
+				"children": [
+					{ "label": "海勃湾区", "index": "H" },
+					{ "label": "海南区", "index": "H" },
+					{ "label": "乌达区", "index": "W" }
+				]
+			},
+			{
+				"label": "乌兰察布市",
+				"index": "W",
+				"children": [
+					{ "label": "察哈尔右翼前旗", "index": "C" },
+					{ "label": "察哈尔右翼中旗", "index": "C" },
+					{ "label": "察哈尔右翼后旗", "index": "C" },
+					{ "label": "丰镇市", "index": "F" },
+					{ "label": "化德县", "index": "H" },
+					{ "label": "集宁区", "index": "J" },
+					{ "label": "凉城县", "index": "L" },
+					{ "label": "商都县", "index": "S" },
+					{ "label": "四子王旗", "index": "S" },
+					{ "label": "兴和县", "index": "X" },
+					{ "label": "卓资县", "index": "Z" }
+				]
+			},
+			{
+				"label": "兴安盟",
+				"index": "X",
+				"children": [
+					{ "label": "阿尔山市", "index": "A" },
+					{ "label": "科尔沁右翼前旗", "index": "K" },
+					{ "label": "科尔沁右翼中旗", "index": "K" },
+					{ "label": "突泉县", "index": "T" },
+					{ "label": "乌兰浩特市", "index": "W" },
+					{ "label": "扎赉特旗", "index": "Z" }
+				]
+			},
+			{
+				"label": "锡林郭勒盟",
+				"index": "X",
+				"children": [
+					{ "label": "阿巴嘎旗", "index": "A" },
+					{ "label": "东乌珠穆沁旗", "index": "D" },
+					{ "label": "多伦县", "index": "D" },
+					{ "label": "二连浩特市", "index": "E" },
+					{ "label": "苏尼特左旗", "index": "S" },
+					{ "label": "苏尼特右旗", "index": "S" },
+					{ "label": "太仆寺旗", "index": "T" },
+					{ "label": "乌拉盖管理区管委会", "index": "W" },
+					{ "label": "锡林浩特市", "index": "X" },
+					{ "label": "西乌珠穆沁旗", "index": "X" },
+					{ "label": "镶黄旗", "index": "X" },
+					{ "label": "正镶白旗", "index": "Z" },
+					{ "label": "正蓝旗", "index": "Z" }
+				]
+			}
+		]
+	},
+	{
+		"label": "宁夏回族自治区",
+		"index": "N",
+		"children": [
+			{
+				"label": "固原市",
+				"index": "G",
+				"children": [
+					{ "label": "泾源县", "index": "J" },
+					{ "label": "隆德县", "index": "L" },
+					{ "label": "彭阳县", "index": "P" },
+					{ "label": "西吉县", "index": "X" },
+					{ "label": "原州区", "index": "Y" }
+				]
+			},
+			{
+				"label": "石嘴山市",
+				"index": "S",
+				"children": [
+					{ "label": "大武口区", "index": "D" },
+					{ "label": "惠农区", "index": "H" },
+					{ "label": "平罗县", "index": "P" }
+				]
+			},
+			{
+				"label": "吴忠市",
+				"index": "W",
+				"children": [
+					{ "label": "红寺堡区", "index": "H" },
+					{ "label": "利通区", "index": "L" },
+					{ "label": "青铜峡市", "index": "Q" },
+					{ "label": "同心县", "index": "T" },
+					{ "label": "盐池县", "index": "Y" }
+				]
+			},
+			{
+				"label": "银川市",
+				"index": "Y",
+				"children": [
+					{ "label": "贺兰县", "index": "H" },
+					{ "label": "金凤区", "index": "J" },
+					{ "label": "灵武市", "index": "L" },
+					{ "label": "兴庆区", "index": "X" },
+					{ "label": "西夏区", "index": "X" },
+					{ "label": "永宁县", "index": "Y" }
+				]
+			},
+			{
+				"label": "中卫市",
+				"index": "Z",
+				"children": [
+					{ "label": "海原县", "index": "H" },
+					{ "label": "沙坡头区", "index": "S" },
+					{ "label": "中宁县", "index": "Z" }
+				]
+			}
+		]
+	},
+	{
+		"label": "青海省",
+		"index": "Q",
+		"children": [
+			{
+				"label": "果洛藏族自治州",
+				"index": "G",
+				"children": [
+					{ "label": "班玛县", "index": "B" },
+					{ "label": "达日县", "index": "D" },
+					{ "label": "甘德县", "index": "G" },
+					{ "label": "久治县", "index": "J" },
+					{ "label": "玛沁县", "index": "M" },
+					{ "label": "玛多县", "index": "M" }
+				]
+			},
+			{
+				"label": "海东市",
+				"index": "H",
+				"children": [
+					{ "label": "互助土族自治县", "index": "H" },
+					{ "label": "化隆回族自治县", "index": "H" },
+					{ "label": "乐都区", "index": "L" },
+					{ "label": "民和回族土族自治县", "index": "M" },
+					{ "label": "平安区", "index": "P" },
+					{ "label": "循化撒拉族自治县", "index": "X" }
+				]
+			},
+			{
+				"label": "海北藏族自治州",
+				"index": "H",
+				"children": [
+					{ "label": "刚察县", "index": "G" },
+					{ "label": "海晏县", "index": "H" },
+					{ "label": "门源回族自治县", "index": "M" },
+					{ "label": "祁连县", "index": "Q" }
+				]
+			},
+			{
+				"label": "黄南藏族自治州",
+				"index": "H",
+				"children": [
+					{ "label": "河南蒙古族自治县", "index": "H" },
+					{ "label": "尖扎县", "index": "J" },
+					{ "label": "同仁市", "index": "T" },
+					{ "label": "泽库县", "index": "Z" }
+				]
+			},
+			{
+				"label": "海南藏族自治州",
+				"index": "H",
+				"children": [
+					{ "label": "共和县", "index": "G" },
+					{ "label": "贵德县", "index": "G" },
+					{ "label": "贵南县", "index": "G" },
+					{ "label": "同德县", "index": "T" },
+					{ "label": "兴海县", "index": "X" }
+				]
+			},
+			{
+				"label": "海西蒙古族藏族自治州",
+				"index": "H",
+				"children": [
+					{ "label": "德令哈市", "index": "D" },
+					{ "label": "都兰县", "index": "D" },
+					{ "label": "大柴旦行政委员会", "index": "D" },
+					{ "label": "格尔木市", "index": "G" },
+					{ "label": "茫崖市", "index": "M" },
+					{ "label": "天峻县", "index": "T" },
+					{ "label": "乌兰县", "index": "W" }
+				]
+			},
+			{
+				"label": "西宁市",
+				"index": "X",
+				"children": [
+					{ "label": "城东区", "index": "C" },
+					{ "label": "城中区", "index": "C" },
+					{ "label": "城西区", "index": "C" },
+					{ "label": "城北区", "index": "C" },
+					{ "label": "大通回族土族自治县", "index": "D" },
+					{ "label": "湟中区", "index": "H" },
+					{ "label": "湟源县", "index": "H" }
+				]
+			},
+			{
+				"label": "玉树藏族自治州",
+				"index": "Y",
+				"children": [
+					{ "label": "称多县", "index": "C" },
+					{ "label": "囊谦县", "index": "N" },
+					{ "label": "曲麻莱县", "index": "Q" },
+					{ "label": "玉树市", "index": "Y" },
+					{ "label": "杂多县", "index": "Z" },
+					{ "label": "治多县", "index": "Z" }
+				]
+			}
+		]
+	},
+	{
+		"label": "山西省",
+		"index": "S",
+		"children": [
+			{
+				"label": "长治市",
+				"index": "C",
+				"children": [
+					{ "label": "长子县", "index": "C" },
+					{ "label": "壶关县", "index": "H" },
+					{ "label": "潞州区", "index": "L" },
+					{ "label": "潞城区", "index": "L" },
+					{ "label": "黎城县", "index": "L" },
+					{ "label": "平顺县", "index": "P" },
+					{ "label": "沁县", "index": "Q" },
+					{ "label": "沁源县", "index": "Q" },
+					{ "label": "上党区", "index": "S" },
+					{ "label": "屯留区", "index": "T" },
+					{ "label": "武乡县", "index": "W" },
+					{ "label": "襄垣县", "index": "X" }
+				]
+			},
+			{
+				"label": "大同市",
+				"index": "D",
+				"children": [
+					{ "label": "广灵县", "index": "G" },
+					{ "label": "浑源县", "index": "H" },
+					{ "label": "灵丘县", "index": "L" },
+					{ "label": "平城区", "index": "P" },
+					{ "label": "山西大同经济开发区", "index": "S" },
+					{ "label": "天镇县", "index": "T" },
+					{ "label": "新荣区", "index": "X" },
+					{ "label": "云冈区", "index": "Y" },
+					{ "label": "云州区", "index": "Y" },
+					{ "label": "阳高县", "index": "Y" },
+					{ "label": "左云县", "index": "Z" }
+				]
+			},
+			{
+				"label": "晋城市",
+				"index": "J",
+				"children": [
+					{ "label": "城区", "index": "C" },
+					{ "label": "高平市", "index": "G" },
+					{ "label": "陵川县", "index": "L" },
+					{ "label": "沁水县", "index": "Q" },
+					{ "label": "阳城县", "index": "Y" },
+					{ "label": "泽州县", "index": "Z" }
+				]
+			},
+			{
+				"label": "晋中市",
+				"index": "J",
+				"children": [
+					{ "label": "和顺县", "index": "H" },
+					{ "label": "介休市", "index": "J" },
+					{ "label": "灵石县", "index": "L" },
+					{ "label": "平遥县", "index": "P" },
+					{ "label": "祁县", "index": "Q" },
+					{ "label": "寿阳县", "index": "S" },
+					{ "label": "太谷区", "index": "T" },
+					{ "label": "昔阳县", "index": "X" },
+					{ "label": "榆次区", "index": "Y" },
+					{ "label": "榆社县", "index": "Y" },
+					{ "label": "左权县", "index": "Z" }
+				]
+			},
+			{
+				"label": "临汾市",
+				"index": "L",
+				"children": [
+					{ "label": "安泽县", "index": "A" },
+					{ "label": "大宁县", "index": "D" },
+					{ "label": "浮山县", "index": "F" },
+					{ "label": "汾西县", "index": "F" },
+					{ "label": "古县", "index": "G" },
+					{ "label": "洪洞县", "index": "H" },
+					{ "label": "侯马市", "index": "H" },
+					{ "label": "霍州市", "index": "H" },
+					{ "label": "吉县", "index": "J" },
+					{ "label": "蒲县", "index": "P" },
+					{ "label": "曲沃县", "index": "Q" },
+					{ "label": "襄汾县", "index": "X" },
+					{ "label": "乡宁县", "index": "X" },
+					{ "label": "隰县", "index": "X" },
+					{ "label": "尧都区", "index": "Y" },
+					{ "label": "翼城县", "index": "Y" },
+					{ "label": "永和县", "index": "Y" }
+				]
+			},
+			{
+				"label": "吕梁市",
+				"index": "L",
+				"children": [
+					{ "label": "方山县", "index": "F" },
+					{ "label": "汾阳市", "index": "F" },
+					{ "label": "交城县", "index": "J" },
+					{ "label": "交口县", "index": "J" },
+					{ "label": "离石区", "index": "L" },
+					{ "label": "临县", "index": "L" },
+					{ "label": "柳林县", "index": "L" },
+					{ "label": "岚县", "index": "L" },
+					{ "label": "石楼县", "index": "S" },
+					{ "label": "文水县", "index": "W" },
+					{ "label": "兴县", "index": "X" },
+					{ "label": "孝义市", "index": "X" },
+					{ "label": "中阳县", "index": "Z" }
+				]
+			},
+			{
+				"label": "朔州市",
+				"index": "S",
+				"children": [
+					{ "label": "怀仁市", "index": "H" },
+					{ "label": "平鲁区", "index": "P" },
+					{ "label": "朔城区", "index": "S" },
+					{ "label": "山阴县", "index": "S" },
+					{ "label": "山西朔州经济开发区", "index": "S" },
+					{ "label": "应县", "index": "Y" },
+					{ "label": "右玉县", "index": "Y" }
+				]
+			},
+			{
+				"label": "太原市",
+				"index": "T",
+				"children": [
+					{ "label": "古交市", "index": "G" },
+					{ "label": "尖草坪区", "index": "J" },
+					{ "label": "晋源区", "index": "J" },
+					{ "label": "娄烦县", "index": "L" },
+					{ "label": "清徐县", "index": "Q" },
+					{ "label": "山西转型综合改革示范区", "index": "S" },
+					{ "label": "万柏林区", "index": "W" },
+					{ "label": "小店区", "index": "X" },
+					{ "label": "杏花岭区", "index": "X" },
+					{ "label": "迎泽区", "index": "Y" },
+					{ "label": "阳曲县", "index": "Y" }
+				]
+			},
+			{
+				"label": "忻州市",
+				"index": "X",
+				"children": [
+					{ "label": "保德县", "index": "B" },
+					{ "label": "定襄县", "index": "D" },
+					{ "label": "代县", "index": "D" },
+					{ "label": "繁峙县", "index": "F" },
+					{ "label": "河曲县", "index": "H" },
+					{ "label": "静乐县", "index": "J" },
+					{ "label": "岢岚县", "index": "K" },
+					{ "label": "宁武县", "index": "N" },
+					{ "label": "偏关县", "index": "P" },
+					{ "label": "神池县", "index": "S" },
+					{ "label": "五台县", "index": "W" },
+					{ "label": "五寨县", "index": "W" },
+					{ "label": "五台山风景名胜区", "index": "W" },
+					{ "label": "忻府区", "index": "X" },
+					{ "label": "原平市", "index": "Y" }
+				]
+			},
+			{
+				"label": "阳泉市",
+				"index": "Y",
+				"children": [
+					{ "label": "城区", "index": "C" },
+					{ "label": "郊区", "index": "J" },
+					{ "label": "矿区", "index": "K" },
+					{ "label": "平定县", "index": "P" },
+					{ "label": "盂县", "index": "Y" }
+				]
+			},
+			{
+				"label": "运城市",
+				"index": "Y",
+				"children": [
+					{ "label": "河津市", "index": "H" },
+					{ "label": "稷山县", "index": "J" },
+					{ "label": "绛县", "index": "J" },
+					{ "label": "临猗县", "index": "L" },
+					{ "label": "平陆县", "index": "P" },
+					{ "label": "芮城县", "index": "R" },
+					{ "label": "万荣县", "index": "W" },
+					{ "label": "闻喜县", "index": "W" },
+					{ "label": "新绛县", "index": "X" },
+					{ "label": "夏县", "index": "X" },
+					{ "label": "盐湖区", "index": "Y" },
+					{ "label": "垣曲县", "index": "Y" },
+					{ "label": "永济市", "index": "Y" }
+				]
+			}
+		]
+	},
+	{
+		"label": "上海市",
+		"index": "S",
+		"children": [
+			{
+				"label": "市辖区",
+				"index": "S",
+				"children": [
+					{ "label": "宝山区", "index": "B" },
+					{ "label": "长宁区", "index": "C" },
+					{ "label": "崇明区", "index": "C" },
+					{ "label": "奉贤区", "index": "F" },
+					{ "label": "黄浦区", "index": "H" },
+					{ "label": "虹口区", "index": "H" },
+					{ "label": "静安区", "index": "J" },
+					{ "label": "嘉定区", "index": "J" },
+					{ "label": "金山区", "index": "J" },
+					{ "label": "闵行区", "index": "M" },
+					{ "label": "普陀区", "index": "P" },
+					{ "label": "浦东新区", "index": "P" },
+					{ "label": "青浦区", "index": "Q" },
+					{ "label": "松江区", "index": "S" },
+					{ "label": "徐汇区", "index": "X" },
+					{ "label": "杨浦区", "index": "Y" }
+				]
+			}
+		]
+	},
+	{
+		"label": "山东省",
+		"index": "S",
+		"children": [
+			{
+				"label": "滨州市",
+				"index": "B",
+				"children": [
+					{ "label": "滨城区", "index": "B" },
+					{ "label": "博兴县", "index": "B" },
+					{ "label": "惠民县", "index": "H" },
+					{ "label": "无棣县", "index": "W" },
+					{ "label": "阳信县", "index": "Y" },
+					{ "label": "沾化区", "index": "Z" },
+					{ "label": "邹平市", "index": "Z" }
+				]
+			},
+			{
+				"label": "东营市",
+				"index": "D",
+				"children": [
+					{ "label": "东营区", "index": "D" },
+					{ "label": "东营经济技术开发区", "index": "D" },
+					{ "label": "东营港经济开发区", "index": "D" },
+					{ "label": "广饶县", "index": "G" },
+					{ "label": "河口区", "index": "H" },
+					{ "label": "垦利区", "index": "K" },
+					{ "label": "利津县", "index": "L" }
+				]
+			},
+			{
+				"label": "德州市",
+				"index": "D",
+				"children": [
+					{ "label": "德城区", "index": "D" },
+					{ "label": "德州天衢新区", "index": "D" },
+					{ "label": "陵城区", "index": "L" },
+					{ "label": "临邑县", "index": "L" },
+					{ "label": "乐陵市", "index": "L" },
+					{ "label": "宁津县", "index": "N" },
+					{ "label": "平原县", "index": "P" },
+					{ "label": "庆云县", "index": "Q" },
+					{ "label": "齐河县", "index": "Q" },
+					{ "label": "武城县", "index": "W" },
+					{ "label": "夏津县", "index": "X" },
+					{ "label": "禹城市", "index": "Y" }
+				]
+			},
+			{
+				"label": "菏泽市",
+				"index": "H",
+				"children": [
+					{ "label": "曹县", "index": "C" },
+					{ "label": "成武县", "index": "C" },
+					{ "label": "定陶区", "index": "D" },
+					{ "label": "单县", "index": "D" },
+					{ "label": "东明县", "index": "D" },
+					{ "label": "菏泽经济技术开发区", "index": "H" },
+					{ "label": "菏泽高新技术开发区", "index": "H" },
+					{ "label": "巨野县", "index": "J" },
+					{ "label": "鄄城县", "index": "J" },
+					{ "label": "牡丹区", "index": "M" },
+					{ "label": "郓城县", "index": "Y" }
+				]
+			},
+			{
+				"label": "济南市",
+				"index": "J",
+				"children": [
+					{ "label": "长清区", "index": "C" },
+					{ "label": "钢城区", "index": "G" },
+					{ "label": "槐荫区", "index": "H" },
+					{ "label": "济阳区", "index": "J" },
+					{ "label": "济南高新技术产业开发区", "index": "J" },
+					{ "label": "历下区", "index": "L" },
+					{ "label": "历城区", "index": "L" },
+					{ "label": "莱芜区", "index": "L" },
+					{ "label": "平阴县", "index": "P" },
+					{ "label": "市中区", "index": "S" },
+					{ "label": "商河县", "index": "S" },
+					{ "label": "天桥区", "index": "T" },
+					{ "label": "章丘区", "index": "Z" }
+				]
+			},
+			{
+				"label": "济宁市",
+				"index": "J",
+				"children": [
+					{ "label": "金乡县", "index": "J" },
+					{ "label": "嘉祥县", "index": "J" },
+					{ "label": "济宁高新技术产业开发区", "index": "J" },
+					{ "label": "梁山县", "index": "L" },
+					{ "label": "曲阜市", "index": "Q" },
+					{ "label": "任城区", "index": "R" },
+					{ "label": "泗水县", "index": "S" },
+					{ "label": "微山县", "index": "W" },
+					{ "label": "汶上县", "index": "W" },
+					{ "label": "兖州区", "index": "Y" },
+					{ "label": "鱼台县", "index": "Y" },
+					{ "label": "邹城市", "index": "Z" }
+				]
+			},
+			{
+				"label": "临沂市",
+				"index": "L",
+				"children": [
+					{ "label": "费县", "index": "F" },
+					{ "label": "河东区", "index": "H" },
+					{ "label": "莒南县", "index": "J" },
+					{ "label": "兰山区", "index": "L" },
+					{ "label": "罗庄区", "index": "L" },
+					{ "label": "兰陵县", "index": "L" },
+					{ "label": "临沭县", "index": "L" },
+					{ "label": "临沂高新技术产业开发区", "index": "L" },
+					{ "label": "蒙阴县", "index": "M" },
+					{ "label": "平邑县", "index": "P" },
+					{ "label": "郯城县", "index": "T" },
+					{ "label": "沂南县", "index": "Y" },
+					{ "label": "沂水县", "index": "Y" }
+				]
+			},
+			{
+				"label": "聊城市",
+				"index": "L",
+				"children": [
+					{ "label": "茌平区", "index": "C" },
+					{ "label": "东昌府区", "index": "D" },
+					{ "label": "东阿县", "index": "D" },
+					{ "label": "冠县", "index": "G" },
+					{ "label": "高唐县", "index": "G" },
+					{ "label": "临清市", "index": "L" },
+					{ "label": "莘县", "index": "S" },
+					{ "label": "阳谷县", "index": "Y" }
+				]
+			},
+			{
+				"label": "青岛市",
+				"index": "Q",
+				"children": [
+					{ "label": "城阳区", "index": "C" },
+					{ "label": "黄岛区", "index": "H" },
+					{ "label": "即墨区", "index": "J" },
+					{ "label": "胶州市", "index": "J" },
+					{ "label": "崂山区", "index": "L" },
+					{ "label": "李沧区", "index": "L" },
+					{ "label": "莱西市", "index": "L" },
+					{ "label": "平度市", "index": "P" },
+					{ "label": "市南区", "index": "S" },
+					{ "label": "市北区", "index": "S" }
+				]
+			},
+			{
+				"label": "日照市",
+				"index": "R",
+				"children": [
+					{ "label": "东港区", "index": "D" },
+					{ "label": "莒县", "index": "J" },
+					{ "label": "岚山区", "index": "L" },
+					{ "label": "日照经济技术开发区", "index": "R" },
+					{ "label": "五莲县", "index": "W" }
+				]
+			},
+			{
+				"label": "泰安市",
+				"index": "T",
+				"children": [
+					{ "label": "岱岳区", "index": "D" },
+					{ "label": "东平县", "index": "D" },
+					{ "label": "肥城市", "index": "F" },
+					{ "label": "宁阳县", "index": "N" },
+					{ "label": "泰山区", "index": "T" },
+					{ "label": "新泰市", "index": "X" }
+				]
+			},
+			{
+				"label": "潍坊市",
+				"index": "W",
+				"children": [
+					{ "label": "安丘市", "index": "A" },
+					{ "label": "昌乐县", "index": "C" },
+					{ "label": "昌邑市", "index": "C" },
+					{ "label": "坊子区", "index": "F" },
+					{ "label": "高密市", "index": "G" },
+					{ "label": "寒亭区", "index": "H" },
+					{ "label": "奎文区", "index": "K" },
+					{ "label": "临朐县", "index": "L" },
+					{ "label": "青州市", "index": "Q" },
+					{ "label": "寿光市", "index": "S" },
+					{ "label": "潍城区", "index": "W" },
+					{ "label": "潍坊滨海经济技术开发区", "index": "W" },
+					{ "label": "诸城市", "index": "Z" }
+				]
+			},
+			{
+				"label": "威海市",
+				"index": "W",
+				"children": [
+					{ "label": "环翠区", "index": "H" },
+					{ "label": "荣成市", "index": "R" },
+					{ "label": "乳山市", "index": "R" },
+					{ "label": "文登区", "index": "W" },
+					{ "label": "威海火炬高技术产业开发区", "index": "W" },
+					{ "label": "威海经济技术开发区", "index": "W" },
+					{ "label": "威海临港经济技术开发区", "index": "W" }
+				]
+			},
+			{
+				"label": "烟台市",
+				"index": "Y",
+				"children": [
+					{ "label": "福山区", "index": "F" },
+					{ "label": "海阳市", "index": "H" },
+					{ "label": "莱山区", "index": "L" },
+					{ "label": "龙口市", "index": "L" },
+					{ "label": "莱阳市", "index": "L" },
+					{ "label": "莱州市", "index": "L" },
+					{ "label": "牟平区", "index": "M" },
+					{ "label": "蓬莱区", "index": "P" },
+					{ "label": "栖霞市", "index": "Q" },
+					{ "label": "烟台高新技术产业开发区", "index": "Y" },
+					{ "label": "烟台经济技术开发区", "index": "Y" },
+					{ "label": "芝罘区", "index": "Z" },
+					{ "label": "招远市", "index": "Z" }
+				]
+			},
+			{
+				"label": "淄博市",
+				"index": "Z",
+				"children": [
+					{ "label": "博山区", "index": "B" },
+					{ "label": "高青县", "index": "G" },
+					{ "label": "桓台县", "index": "H" },
+					{ "label": "临淄区", "index": "L" },
+					{ "label": "沂源县", "index": "Y" },
+					{ "label": "淄川区", "index": "Z" },
+					{ "label": "张店区", "index": "Z" },
+					{ "label": "周村区", "index": "Z" }
+				]
+			},
+			{
+				"label": "枣庄市",
+				"index": "Z",
+				"children": [
+					{ "label": "市中区", "index": "S" },
+					{ "label": "山亭区", "index": "S" },
+					{ "label": "台儿庄区", "index": "T" },
+					{ "label": "滕州市", "index": "T" },
+					{ "label": "薛城区", "index": "X" },
+					{ "label": "峄城区", "index": "Y" }
+				]
+			}
+		]
+	},
+	{
+		"label": "四川省",
+		"index": "S",
+		"children": [
+			{
+				"label": "阿坝藏族羌族自治州",
+				"index": "A",
+				"children": [
+					{ "label": "阿坝县", "index": "A" },
+					{ "label": "黑水县", "index": "H" },
+					{ "label": "红原县", "index": "H" },
+					{ "label": "九寨沟县", "index": "J" },
+					{ "label": "金川县", "index": "J" },
+					{ "label": "理县", "index": "L" },
+					{ "label": "马尔康市", "index": "M" },
+					{ "label": "茂县", "index": "M" },
+					{ "label": "壤塘县", "index": "R" },
+					{ "label": "若尔盖县", "index": "R" },
+					{ "label": "松潘县", "index": "S" },
+					{ "label": "汶川县", "index": "W" },
+					{ "label": "小金县", "index": "X" }
+				]
+			},
+			{
+				"label": "巴中市",
+				"index": "B",
+				"children": [
+					{ "label": "巴州区", "index": "B" },
+					{ "label": "恩阳区", "index": "E" },
+					{ "label": "南江县", "index": "N" },
+					{ "label": "平昌县", "index": "P" },
+					{ "label": "通江县", "index": "T" }
+				]
+			},
+			{
+				"label": "成都市",
+				"index": "C",
+				"children": [
+					{ "label": "成华区", "index": "C" },
+					{ "label": "崇州市", "index": "C" },
+					{ "label": "大邑县", "index": "D" },
+					{ "label": "都江堰市", "index": "D" },
+					{ "label": "锦江区", "index": "J" },
+					{ "label": "金牛区", "index": "J" },
+					{ "label": "金堂县", "index": "J" },
+					{ "label": "简阳市", "index": "J" },
+					{ "label": "龙泉驿区", "index": "L" },
+					{ "label": "郫都区", "index": "P" },
+					{ "label": "蒲江县", "index": "P" },
+					{ "label": "彭州市", "index": "P" },
+					{ "label": "青羊区", "index": "Q" },
+					{ "label": "青白江区", "index": "Q" },
+					{ "label": "邛崃市", "index": "Q" },
+					{ "label": "双流区", "index": "S" },
+					{ "label": "武侯区", "index": "W" },
+					{ "label": "温江区", "index": "W" },
+					{ "label": "新都区", "index": "X" },
+					{ "label": "新津区", "index": "X" }
+				]
+			},
+			{
+				"label": "德阳市",
+				"index": "D",
+				"children": [
+					{ "label": "广汉市", "index": "G" },
+					{ "label": "旌阳区", "index": "J" },
+					{ "label": "罗江区", "index": "L" },
+					{ "label": "绵竹市", "index": "M" },
+					{ "label": "什邡市", "index": "S" },
+					{ "label": "中江县", "index": "Z" }
+				]
+			},
+			{
+				"label": "达州市",
+				"index": "D",
+				"children": [
+					{ "label": "达川区", "index": "D" },
+					{ "label": "大竹县", "index": "D" },
+					{ "label": "开江县", "index": "K" },
+					{ "label": "渠县", "index": "Q" },
+					{ "label": "通川区", "index": "T" },
+					{ "label": "万源市", "index": "W" },
+					{ "label": "宣汉县", "index": "X" }
+				]
+			},
+			{
+				"label": "广元市",
+				"index": "G",
+				"children": [
+					{ "label": "苍溪县", "index": "C" },
+					{ "label": "剑阁县", "index": "J" },
+					{ "label": "利州区", "index": "L" },
+					{ "label": "青川县", "index": "Q" },
+					{ "label": "旺苍县", "index": "W" },
+					{ "label": "昭化区", "index": "Z" },
+					{ "label": "朝天区", "index": "Z" }
+				]
+			},
+			{
+				"label": "广安市",
+				"index": "G",
+				"children": [
+					{ "label": "广安区", "index": "G" },
+					{ "label": "华蓥市", "index": "H" },
+					{ "label": "邻水县", "index": "L" },
+					{ "label": "前锋区", "index": "Q" },
+					{ "label": "武胜县", "index": "W" },
+					{ "label": "岳池县", "index": "Y" }
+				]
+			},
+			{
+				"label": "甘孜藏族自治州",
+				"index": "G",
+				"children": [
+					{ "label": "白玉县", "index": "B" },
+					{ "label": "巴塘县", "index": "B" },
+					{ "label": "丹巴县", "index": "D" },
+					{ "label": "道孚县", "index": "D" },
+					{ "label": "德格县", "index": "D" },
+					{ "label": "稻城县", "index": "D" },
+					{ "label": "得荣县", "index": "D" },
+					{ "label": "甘孜县", "index": "G" },
+					{ "label": "九龙县", "index": "J" },
+					{ "label": "康定市", "index": "K" },
+					{ "label": "泸定县", "index": "L" },
+					{ "label": "炉霍县", "index": "L" },
+					{ "label": "理塘县", "index": "L" },
+					{ "label": "石渠县", "index": "S" },
+					{ "label": "色达县", "index": "S" },
+					{ "label": "新龙县", "index": "X" },
+					{ "label": "乡城县", "index": "X" },
+					{ "label": "雅江县", "index": "Y" }
+				]
+			},
+			{
+				"label": "泸州市",
+				"index": "L",
+				"children": [
+					{ "label": "古蔺县", "index": "G" },
+					{ "label": "合江县", "index": "H" },
+					{ "label": "江阳区", "index": "J" },
+					{ "label": "龙马潭区", "index": "L" },
+					{ "label": "泸县", "index": "L" },
+					{ "label": "纳溪区", "index": "N" },
+					{ "label": "叙永县", "index": "X" }
+				]
+			},
+			{
+				"label": "乐山市",
+				"index": "L",
+				"children": [
+					{ "label": "峨边彝族自治县", "index": "E" },
+					{ "label": "峨眉山市", "index": "E" },
+					{ "label": "金口河区", "index": "J" },
+					{ "label": "犍为县", "index": "J" },
+					{ "label": "井研县", "index": "J" },
+					{ "label": "夹江县", "index": "J" },
+					{ "label": "沐川县", "index": "M" },
+					{ "label": "马边彝族自治县", "index": "M" },
+					{ "label": "市中区", "index": "S" },
+					{ "label": "沙湾区", "index": "S" },
+					{ "label": "五通桥区", "index": "W" }
+				]
+			},
+			{
+				"label": "凉山彝族自治州",
+				"index": "L",
+				"children": [
+					{ "label": "布拖县", "index": "B" },
+					{ "label": "德昌县", "index": "D" },
+					{ "label": "甘洛县", "index": "G" },
+					{ "label": "会理市", "index": "H" },
+					{ "label": "会东县", "index": "H" },
+					{ "label": "金阳县", "index": "J" },
+					{ "label": "雷波县", "index": "L" },
+					{ "label": "木里藏族自治县", "index": "M" },
+					{ "label": "冕宁县", "index": "M" },
+					{ "label": "美姑县", "index": "M" },
+					{ "label": "宁南县", "index": "N" },
+					{ "label": "普格县", "index": "P" },
+					{ "label": "西昌市", "index": "X" },
+					{ "label": "喜德县", "index": "X" },
+					{ "label": "盐源县", "index": "Y" },
+					{ "label": "越西县", "index": "Y" },
+					{ "label": "昭觉县", "index": "Z" }
+				]
+			},
+			{
+				"label": "绵阳市",
+				"index": "M",
+				"children": [
+					{ "label": "安州区", "index": "A" },
+					{ "label": "北川羌族自治县", "index": "B" },
+					{ "label": "涪城区", "index": "F" },
+					{ "label": "江油市", "index": "J" },
+					{ "label": "平武县", "index": "P" },
+					{ "label": "三台县", "index": "S" },
+					{ "label": "游仙区", "index": "Y" },
+					{ "label": "盐亭县", "index": "Y" },
+					{ "label": "梓潼县", "index": "Z" }
+				]
+			},
+			{
+				"label": "眉山市",
+				"index": "M",
+				"children": [
+					{ "label": "东坡区", "index": "D" },
+					{ "label": "丹棱县", "index": "D" },
+					{ "label": "洪雅县", "index": "H" },
+					{ "label": "彭山区", "index": "P" },
+					{ "label": "青神县", "index": "Q" },
+					{ "label": "仁寿县", "index": "R" }
+				]
+			},
+			{
+				"label": "内江市",
+				"index": "N",
+				"children": [
+					{ "label": "东兴区", "index": "D" },
+					{ "label": "隆昌市", "index": "L" },
+					{ "label": "市中区", "index": "S" },
+					{ "label": "威远县", "index": "W" },
+					{ "label": "资中县", "index": "Z" }
+				]
+			},
+			{
+				"label": "南充市",
+				"index": "N",
+				"children": [
+					{ "label": "高坪区", "index": "G" },
+					{ "label": "嘉陵区", "index": "J" },
+					{ "label": "阆中市", "index": "L" },
+					{ "label": "南部县", "index": "N" },
+					{ "label": "蓬安县", "index": "P" },
+					{ "label": "顺庆区", "index": "S" },
+					{ "label": "西充县", "index": "X" },
+					{ "label": "营山县", "index": "Y" },
+					{ "label": "仪陇县", "index": "Y" }
+				]
+			},
+			{
+				"label": "攀枝花市",
+				"index": "P",
+				"children": [
+					{ "label": "东区", "index": "D" },
+					{ "label": "米易县", "index": "M" },
+					{ "label": "仁和区", "index": "R" },
+					{ "label": "西区", "index": "X" },
+					{ "label": "盐边县", "index": "Y" }
+				]
+			},
+			{
+				"label": "遂宁市",
+				"index": "S",
+				"children": [
+					{ "label": "安居区", "index": "A" },
+					{ "label": "船山区", "index": "C" },
+					{ "label": "大英县", "index": "D" },
+					{ "label": "蓬溪县", "index": "P" },
+					{ "label": "射洪市", "index": "S" }
+				]
+			},
+			{
+				"label": "宜宾市",
+				"index": "Y",
+				"children": [
+					{ "label": "翠屏区", "index": "C" },
+					{ "label": "长宁县", "index": "C" },
+					{ "label": "高县", "index": "G" },
+					{ "label": "珙县", "index": "G" },
+					{ "label": "江安县", "index": "J" },
+					{ "label": "南溪区", "index": "N" },
+					{ "label": "屏山县", "index": "P" },
+					{ "label": "叙州区", "index": "X" },
+					{ "label": "兴文县", "index": "X" },
+					{ "label": "筠连县", "index": "Y" }
+				]
+			},
+			{
+				"label": "雅安市",
+				"index": "Y",
+				"children": [
+					{ "label": "宝兴县", "index": "B" },
+					{ "label": "汉源县", "index": "H" },
+					{ "label": "芦山县", "index": "L" },
+					{ "label": "名山区", "index": "M" },
+					{ "label": "石棉县", "index": "S" },
+					{ "label": "天全县", "index": "T" },
+					{ "label": "荥经县", "index": "X" },
+					{ "label": "雨城区", "index": "Y" }
+				]
+			},
+			{
+				"label": "自贡市",
+				"index": "Z",
+				"children": [
+					{ "label": "大安区", "index": "D" },
+					{ "label": "富顺县", "index": "F" },
+					{ "label": "贡井区", "index": "G" },
+					{ "label": "荣县", "index": "R" },
+					{ "label": "沿滩区", "index": "Y" },
+					{ "label": "自流井区", "index": "Z" }
+				]
+			},
+			{
+				"label": "资阳市",
+				"index": "Z",
+				"children": [
+					{ "label": "安岳县", "index": "A" },
+					{ "label": "乐至县", "index": "L" },
+					{ "label": "雁江区", "index": "Y" }
+				]
+			}
+		]
+	},
+	{
+		"label": "陕西省",
+		"index": "S",
+		"children": [
+			{
+				"label": "安康市",
+				"index": "A",
+				"children": [
+					{ "label": "白河县", "index": "B" },
+					{ "label": "汉滨区", "index": "H" },
+					{ "label": "汉阴县", "index": "H" },
+					{ "label": "岚皋县", "index": "L" },
+					{ "label": "宁陕县", "index": "N" },
+					{ "label": "平利县", "index": "P" },
+					{ "label": "石泉县", "index": "S" },
+					{ "label": "旬阳市", "index": "X" },
+					{ "label": "紫阳县", "index": "Z" },
+					{ "label": "镇坪县", "index": "Z" }
+				]
+			},
+			{
+				"label": "宝鸡市",
+				"index": "B",
+				"children": [
+					{ "label": "陈仓区", "index": "C" },
+					{ "label": "凤翔区", "index": "F" },
+					{ "label": "扶风县", "index": "F" },
+					{ "label": "凤县", "index": "F" },
+					{ "label": "金台区", "index": "J" },
+					{ "label": "陇县", "index": "L" },
+					{ "label": "麟游县", "index": "L" },
+					{ "label": "眉县", "index": "M" },
+					{ "label": "岐山县", "index": "Q" },
+					{ "label": "千阳县", "index": "Q" },
+					{ "label": "太白县", "index": "T" },
+					{ "label": "渭滨区", "index": "W" }
+				]
+			},
+			{
+				"label": "汉中市",
+				"index": "H",
+				"children": [
+					{ "label": "城固县", "index": "C" },
+					{ "label": "佛坪县", "index": "F" },
+					{ "label": "汉台区", "index": "H" },
+					{ "label": "略阳县", "index": "L" },
+					{ "label": "留坝县", "index": "L" },
+					{ "label": "勉县", "index": "M" },
+					{ "label": "南郑区", "index": "N" },
+					{ "label": "宁强县", "index": "N" },
+					{ "label": "西乡县", "index": "X" },
+					{ "label": "洋县", "index": "Y" },
+					{ "label": "镇巴县", "index": "Z" }
+				]
+			},
+			{
+				"label": "商洛市",
+				"index": "S",
+				"children": [
+					{ "label": "丹凤县", "index": "D" },
+					{ "label": "洛南县", "index": "L" },
+					{ "label": "商州区", "index": "S" },
+					{ "label": "商南县", "index": "S" },
+					{ "label": "山阳县", "index": "S" },
+					{ "label": "镇安县", "index": "Z" },
+					{ "label": "柞水县", "index": "Z" }
+				]
+			},
+			{
+				"label": "铜川市",
+				"index": "T",
+				"children": [
+					{ "label": "王益区", "index": "W" },
+					{ "label": "印台区", "index": "Y" },
+					{ "label": "耀州区", "index": "Y" },
+					{ "label": "宜君县", "index": "Y" }
+				]
+			},
+			{
+				"label": "渭南市",
+				"index": "W",
+				"children": [
+					{ "label": "白水县", "index": "B" },
+					{ "label": "澄城县", "index": "C" },
+					{ "label": "大荔县", "index": "D" },
+					{ "label": "富平县", "index": "F" },
+					{ "label": "华州区", "index": "H" },
+					{ "label": "合阳县", "index": "H" },
+					{ "label": "韩城市", "index": "H" },
+					{ "label": "华阴市", "index": "H" },
+					{ "label": "临渭区", "index": "L" },
+					{ "label": "蒲城县", "index": "P" },
+					{ "label": "潼关县", "index": "T" }
+				]
+			},
+			{
+				"label": "西安市",
+				"index": "X",
+				"children": [
+					{ "label": "碑林区", "index": "B" },
+					{ "label": "灞桥区", "index": "B" },
+					{ "label": "长安区", "index": "C" },
+					{ "label": "高陵区", "index": "G" },
+					{ "label": "鄠邑区", "index": "H" },
+					{ "label": "莲湖区", "index": "L" },
+					{ "label": "临潼区", "index": "L" },
+					{ "label": "蓝田县", "index": "L" },
+					{ "label": "未央区", "index": "W" },
+					{ "label": "新城区", "index": "X" },
+					{ "label": "雁塔区", "index": "Y" },
+					{ "label": "阎良区", "index": "Y" },
+					{ "label": "周至县", "index": "Z" }
+				]
+			},
+			{
+				"label": "咸阳市",
+				"index": "X",
+				"children": [
+					{ "label": "彬州市", "index": "B" },
+					{ "label": "长武县", "index": "C" },
+					{ "label": "淳化县", "index": "C" },
+					{ "label": "泾阳县", "index": "J" },
+					{ "label": "礼泉县", "index": "L" },
+					{ "label": "秦都区", "index": "Q" },
+					{ "label": "乾县", "index": "Q" },
+					{ "label": "三原县", "index": "S" },
+					{ "label": "渭城区", "index": "W" },
+					{ "label": "武功县", "index": "W" },
+					{ "label": "旬邑县", "index": "X" },
+					{ "label": "兴平市", "index": "X" },
+					{ "label": "杨陵区", "index": "Y" },
+					{ "label": "永寿县", "index": "Y" }
+				]
+			},
+			{
+				"label": "延安市",
+				"index": "Y",
+				"children": [
+					{ "label": "安塞区", "index": "A" },
+					{ "label": "宝塔区", "index": "B" },
+					{ "label": "富县", "index": "F" },
+					{ "label": "甘泉县", "index": "G" },
+					{ "label": "黄龙县", "index": "H" },
+					{ "label": "黄陵县", "index": "H" },
+					{ "label": "洛川县", "index": "L" },
+					{ "label": "吴起县", "index": "W" },
+					{ "label": "延长县", "index": "Y" },
+					{ "label": "延川县", "index": "Y" },
+					{ "label": "宜川县", "index": "Y" },
+					{ "label": "志丹县", "index": "Z" },
+					{ "label": "子长市", "index": "Z" }
+				]
+			},
+			{
+				"label": "榆林市",
+				"index": "Y",
+				"children": [
+					{ "label": "定边县", "index": "D" },
+					{ "label": "府谷县", "index": "F" },
+					{ "label": "横山区", "index": "H" },
+					{ "label": "靖边县", "index": "J" },
+					{ "label": "佳县", "index": "J" },
+					{ "label": "米脂县", "index": "M" },
+					{ "label": "清涧县", "index": "Q" },
+					{ "label": "绥德县", "index": "S" },
+					{ "label": "神木市", "index": "S" },
+					{ "label": "吴堡县", "index": "W" },
+					{ "label": "榆阳区", "index": "Y" },
+					{ "label": "子洲县", "index": "Z" }
+				]
+			}
+		]
+	},
+	{
+		"label": "天津市",
+		"index": "T",
+		"children": [
+			{
+				"label": "市辖区",
+				"index": "S",
+				"children": [
+					{ "label": "北辰区", "index": "B" },
+					{ "label": "宝坻区", "index": "B" },
+					{ "label": "滨海新区", "index": "B" },
+					{ "label": "东丽区", "index": "D" },
+					{ "label": "和平区", "index": "H" },
+					{ "label": "河东区", "index": "H" },
+					{ "label": "河西区", "index": "H" },
+					{ "label": "河北区", "index": "H" },
+					{ "label": "红桥区", "index": "H" },
+					{ "label": "津南区", "index": "J" },
+					{ "label": "静海区", "index": "J" },
+					{ "label": "蓟州区", "index": "J" },
+					{ "label": "南开区", "index": "N" },
+					{ "label": "宁河区", "index": "N" },
+					{ "label": "武清区", "index": "W" },
+					{ "label": "西青区", "index": "X" }
+				]
+			}
+		]
+	},
+	{
+		"label": "西藏自治区",
+		"index": "X",
+		"children": [
+			{
+				"label": "阿里地区",
+				"index": "A",
+				"children": [
+					{ "label": "措勤县", "index": "C" },
+					{ "label": "噶尔县", "index": "G" },
+					{ "label": "革吉县", "index": "G" },
+					{ "label": "改则县", "index": "G" },
+					{ "label": "普兰县", "index": "P" },
+					{ "label": "日土县", "index": "R" },
+					{ "label": "札达县", "index": "Z" }
+				]
+			},
+			{
+				"label": "昌都市",
+				"index": "C",
+				"children": [
+					{ "label": "八宿县", "index": "B" },
+					{ "label": "边坝县", "index": "B" },
+					{ "label": "察雅县", "index": "C" },
+					{ "label": "丁青县", "index": "D" },
+					{ "label": "贡觉县", "index": "G" },
+					{ "label": "江达县", "index": "J" },
+					{ "label": "卡若区", "index": "K" },
+					{ "label": "类乌齐县", "index": "L" },
+					{ "label": "洛隆县", "index": "L" },
+					{ "label": "芒康县", "index": "M" },
+					{ "label": "左贡县", "index": "Z" }
+				]
+			},
+			{
+				"label": "拉萨市",
+				"index": "L",
+				"children": [
+					{ "label": "城关区", "index": "C" },
+					{ "label": "堆龙德庆区", "index": "D" },
+					{ "label": "达孜区", "index": "D" },
+					{ "label": "当雄县", "index": "D" },
+					{ "label": "达孜工业园区", "index": "D" },
+					{ "label": "格尔木藏青工业园区", "index": "G" },
+					{ "label": "林周县", "index": "L" },
+					{ "label": "拉萨经济技术开发区", "index": "L" },
+					{ "label": "墨竹工卡县", "index": "M" },
+					{ "label": "尼木县", "index": "N" },
+					{ "label": "曲水县", "index": "Q" },
+					{ "label": "西藏文化旅游创意园区", "index": "X" }
+				]
+			},
+			{
+				"label": "林芝市",
+				"index": "L",
+				"children": [
+					{ "label": "巴宜区", "index": "B" },
+					{ "label": "波密县", "index": "B" },
+					{ "label": "察隅县", "index": "C" },
+					{ "label": "工布江达县", "index": "G" },
+					{ "label": "朗县", "index": "L" },
+					{ "label": "墨脱县", "index": "M" },
+					{ "label": "米林市", "index": "M" }
+				]
+			},
+			{
+				"label": "那曲市",
+				"index": "N",
+				"children": [
+					{ "label": "安多县", "index": "A" },
+					{ "label": "比如县", "index": "B" },
+					{ "label": "班戈县", "index": "B" },
+					{ "label": "巴青县", "index": "B" },
+					{ "label": "嘉黎县", "index": "J" },
+					{ "label": "聂荣县", "index": "N" },
+					{ "label": "尼玛县", "index": "N" },
+					{ "label": "色尼区", "index": "S" },
+					{ "label": "申扎县", "index": "S" },
+					{ "label": "索县", "index": "S" },
+					{ "label": "双湖县", "index": "S" }
+				]
+			},
+			{
+				"label": "日喀则市",
+				"index": "R",
+				"children": [
+					{ "label": "昂仁县", "index": "A" },
+					{ "label": "白朗县", "index": "B" },
+					{ "label": "定日县", "index": "D" },
+					{ "label": "定结县", "index": "D" },
+					{ "label": "岗巴县", "index": "G" },
+					{ "label": "江孜县", "index": "J" },
+					{ "label": "吉隆县", "index": "J" },
+					{ "label": "康马县", "index": "K" },
+					{ "label": "拉孜县", "index": "L" },
+					{ "label": "南木林县", "index": "N" },
+					{ "label": "聂拉木县", "index": "N" },
+					{ "label": "仁布县", "index": "R" },
+					{ "label": "桑珠孜区", "index": "S" },
+					{ "label": "萨迦县", "index": "S" },
+					{ "label": "萨嘎县", "index": "S" },
+					{ "label": "谢通门县", "index": "X" },
+					{ "label": "亚东县", "index": "Y" },
+					{ "label": "仲巴县", "index": "Z" }
+				]
+			},
+			{
+				"label": "山南市",
+				"index": "S",
+				"children": [
+					{ "label": "措美县", "index": "C" },
+					{ "label": "错那市", "index": "C" },
+					{ "label": "贡嘎县", "index": "G" },
+					{ "label": "加查县", "index": "J" },
+					{ "label": "洛扎县", "index": "L" },
+					{ "label": "隆子县", "index": "L" },
+					{ "label": "浪卡子县", "index": "L" },
+					{ "label": "乃东区", "index": "N" },
+					{ "label": "琼结县", "index": "Q" },
+					{ "label": "曲松县", "index": "Q" },
+					{ "label": "桑日县", "index": "S" },
+					{ "label": "扎囊县", "index": "Z" }
+				]
+			}
+		]
+	},
+	{
+		"label": "新疆维吾尔自治区",
+		"index": "X",
+		"children": [
+			{
+				"label": "阿克苏地区",
+				"index": "A",
+				"children": [
+					{ "label": "阿克苏市", "index": "A" },
+					{ "label": "阿瓦提县", "index": "A" },
+					{ "label": "拜城县", "index": "B" },
+					{ "label": "库车市", "index": "K" },
+					{ "label": "柯坪县", "index": "K" },
+					{ "label": "沙雅县", "index": "S" },
+					{ "label": "温宿县", "index": "W" },
+					{ "label": "乌什县", "index": "W" },
+					{ "label": "新和县", "index": "X" }
+				]
+			},
+			{
+				"label": "阿勒泰地区",
+				"index": "A",
+				"children": [
+					{ "label": "阿勒泰市", "index": "A" },
+					{ "label": "布尔津县", "index": "B" },
+					{ "label": "富蕴县", "index": "F" },
+					{ "label": "福海县", "index": "F" },
+					{ "label": "哈巴河县", "index": "H" },
+					{ "label": "吉木乃县", "index": "J" },
+					{ "label": "青河县", "index": "Q" }
+				]
+			},
+			{
+				"label": "博尔塔拉蒙古自治州",
+				"index": "B",
+				"children": [
+					{ "label": "阿拉山口市", "index": "A" },
+					{ "label": "博乐市", "index": "B" },
+					{ "label": "精河县", "index": "J" },
+					{ "label": "温泉县", "index": "W" }
+				]
+			},
+			{
+				"label": "巴音郭楞蒙古自治州",
+				"index": "B",
+				"children": [
+					{ "label": "博湖县", "index": "B" },
+					{ "label": "和静县", "index": "H" },
+					{ "label": "和硕县", "index": "H" },
+					{ "label": "库尔勒市", "index": "K" },
+					{ "label": "轮台县", "index": "L" },
+					{ "label": "且末县", "index": "Q" },
+					{ "label": "若羌县", "index": "R" },
+					{ "label": "尉犁县", "index": "W" },
+					{ "label": "焉耆回族自治县", "index": "Y" }
+				]
+			},
+			{
+				"label": "昌吉回族自治州",
+				"index": "C",
+				"children": [
+					{ "label": "昌吉市", "index": "C" },
+					{ "label": "阜康市", "index": "F" },
+					{ "label": "呼图壁县", "index": "H" },
+					{ "label": "吉木萨尔县", "index": "J" },
+					{ "label": "玛纳斯县", "index": "M" },
+					{ "label": "木垒哈萨克自治县", "index": "M" },
+					{ "label": "奇台县", "index": "Q" }
+				]
+			},
+			{
+				"label": "哈密市",
+				"index": "H",
+				"children": [
+					{ "label": "巴里坤哈萨克自治县", "index": "B" },
+					{ "label": "伊州区", "index": "Y" },
+					{ "label": "伊吾县", "index": "Y" }
+				]
+			},
+			{
+				"label": "和田地区",
+				"index": "H",
+				"children": [
+					{ "label": "策勒县", "index": "C" },
+					{ "label": "和田市", "index": "H" },
+					{ "label": "和田县", "index": "H" },
+					{ "label": "洛浦县", "index": "L" },
+					{ "label": "墨玉县", "index": "M" },
+					{ "label": "民丰县", "index": "M" },
+					{ "label": "皮山县", "index": "P" },
+					{ "label": "于田县", "index": "Y" }
+				]
+			},
+			{
+				"label": "克拉玛依市",
+				"index": "K",
+				"children": [
+					{ "label": "白碱滩区", "index": "B" },
+					{ "label": "独山子区", "index": "D" },
+					{ "label": "克拉玛依区", "index": "K" },
+					{ "label": "乌尔禾区", "index": "W" }
+				]
+			},
+			{
+				"label": "克孜勒苏柯尔克孜自治州",
+				"index": "K",
+				"children": [
+					{ "label": "阿图什市", "index": "A" },
+					{ "label": "阿克陶县", "index": "A" },
+					{ "label": "阿合奇县", "index": "A" },
+					{ "label": "乌恰县", "index": "W" }
+				]
+			},
+			{
+				"label": "喀什地区",
+				"index": "K",
+				"children": [
+					{ "label": "巴楚县", "index": "B" },
+					{ "label": "喀什市", "index": "K" },
+					{ "label": "麦盖提县", "index": "M" },
+					{ "label": "伽师县", "index": "Q" },
+					{ "label": "疏附县", "index": "S" },
+					{ "label": "疏勒县", "index": "S" },
+					{ "label": "莎车县", "index": "S" },
+					{ "label": "塔什库尔干塔吉克自治县", "index": "T" },
+					{ "label": "英吉沙县", "index": "Y" },
+					{ "label": "叶城县", "index": "Y" },
+					{ "label": "岳普湖县", "index": "Y" },
+					{ "label": "泽普县", "index": "Z" }
+				]
+			},
+			{
+				"label": "吐鲁番市",
+				"index": "T",
+				"children": [
+					{ "label": "高昌区", "index": "G" },
+					{ "label": "鄯善县", "index": "S" },
+					{ "label": "托克逊县", "index": "T" }
+				]
+			},
+			{
+				"label": "塔城地区",
+				"index": "T",
+				"children": [
+					{ "label": "额敏县", "index": "E" },
+					{ "label": "和布克赛尔蒙古自治县", "index": "H" },
+					{ "label": "沙湾市", "index": "S" },
+					{ "label": "塔城市", "index": "T" },
+					{ "label": "托里县", "index": "T" },
+					{ "label": "乌苏市", "index": "W" },
+					{ "label": "裕民县", "index": "Y" }
+				]
+			},
+			{
+				"label": "乌鲁木齐市",
+				"index": "W",
+				"children": [
+					{ "label": "达坂城区", "index": "D" },
+					{ "label": "米东区", "index": "M" },
+					{ "label": "沙依巴克区", "index": "S" },
+					{ "label": "水磨沟区", "index": "S" },
+					{ "label": "天山区", "index": "T" },
+					{ "label": "头屯河区", "index": "T" },
+					{ "label": "乌鲁木齐县", "index": "W" },
+					{ "label": "新市区", "index": "X" }
+				]
+			},
+			{
+				"label": "伊犁哈萨克自治州",
+				"index": "Y",
+				"children": [
+					{ "label": "察布查尔锡伯自治县", "index": "C" },
+					{ "label": "巩留县", "index": "G" },
+					{ "label": "霍尔果斯市", "index": "H" },
+					{ "label": "霍城县", "index": "H" },
+					{ "label": "奎屯市", "index": "K" },
+					{ "label": "尼勒克县", "index": "N" },
+					{ "label": "特克斯县", "index": "T" },
+					{ "label": "新源县", "index": "X" },
+					{ "label": "伊宁市", "index": "Y" },
+					{ "label": "伊宁县", "index": "Y" },
+					{ "label": "昭苏县", "index": "Z" }
+				]
+			},
+			{
+				"label": "自治区直辖县级行政区划",
+				"index": "Z",
+				"children": [
+					{ "label": "阿拉尔市", "index": "A" },
+					{ "label": "北屯市", "index": "B" },
+					{ "label": "白杨市", "index": "B" },
+					{ "label": "胡杨河市", "index": "H" },
+					{ "label": "可克达拉市", "index": "K" },
+					{ "label": "昆玉市", "index": "K" },
+					{ "label": "石河子市", "index": "S" },
+					{ "label": "双河市", "index": "S" },
+					{ "label": "图木舒克市", "index": "T" },
+					{ "label": "铁门关市", "index": "T" },
+					{ "label": "五家渠市", "index": "W" },
+					{ "label": "新星市", "index": "X" }
+				]
+			}
+		]
+	},
+	{
+		"label": "云南省",
+		"index": "Y",
+		"children": [
+			{
+				"label": "保山市",
+				"index": "B",
+				"children": [
+					{ "label": "昌宁县", "index": "C" },
+					{ "label": "隆阳区", "index": "L" },
+					{ "label": "龙陵县", "index": "L" },
+					{ "label": "施甸县", "index": "S" },
+					{ "label": "腾冲市", "index": "T" }
+				]
+			},
+			{
+				"label": "楚雄彝族自治州",
+				"index": "C",
+				"children": [
+					{ "label": "楚雄市", "index": "C" },
+					{ "label": "大姚县", "index": "D" },
+					{ "label": "禄丰市", "index": "L" },
+					{ "label": "牟定县", "index": "M" },
+					{ "label": "南华县", "index": "N" },
+					{ "label": "双柏县", "index": "S" },
+					{ "label": "武定县", "index": "W" },
+					{ "label": "姚安县", "index": "Y" },
+					{ "label": "永仁县", "index": "Y" },
+					{ "label": "元谋县", "index": "Y" }
+				]
+			},
+			{
+				"label": "大理白族自治州",
+				"index": "D",
+				"children": [
+					{ "label": "宾川县", "index": "B" },
+					{ "label": "大理市", "index": "D" },
+					{ "label": "洱源县", "index": "E" },
+					{ "label": "鹤庆县", "index": "H" },
+					{ "label": "剑川县", "index": "J" },
+					{ "label": "弥渡县", "index": "M" },
+					{ "label": "南涧彝族自治县", "index": "N" },
+					{ "label": "巍山彝族回族自治县", "index": "W" },
+					{ "label": "祥云县", "index": "X" },
+					{ "label": "漾濞彝族自治县", "index": "Y" },
+					{ "label": "永平县", "index": "Y" },
+					{ "label": "云龙县", "index": "Y" }
+				]
+			},
+			{
+				"label": "德宏傣族景颇族自治州",
+				"index": "D",
+				"children": [
+					{ "label": "梁河县", "index": "L" },
+					{ "label": "陇川县", "index": "L" },
+					{ "label": "芒市", "index": "M" },
+					{ "label": "瑞丽市", "index": "R" },
+					{ "label": "盈江县", "index": "Y" }
+				]
+			},
+			{
+				"label": "迪庆藏族自治州",
+				"index": "D",
+				"children": [
+					{ "label": "德钦县", "index": "D" },
+					{ "label": "维西傈僳族自治县", "index": "W" },
+					{ "label": "香格里拉市", "index": "X" }
+				]
+			},
+			{
+				"label": "红河哈尼族彝族自治州",
+				"index": "H",
+				"children": [
+					{ "label": "个旧市", "index": "G" },
+					{ "label": "红河县", "index": "H" },
+					{ "label": "河口瑶族自治县", "index": "H" },
+					{ "label": "建水县", "index": "J" },
+					{ "label": "金平苗族瑶族傣族自治县", "index": "J" },
+					{ "label": "开远市", "index": "K" },
+					{ "label": "泸西县", "index": "L" },
+					{ "label": "绿春县", "index": "L" },
+					{ "label": "蒙自市", "index": "M" },
+					{ "label": "弥勒市", "index": "M" },
+					{ "label": "屏边苗族自治县", "index": "P" },
+					{ "label": "石屏县", "index": "S" },
+					{ "label": "元阳县", "index": "Y" }
+				]
+			},
+			{
+				"label": "昆明市",
+				"index": "K",
+				"children": [
+					{ "label": "安宁市", "index": "A" },
+					{ "label": "呈贡区", "index": "C" },
+					{ "label": "东川区", "index": "D" },
+					{ "label": "富民县", "index": "F" },
+					{ "label": "官渡区", "index": "G" },
+					{ "label": "晋宁区", "index": "J" },
+					{ "label": "禄劝彝族苗族自治县", "index": "L" },
+					{ "label": "盘龙区", "index": "P" },
+					{ "label": "石林彝族自治县", "index": "S" },
+					{ "label": "嵩明县", "index": "S" },
+					{ "label": "五华区", "index": "W" },
+					{ "label": "西山区", "index": "X" },
+					{ "label": "寻甸回族彝族自治县", "index": "X" },
+					{ "label": "宜良县", "index": "Y" }
+				]
+			},
+			{
+				"label": "丽江市",
+				"index": "L",
+				"children": [
+					{ "label": "古城区", "index": "G" },
+					{ "label": "华坪县", "index": "H" },
+					{ "label": "宁蒗彝族自治县", "index": "N" },
+					{ "label": "玉龙纳西族自治县", "index": "Y" },
+					{ "label": "永胜县", "index": "Y" }
+				]
+			},
+			{
+				"label": "临沧市",
+				"index": "L",
+				"children": [
+					{ "label": "沧源佤族自治县", "index": "C" },
+					{ "label": "凤庆县", "index": "F" },
+					{ "label": "耿马傣族佤族自治县", "index": "G" },
+					{ "label": "临翔区", "index": "L" },
+					{ "label": "双江拉祜族佤族布朗族傣族自治县", "index": "S" },
+					{ "label": "云县", "index": "Y" },
+					{ "label": "永德县", "index": "Y" },
+					{ "label": "镇康县", "index": "Z" }
+				]
+			},
+			{
+				"label": "怒江傈僳族自治州",
+				"index": "N",
+				"children": [
+					{ "label": "福贡县", "index": "F" },
+					{ "label": "贡山独龙族怒族自治县", "index": "G" },
+					{ "label": "泸水市", "index": "L" },
+					{ "label": "兰坪白族普米族自治县", "index": "L" }
+				]
+			},
+			{
+				"label": "普洱市",
+				"index": "P",
+				"children": [
+					{ "label": "景东彝族自治县", "index": "J" },
+					{ "label": "景谷傣族彝族自治县", "index": "J" },
+					{ "label": "江城哈尼族彝族自治县", "index": "J" },
+					{ "label": "澜沧拉祜族自治县", "index": "L" },
+					{ "label": "墨江哈尼族自治县", "index": "M" },
+					{ "label": "孟连傣族拉祜族佤族自治县", "index": "M" },
+					{ "label": "宁洱哈尼族彝族自治县", "index": "N" },
+					{ "label": "思茅区", "index": "S" },
+					{ "label": "西盟佤族自治县", "index": "X" },
+					{ "label": "镇沅彝族哈尼族拉祜族自治县", "index": "Z" }
+				]
+			},
+			{
+				"label": "曲靖市",
+				"index": "Q",
+				"children": [
+					{ "label": "富源县", "index": "F" },
+					{ "label": "会泽县", "index": "H" },
+					{ "label": "陆良县", "index": "L" },
+					{ "label": "罗平县", "index": "L" },
+					{ "label": "马龙区", "index": "M" },
+					{ "label": "麒麟区", "index": "Q" },
+					{ "label": "师宗县", "index": "S" },
+					{ "label": "宣威市", "index": "X" },
+					{ "label": "沾益区", "index": "Z" }
+				]
+			},
+			{
+				"label": "文山壮族苗族自治州",
+				"index": "W",
+				"children": [
+					{ "label": "富宁县", "index": "F" },
+					{ "label": "广南县", "index": "G" },
+					{ "label": "麻栗坡县", "index": "M" },
+					{ "label": "马关县", "index": "M" },
+					{ "label": "丘北县", "index": "Q" },
+					{ "label": "文山市", "index": "W" },
+					{ "label": "西畴县", "index": "X" },
+					{ "label": "砚山县", "index": "Y" }
+				]
+			},
+			{
+				"label": "西双版纳傣族自治州",
+				"index": "X",
+				"children": [
+					{ "label": "景洪市", "index": "J" },
+					{ "label": "勐海县", "index": "M" },
+					{ "label": "勐腊县", "index": "M" }
+				]
+			},
+			{
+				"label": "玉溪市",
+				"index": "Y",
+				"children": [
+					{ "label": "澄江市", "index": "C" },
+					{ "label": "峨山彝族自治县", "index": "E" },
+					{ "label": "红塔区", "index": "H" },
+					{ "label": "华宁县", "index": "H" },
+					{ "label": "江川区", "index": "J" },
+					{ "label": "通海县", "index": "T" },
+					{ "label": "新平彝族傣族自治县", "index": "X" },
+					{ "label": "易门县", "index": "Y" },
+					{ "label": "元江哈尼族彝族傣族自治县", "index": "Y" }
+				]
+			},
+			{
+				"label": "昭通市",
+				"index": "Z",
+				"children": [
+					{ "label": "大关县", "index": "D" },
+					{ "label": "鲁甸县", "index": "L" },
+					{ "label": "巧家县", "index": "Q" },
+					{ "label": "绥江县", "index": "S" },
+					{ "label": "水富市", "index": "S" },
+					{ "label": "威信县", "index": "W" },
+					{ "label": "盐津县", "index": "Y" },
+					{ "label": "永善县", "index": "Y" },
+					{ "label": "彝良县", "index": "Y" },
+					{ "label": "昭阳区", "index": "Z" },
+					{ "label": "镇雄县", "index": "Z" }
+				]
+			}
+		]
+	},
+	{
+		"label": "浙江省",
+		"index": "Z",
+		"children": [
+			{
+				"label": "杭州市",
+				"index": "H",
+				"children": [
+					{ "label": "滨江区", "index": "B" },
+					{ "label": "淳安县", "index": "C" },
+					{ "label": "富阳区", "index": "F" },
+					{ "label": "拱墅区", "index": "G" },
+					{ "label": "建德市", "index": "J" },
+					{ "label": "临安区", "index": "L" },
+					{ "label": "临平区", "index": "L" },
+					{ "label": "钱塘区", "index": "Q" },
+					{ "label": "上城区", "index": "S" },
+					{ "label": "桐庐县", "index": "T" },
+					{ "label": "西湖区", "index": "X" },
+					{ "label": "萧山区", "index": "X" },
+					{ "label": "余杭区", "index": "Y" }
+				]
+			},
+			{
+				"label": "湖州市",
+				"index": "H",
+				"children": [
+					{ "label": "安吉县", "index": "A" },
+					{ "label": "长兴县", "index": "C" },
+					{ "label": "德清县", "index": "D" },
+					{ "label": "南浔区", "index": "N" },
+					{ "label": "吴兴区", "index": "W" }
+				]
+			},
+			{
+				"label": "嘉兴市",
+				"index": "J",
+				"children": [
+					{ "label": "海盐县", "index": "H" },
+					{ "label": "海宁市", "index": "H" },
+					{ "label": "嘉善县", "index": "J" },
+					{ "label": "南湖区", "index": "N" },
+					{ "label": "平湖市", "index": "P" },
+					{ "label": "桐乡市", "index": "T" },
+					{ "label": "秀洲区", "index": "X" }
+				]
+			},
+			{
+				"label": "金华市",
+				"index": "J",
+				"children": [
+					{ "label": "东阳市", "index": "D" },
+					{ "label": "金东区", "index": "J" },
+					{ "label": "兰溪市", "index": "L" },
+					{ "label": "浦江县", "index": "P" },
+					{ "label": "磐安县", "index": "P" },
+					{ "label": "婺城区", "index": "W" },
+					{ "label": "武义县", "index": "W" },
+					{ "label": "义乌市", "index": "Y" },
+					{ "label": "永康市", "index": "Y" }
+				]
+			},
+			{
+				"label": "丽水市",
+				"index": "L",
+				"children": [
+					{ "label": "缙云县", "index": "J" },
+					{ "label": "景宁畲族自治县", "index": "J" },
+					{ "label": "莲都区", "index": "L" },
+					{ "label": "龙泉市", "index": "L" },
+					{ "label": "青田县", "index": "Q" },
+					{ "label": "庆元县", "index": "Q" },
+					{ "label": "遂昌县", "index": "S" },
+					{ "label": "松阳县", "index": "S" },
+					{ "label": "云和县", "index": "Y" }
+				]
+			},
+			{
+				"label": "宁波市",
+				"index": "N",
+				"children": [
+					{ "label": "北仑区", "index": "B" },
+					{ "label": "慈溪市", "index": "C" },
+					{ "label": "奉化区", "index": "F" },
+					{ "label": "海曙区", "index": "H" },
+					{ "label": "江北区", "index": "J" },
+					{ "label": "宁海县", "index": "N" },
+					{ "label": "象山县", "index": "X" },
+					{ "label": "鄞州区", "index": "Y" },
+					{ "label": "余姚市", "index": "Y" },
+					{ "label": "镇海区", "index": "Z" }
+				]
+			},
+			{
+				"label": "衢州市",
+				"index": "Q",
+				"children": [
+					{ "label": "常山县", "index": "C" },
+					{ "label": "江山市", "index": "J" },
+					{ "label": "柯城区", "index": "K" },
+					{ "label": "开化县", "index": "K" },
+					{ "label": "龙游县", "index": "L" },
+					{ "label": "衢江区", "index": "Q" }
+				]
+			},
+			{
+				"label": "绍兴市",
+				"index": "S",
+				"children": [
+					{ "label": "柯桥区", "index": "K" },
+					{ "label": "上虞区", "index": "S" },
+					{ "label": "嵊州市", "index": "S" },
+					{ "label": "新昌县", "index": "X" },
+					{ "label": "越城区", "index": "Y" },
+					{ "label": "诸暨市", "index": "Z" }
+				]
+			},
+			{
+				"label": "台州市",
+				"index": "T",
+				"children": [
+					{ "label": "黄岩区", "index": "H" },
+					{ "label": "椒江区", "index": "J" },
+					{ "label": "路桥区", "index": "L" },
+					{ "label": "临海市", "index": "L" },
+					{ "label": "三门县", "index": "S" },
+					{ "label": "天台县", "index": "T" },
+					{ "label": "温岭市", "index": "W" },
+					{ "label": "仙居县", "index": "X" },
+					{ "label": "玉环市", "index": "Y" }
+				]
+			},
+			{
+				"label": "温州市",
+				"index": "W",
+				"children": [
+					{ "label": "苍南县", "index": "C" },
+					{ "label": "洞头区", "index": "D" },
+					{ "label": "鹿城区", "index": "L" },
+					{ "label": "龙湾区", "index": "L" },
+					{ "label": "乐清市", "index": "L" },
+					{ "label": "龙港市", "index": "L" },
+					{ "label": "瓯海区", "index": "O" },
+					{ "label": "平阳县", "index": "P" },
+					{ "label": "瑞安市", "index": "R" },
+					{ "label": "泰顺县", "index": "T" },
+					{ "label": "文成县", "index": "W" },
+					{ "label": "永嘉县", "index": "Y" }
+				]
+			},
+			{
+				"label": "舟山市",
+				"index": "Z",
+				"children": [
+					{ "label": "定海区", "index": "D" },
+					{ "label": "岱山县", "index": "D" },
+					{ "label": "普陀区", "index": "P" },
+					{ "label": "嵊泗县", "index": "S" }
+				]
+			}
+		]
+	},
+	{
+		"label": "重庆市",
+		"index": "Z",
+		"children": [
+			{
+				"label": "市辖区",
+				"index": "S",
+				"children": [
+					{ "label": "北碚区", "index": "B" },
+					{ "label": "巴南区", "index": "B" },
+					{ "label": "璧山区", "index": "B" },
+					{ "label": "长寿区", "index": "C" },
+					{ "label": "大渡口区", "index": "D" },
+					{ "label": "大足区", "index": "D" },
+					{ "label": "涪陵区", "index": "F" },
+					{ "label": "合川区", "index": "H" },
+					{ "label": "江北区", "index": "J" },
+					{ "label": "九龙坡区", "index": "J" },
+					{ "label": "江津区", "index": "J" },
+					{ "label": "开州区", "index": "K" },
+					{ "label": "梁平区", "index": "L" },
+					{ "label": "南岸区", "index": "N" },
+					{ "label": "南川区", "index": "N" },
+					{ "label": "綦江区", "index": "Q" },
+					{ "label": "黔江区", "index": "Q" },
+					{ "label": "荣昌区", "index": "R" },
+					{ "label": "沙坪坝区", "index": "S" },
+					{ "label": "铜梁区", "index": "T" },
+					{ "label": "潼南区", "index": "T" },
+					{ "label": "万州区", "index": "W" },
+					{ "label": "武隆区", "index": "W" },
+					{ "label": "渝中区", "index": "Y" },
+					{ "label": "渝北区", "index": "Y" },
+					{ "label": "永川区", "index": "Y" }
+				]
+			},
+			{
+				"label": "县",
+				"index": "X",
+				"children": [
+					{ "label": "城口县", "index": "C" },
+					{ "label": "垫江县", "index": "D" },
+					{ "label": "丰都县", "index": "F" },
+					{ "label": "奉节县", "index": "F" },
+					{ "label": "彭水苗族土家族自治县", "index": "P" },
+					{ "label": "石柱土家族自治县", "index": "S" },
+					{ "label": "巫山县", "index": "W" },
+					{ "label": "巫溪县", "index": "W" },
+					{ "label": "秀山土家族苗族自治县", "index": "X" },
+					{ "label": "云阳县", "index": "Y" },
+					{ "label": "酉阳土家族苗族自治县", "index": "Y" },
+					{ "label": "忠县", "index": "Z" }
+				]
+			}
+		]
+	}
+]

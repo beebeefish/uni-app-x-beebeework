@@ -1,0 +1,24 @@
+<template>
+  <!-- 完美绕过 <component :is> 限制，用显式条件渲染，安全百分百 -->
+  <UserInfoAddon v-if="data['userInfo'] != null" :data="data" />
+  <StatsListAddon v-if="data['statsList'] != null" :data="data" />
+  <ActionsBtnAddon v-if="data['actionsBtn'] != null" :data="data" />
+  
+  <!-- 🚀 以后新增插件：在这里直接加一行即可，主页面永远解放！ -->
+  <!-- <NewFeatureAddon v-if="data['newFeature'] != null" :data="data" /> -->
+</template>
+
+<script setup lang="uts">
+// 统一在这里引入所有插件子组件
+import UserInfoAddon from '@/components/comp/common-userinfo.uvue'
+import StatsListAddon from '@/components/comp/common-statslist.uvue'
+import ActionsBtnAddon from '@/components/comp/common-actionsbtn.uvue'
+
+defineProps({
+  data: {
+    type: Object,
+    required: true,
+    default: () => ({})
+  }
+})
+</script>

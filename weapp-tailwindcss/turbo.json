@@ -1,0 +1,92 @@
+{
+  "$schema": "https://turborepo.com/schema.json",
+  "globalPassThroughEnv": [
+    "WEAPP_TW_SKIP_INTERACTIVE_TARO_BUILD",
+    "WEAPP_TW_SKIP_INTERACTIVE_UNI_BUILD"
+  ],
+  "tasks": {
+    "build": {
+      "dependsOn": [
+        "^build"
+      ],
+      "outputs": [
+        "dist/**",
+        "build/**",
+        "result.css",
+        "result.json",
+        "transformed.css"
+      ]
+    },
+    "lint": {
+      "dependsOn": [
+        "^lint"
+      ],
+      "outputs": []
+    },
+    "dev": {
+      "cache": false
+    },
+    "test": {
+      "dependsOn": [
+        "^test"
+      ],
+      "outputs": [
+        "coverage/**"
+      ]
+    },
+    "tsd": {
+      "dependsOn": [
+        "^tsd"
+      ],
+      "outputs": []
+    },
+    "release": {},
+    "sync": {
+      "cache": false
+    },
+    "demo/*#build": {
+      "dependsOn": [
+        "^build",
+        "@weapp-tailwindcss/build-all#build"
+      ],
+      "outputs": [
+        "dist/**",
+        "build/**",
+        "result.css",
+        "result.json",
+        "transformed.css"
+      ]
+    },
+    "demo/web/*#build": {
+      "dependsOn": [
+        "^build",
+        "@weapp-tailwindcss/build-all#build"
+      ],
+      "outputs": [
+        "dist/**",
+        "dist-web/**",
+        "dist-weapp/**"
+      ]
+    },
+    "apps/**#build": {
+      "dependsOn": [
+        "^build",
+        "@weapp-tailwindcss/build-all#build"
+      ],
+      "outputs": [
+        "dist/**",
+        "build/**",
+        "result.css",
+        "result.json",
+        "transformed.css"
+      ]
+    }
+  },
+  "boundaries": {
+    "implicitDependencies": [
+      "apps/* -> packages/*",
+      "demo/* -> packages/*",
+      "demo/web/* -> packages/*"
+    ]
+  }
+}

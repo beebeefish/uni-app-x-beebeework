@@ -1,0 +1,83 @@
+import type { TailwindcssPatcherFactoryOptions } from '@/tailwindcss/v4'
+import type { InternalUserDefinedOptions } from '@/types'
+import { logger } from '@weapp-tailwindcss/logger'
+import { findWorkspaceRoot } from '@/context/workspace'
+import {
+  createPatcherForBase,
+  groupCssEntriesByBase,
+  guessBasedirFromEntries,
+  normalizeCssEntries,
+  tryCreateMultiTailwindcssPatcher,
+} from '@/tailwindcss/v4'
+import { omitUndefined } from '@/utils/object'
+import { resolveTailwindcssBasedir } from './tailwindcss/basedir'
+import { detectImplicitCssEntries } from './tailwindcss/rax'
+
+export function createTailwindcssPatcherFromContext(ctx: InternalUserDefinedOptions) {
+  const {
+    tailwindcssBasedir,
+    supportCustomLengthUnitsPatch,
+    tailwindcss,
+    tailwindcssPatcherOptions,
+    cssEntries: rawCssEntries,
+    appType,
+    arbitraryValues,
+  } = ctx
+
+  const absoluteCssEntryBasedir = guessBasedirFromEntries(rawCssEntries)
+  const resolvedTailwindcssBasedir = resolveTailwindcssBasedir(tailwindcssBasedir, absoluteCssEntryBasedir)
+  ctx.tailwindcssBasedir = resolvedTailwindcssBasedir
+  logger.debug('tailwindcss basedir resolved: %s', resolvedTailwindcssBasedir)
+
+  let normalizedCssEntries = normalizeCssEntries(rawCssEntries, resolvedTailwindcssBasedir)
+  if (!normalizedCssEntries) {
+    normalizedCssEntries = detectImplicitCssEntries(ctx.appType, resolvedTailwindcssBasedir)
+  }
+  if (normalizedCssEntries) {
+    ctx.cssEntries = normalizedCssEntries
+  }
+
+  const patcherOptions: TailwindcssPatcherFactoryOptions = {
+    tailwindcss,
+    tailwindcssPatcherOptions,
+    supportCustomLengthUnitsPatch,
+    appType,
+    bareArbitraryValues: arbitraryValues?.bareArbitraryValues,
+  }
+
+  const workspaceRoot = findWorkspaceRoot(resolvedTailwindcssBasedir)
+    ?? (absoluteCssEntryBasedir ? findWorkspaceRoot(absoluteCssEntryBasedir) : undefined)
+
+  const groupedCssEntries = normalizedCssEntries
+    ? groupCssEntriesByBase(normalizedCssEntries, omitUndefined({
+        preferredBaseDir: resolvedTailwindcssBasedir,
+        workspaceRoot,
+      }))
+    : undefined
+
+  const multiPatcher = groupedCssEntries
+    ? tryCreateMultiTailwindcssPatcher(groupedCssEntries, patcherOptions)
+    : undefined
+
+  if (multiPatcher) {
+    return multiPatcher
+  }
+
+  if (groupedCssEntries?.size === 1) {
+    const firstGroup = groupedCssEntries.entries().next().value
+    if (firstGroup) {
+      const [baseDir, entries] = firstGroup
+      return createPatcherForBase(baseDir, entries, patcherOptions)
+    }
+  }
+
+  const effectiveCssEntries = normalizedCssEntries ?? rawCssEntries
+
+  return createPatcherForBase(
+    resolvedTailwindcssBasedir,
+    effectiveCssEntries,
+    patcherOptions,
+  )
+}
+
+export { resolveTailwindcssBasedir }

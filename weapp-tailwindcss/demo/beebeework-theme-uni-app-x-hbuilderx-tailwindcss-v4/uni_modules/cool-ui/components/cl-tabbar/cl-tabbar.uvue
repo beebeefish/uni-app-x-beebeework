@@ -1,0 +1,144 @@
+<template>
+	<cl-footer
+		:height="height"
+		:pt="{
+			className: parseClass([pt.footer?.className]),
+			content: {
+				className: parseClass(['!p-0', pt.footerContent?.className])
+			}
+		}"
+		:vt="cache.key"
+	>
+		<view class="cl-tabbar" :class="[pt.className]" :style="tabbarStyle">
+			<view
+				class="cl-tabbar__item"
+				:class="[pt.item?.className]"
+				v-for="item in list"
+				:key="item.value"
+				@tap="select(item)"
+			>
+				<cl-image
+					v-if="item.icon != null && showIcon"
+					:src="modelValue == item.value ? item.selectedIcon : item.icon"
+					:height="pt.icon?.height ?? iconSize"
+					:width="pt.icon?.width ?? iconSize"
+					:pt="{
+						className: pt.icon?.className
+					}"
+				></cl-image>
+
+				<cl-text
+					v-if="item.text != null && showText"
+					:size="pt.text?.size ?? textSize"
+					:color="modelValue == item.value ? selectedColor : color"
+					:pt="{
+						className: parseClass([
+							[item.icon != null && showIcon, 'mt-[2px]'],
+							pt.text?.className
+						])
+					}"
+					>{{ item.text }}</cl-text
+				>
+			</view>
+		</view>
+	</cl-footer>
+</template>
+
+<script setup lang="ts">
+import { getColor, getUnit, parseClass, parsePt, useCache } from "@/.cool";
+import { computed, type PropType } from "vue";
+import type { ClTabbarItem, PassThroughProps } from "../../types";
+import type { ClTextProps } from "../cl-text/props";
+import type { ClImageProps } from "../cl-image/props";
+
+defineOptions({
+	name: "cl-tabbar"
+});
+
+const props = defineProps({
+	modelValue: {
+		type: String,
+		default: ""
+	},
+	pt: {
+		type: Object,
+		default: () => ({})
+	},
+	list: {
+		type: Array as PropType<ClTabbarItem[]>,
+		default: () => []
+	},
+	height: {
+		type: Number,
+		default: 60
+	},
+	backgroundColor: {
+		type: String,
+		default: null
+	},
+	color: {
+		type: String,
+		default: () => getColor("gray-400/10")
+	},
+	selectedColor: {
+		type: String,
+		default: () => getColor("teal-500/10")
+	},
+	iconSize: {
+		type: Number,
+		default: 32
+	},
+	textSize: {
+		type: Number,
+		default: 12
+	},
+	showIcon: {
+		type: Boolean,
+		default: true
+	},
+	showText: {
+		type: Boolean,
+		default: true
+	}
+});
+
+const emit = defineEmits(["update:modelValue", "select"]);
+
+type PassThrough = {
+	className?: string;
+	item?: PassThroughProps;
+	icon?: ClImageProps;
+	text?: ClTextProps;
+	footer?: PassThroughProps;
+	footerContent?: PassThroughProps;
+};
+
+const pt = computed(() => parsePt<PassThrough>(props.pt));
+
+// 监听高度变化
+const { cache } = useCache(() => [props.height]);
+
+// 计算样式
+const tabbarStyle = computed(() => {
+	return {
+		height: getUnit(props.height),
+		backgroundColor: props.backgroundColor
+	};
+});
+
+// 选择
+const select = (item: ClTabbarItem) => {
+	emit("update:modelValue", item.value);
+	emit("select", item);
+};
+</script>
+
+<style lang="scss" scoped>
+.cl-tabbar {
+	@apply flex flex-row items-center flex-1;
+
+	&__item {
+		@apply flex flex-col items-center justify-center flex-1;
+	}
+}
+</style>

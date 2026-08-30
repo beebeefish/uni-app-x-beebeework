@@ -1,0 +1,301 @@
+<template>
+	<cl-select-trigger
+		v-if="showTrigger"
+		:pt="ptTrigger"
+		:placeholder="placeholder"
+		:disabled="disabled"
+		:focus="popupRef?.isOpen"
+		:text="text"
+		@open="open()"
+		@clear="clear"
+	></cl-select-trigger>
+
+	<cl-popup ref="popupRef" v-model="visible" :title="title" :pt="ptPopup">
+		<view class="cl-select-popup" @touchmove.stop>
+			<slot name="prepend"></slot>
+
+			<view class="cl-select-popup__picker">
+				<cl-calendar
+					v-model="value"
+					v-model:date="date"
+					:mode="mode"
+					:date-config="dateConfig"
+					:start="start"
+					:end="end"
+					@change="onCalendarChange"
+				></cl-calendar>
+			</view>
+
+			<slot name="append"></slot>
+
+			<view class="cl-select-popup__op">
+				<cl-button
+					v-if="showCancel"
+					size="large"
+					text
+					border
+					type="light"
+					fluid
+					@tap="close"
+					>{{ cancelText }}</cl-button
+				>
+				<cl-button v-if="showConfirm" size="large" fluid @tap="confirm">{{
+					confirmText
+				}}</cl-button>
+			</view>
+		</view>
+	</cl-popup>
+</template>
+
+<script setup lang="ts">
+import { ref, computed, type PropType } from "vue";
+import type { ClCalendarDateConfig, ClCalendarMode } from "../../types";
+import { isEmpty, parsePt, parseToObject, t } from "@/.cool";
+import type { ClSelectTriggerPassThrough } from "../cl-select-trigger/props";
+import type { ClPopupPassThrough } from "../cl-popup/props";
+import { useUi } from "../../hooks";
+
+defineOptions({
+	name: "cl-calendar-select"
+});
+
+defineSlots<{
+	prepend(): any;
+	append(): any;
+}>();
+
+// 组件属性定义
+const props = defineProps({
+	// 透传样式配置
+	pt: {
+		type: Object,
+		default: () => ({})
+	},
+	// 选择器的值
+	modelValue: {
+		type: String as PropType<string | null>,
+		default: null
+	},
+	// 多个日期
+	date: {
+		type: Array as PropType<string[]>,
+		default: () => []
+	},
+	// 日期选择模式
+	mode: {
+		type: String as PropType<ClCalendarMode>,
+		default: "single"
+	},
+	// 日期配置
+	dateConfig: {
+		type: Array as PropType<ClCalendarDateConfig[]>,
+		default: () => []
+	},
+	// 开始日期，可选日期的开始
+	start: {
+		type: String
+	},
+	// 结束日期，可选日期的结束
+	end: {
+		type: String
+	},
+	// 选择器标题
+	title: {
+		type: String,
+		default: () => t("请选择")
+	},
+	// 选择器占位符
+	placeholder: {
+		type: String,
+		default: () => t("请选择")
+	},
+	// 是否显示选择器触发器
+	showTrigger: {
+		type: Boolean,
+		default: true
+	},
+	// 是否禁用选择器
+	disabled: {
+		type: Boolean,
+		default: false
+	},
+	// 分隔符
+	splitor: {
+		type: String,
+		default: "、"
+	},
+	// 范围分隔符
+	rangeSplitor: {
+		type: String,
+		default: () => t(" 至 ")
+	},
+	// 确认按钮文本
+	confirmText: {
+		type: String,
+		default: () => t("确定")
+	},
+	// 是否显示确认按钮
+	showConfirm: {
+		type: Boolean,
+		default: true
+	},
+	// 取消按钮文本
+	cancelText: {
+		type: String,
+		default: () => t("取消")
+	},
+	// 是否显示取消按钮
+	showCancel: {
+		type: Boolean,
+		default: true
+	}
+});
+
+// 定义事件
+const emit = defineEmits(["update:modelValue", "update:date", "change", "select"]);
+
+// UI实例
+const ui = useUi();
+
+// 弹出层引用
+const popupRef = ref<ClPopupComponentPublicInstance | null>(null);
+
+// 透传样式类型定义
+type PassThrough = {
+	trigger?: ClSelectTriggerPassThrough;
+	popup?: ClPopupPassThrough;
+};
+
+// 解析透传样式配置
+const pt = computed(() => parsePt<PassThrough>(props.pt));
+
+// 解析触发器透传样式配置
+const ptTrigger = computed(() => parseToObject(pt.value.trigger));
+
+// 解析弹窗透传样式配置
+const ptPopup = computed(() => parseToObject(pt.value.popup));
+
+// 当前选中的值
+const value = ref<string | null>(null);
+
+// 当前选中的日期
+const date = ref<string[]>([]);
+
+// 显示文本
+const text = computed(() => {
+	switch (props.mode) {
+		case "single":
+			return props.modelValue ?? "";
+		case "multiple":
+			return props.date.join(props.splitor);
+		case "range":
+			return props.date.join(props.rangeSplitor);
+		default:
+			return "";
+	}
+});
+
+// 选择器显示状态
+const visible = ref(false);
+
+// 选择回调函数
+let callback: ((value: string | string[]) => void) | null = null;
+
+// 打开选择器
+function open(cb: ((value: string | string[]) => void) | null = null) {
+	visible.value = true;
+
+	// 单选日期
+	value.value = props.modelValue;
+
+	// 多个日期
+	date.value = props.date;
+
+	// 回调
+	callback = cb;
+}
+
+// 关闭选择器
+function close() {
+	visible.value = false;
+}
+
+// 清空选择器
+function clear() {
+	value.value = null;
+	date.value = [] as string[];
+
+	emit("update:modelValue", value.value);
+	emit("update:date", date.value);
+}
+
+// 确认选择
+function confirm() {
+	if (props.mode == "single") {
+		if (value.value == null) {
+			ui.showToast({
+				message: t("请选择日期")
+			});
+			return;
+		}
+
+		emit("update:modelValue", value.value);
+		emit("change", value.value);
+
+		// 触发回调
+		if (callback != null) {
+			callback!(value.value);
+		}
+	} else {
+		if (isEmpty(date.value)) {
+			ui.showToast({
+				message: t("请选择日期")
+			});
+			return;
+		}
+
+		if (date.value.length != 2 && props.mode == "range") {
+			ui.showToast({
+				message: t("请选择日期范围")
+			});
+			return;
+		}
+
+		emit("update:date", date.value);
+		emit("change", date.value);
+
+		// 触发回调
+		if (callback != null) {
+			callback!(date.value);
+		}
+	}
+
+	// 关闭选择器
+	close();
+}
+
+// 日历变化
+function onCalendarChange(date: string[]) {
+	emit("select", date);
+}
+
+defineExpose({
+	open,
+	close
+});
+</script>
+
+<style lang="scss" scoped>
+.cl-select {
+	&-popup {
+		&__picker {
+			@apply p-3 pt-0;
+		}
+
+		&__op {
+			@apply flex flex-row items-center justify-center;
+			padding: 12px;
+		}
+	}
+}
+</style>

@@ -1,0 +1,241 @@
+<template>
+	<view
+		class="cl-waterfall"
+		:class="[pt.className]"
+		:style="{
+			padding: `0 ${props.gutter / 2}px`
+		}"
+	>
+		<view
+			class="cl-waterfall__column"
+			v-for="(column, columnIndex) in columns"
+			:key="columnIndex"
+			:style="{
+				margin: `0 ${props.gutter / 2}px`
+			}"
+		>
+			<view class="cl-waterfall__column-inner">
+				<view
+					v-for="(item, index) in column"
+					:key="`${columnIndex}-${index}-${item[props.nodeKey]}`"
+					class="cl-waterfall__item"
+					:class="{
+						'is-virtual': item.isVirtual
+					}"
+				>
+					<slot name="item" :item="item" :index="index"></slot>
+				</view>
+			</view>
+		</view>
+	</view>
+</template>
+
+<script setup lang="ts">
+import { assign, isNull } from "@/.cool";
+import { computed, getCurrentInstance, nextTick, onMounted, ref, watch } from "vue";
+import { parsePt } from "@/.cool";
+
+defineOptions({
+	name: "cl-waterfall"
+});
+
+// 定义插槽类型，item插槽接收item和index参数
+defineSlots<{
+	item(props: { item: UTSJSONObject; index: number }): any;
+}>();
+
+// 组件属性定义
+const props = defineProps({
+	// 透传属性
+	pt: {
+		type: Object,
+		default: () => ({})
+	},
+	// 瀑布流列数，默认为2列
+	column: {
+		type: Number,
+		default: 2
+	},
+	// 列间距，单位为px
+	gutter: {
+		type: Number,
+		default: 8
+	},
+	// 数据项的唯一标识字段名，默认为"id"
+	nodeKey: {
+		type: String,
+		default: "id"
+	}
+});
+
+// 获取当前组件实例的代理对象
+const { proxy } = getCurrentInstance()!;
+
+type PassThrough = {
+	className?: string;
+};
+
+const pt = computed(() => parsePt<PassThrough>(props.pt));
+
+// 存储每列的当前高度，用于计算最短列
+const heights = ref<number[]>([]);
+
+// 存储瀑布流数据，二维数组，每个子数组代表一列
+const columns = ref<UTSJSONObject[][]>([]);
+
+/**
+ * 获取各列的当前高度
+ * 通过uni.createSelectorQuery查询DOM元素的实际高度
+ * @returns Promise<> 返回Promise对象
+ */
+async function getHeight(): Promise<void> {
+	// 等待DOM更新完成
+	await nextTick();
+
+	return new Promise((resolve) => {
+		// 创建选择器查询，获取所有列容器的边界信息
+		uni.createSelectorQuery()
+			.in(proxy)
+			.selectAll(".cl-waterfall__column-inner")
+			.boundingClientRect()
+			.exec((rect) => {
+				const nodes = rect[0] as NodeInfo[];
+
+				if (!isNull(nodes)) {
+					// 提取每列的高度信息，如果获取失败则默认为0
+					heights.value = nodes.map((e) => e.height ?? 0);
+				}
+
+				resolve();
+			});
+	});
+}
+
+/**
+ * 向瀑布流添加新数据
+ * 使用虚拟定位技术计算每个项目的高度，然后分配到最短的列
+ * @param data 要添加的数据数组
+ */
+async function append(data: UTSJSONObject[]) {
+	// 首先获取当前各列高度
+	await getHeight();
+
+	// 将新数据作为虚拟项目添加到第一列，用于计算高度
+	columns.value[0].push(
+		...data.map((e) => {
+			return {
+				...e,
+				isVirtual: true // 标记为虚拟项目，会在CSS中隐藏
+			} as UTSJSONObject;
+		})
+	);
+
+	// 等待DOM更新
+	await nextTick();
+
+	// 延迟300ms后计算虚拟项目的高度并重新分配
+	setTimeout(() => {
+		uni.createSelectorQuery()
+			.in(proxy)
+			.selectAll(".is-virtual")
+			.boundingClientRect()
+			.exec((rect) => {
+				// 遍历每个虚拟项目
+				(rect[0] as NodeInfo[]).forEach((e, i) => {
+					// 找到当前高度最小的列
+					const min = Math.min(...heights.value);
+					const index = heights.value.indexOf(min);
+
+					// 将实际数据添加到最短列
+					columns.value[index].push(data[i]);
+
+					// 更新该列的高度
+					heights.value[index] += e.height ?? 0;
+
+					// 清除第一列中的虚拟项目（临时用于计算高度的项目）
+					columns.value[0] = columns.value[0].filter((e) => e.isVirtual != true);
+				});
+			});
+	}, 300);
+}
+
+/**
+ * 根据ID移除指定项目
+ * @param id 要移除的项目ID
+ */
+function remove(id: string | number) {
+	columns.value.forEach((column, columnIndex) => {
+		// 过滤掉指定ID的项目
+		columns.value[columnIndex] = column.filter((e) => e[props.nodeKey] != id);
+	});
+}
+
+/**
+ * 根据ID更新指定项目的数据
+ * @param id 要更新的项目ID
+ * @param data 新的数据对象
+ */
+function update(id: string | number, data: UTSJSONObject) {
+	columns.value.forEach((column) => {
+		column.forEach((e) => {
+			// 找到指定ID的项目并更新数据
+			if (e[props.nodeKey] == id) {
+				assign(e, data);
+			}
+		});
+	});
+}
+
+/**
+ * 清空瀑布流数据
+ * 重新初始化列数组
+ */
+function clear() {
+	columns.value = [];
+
+	// 根据列数创建空的列数组
+	for (let i = 0; i < props.column; i++) {
+		columns.value.push([]);
+	}
+}
+
+// 组件挂载时的初始化逻辑
+onMounted(() => {
+	// 监听列数变化，当列数改变时重新初始化
+	watch(
+		computed(() => props.column),
+		() => {
+			clear(); // 清空现有数据
+			getHeight(); // 重新获取高度
+		},
+		{
+			immediate: true // 立即执行一次
+		}
+	);
+});
+
+defineExpose({
+	append,
+	remove,
+	update,
+	clear
+});
+</script>
+
+<style lang="scss" scoped>
+.cl-waterfall {
+	@apply flex flex-row w-full relative;
+
+	&__column {
+		flex: 1;
+	}
+
+	&__item {
+		&.is-virtual {
+			@apply absolute top-0 w-full;
+			left: -100%;
+			opacity: 0;
+		}
+	}
+}
+</style>

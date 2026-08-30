@@ -1,0 +1,550 @@
+<template>
+	<view
+		class="cl-slider"
+		:class="[
+			{
+				'cl-slider--disabled': isDisabled
+			},
+			pt.className
+		]"
+	>
+		<view
+			class="cl-slider__inner"
+			:style="{
+				height: blockSize + 4 + 'px'
+			}"
+		>
+			<view
+				class="cl-slider__track"
+				:class="[pt.track?.className]"
+				:style="{
+					height: trackHeight + 'px'
+				}"
+			>
+				<view
+					class="cl-slider__progress"
+					:class="[pt.progress?.className]"
+					:style="progressStyle"
+				></view>
+			</view>
+
+			<!-- 单滑块模式 -->
+			<view
+				v-if="!range"
+				class="cl-slider__thumb"
+				:class="[pt.thumb?.className]"
+				:style="singleThumbStyle"
+			></view>
+
+			<!-- 双滑块模式 -->
+			<template v-if="range">
+				<view
+					class="cl-slider__thumb cl-slider__thumb--min"
+					:class="[pt.thumb?.className]"
+					:style="minThumbStyle"
+				></view>
+				<view
+					class="cl-slider__thumb cl-slider__thumb--max"
+					:class="[pt.thumb?.className]"
+					:style="maxThumbStyle"
+				></view>
+			</template>
+
+			<view
+				class="cl-slider__picker"
+				:style="{
+					height: blockSize * 1.5 + 'px'
+				}"
+				@touchstart.prevent="onTouchStart"
+				@touchmove.prevent="onTouchMove"
+				@touchend="onTouchEnd"
+				@touchcancel="onTouchEnd"
+			></view>
+		</view>
+
+		<slot name="value" :value="displayValue">
+			<cl-text
+				v-if="showValue"
+				:pt="{
+					className: parseClass(['text-center w-[50px]', pt.value?.className])
+				}"
+			>
+				{{ displayValue }}
+			</cl-text>
+		</slot>
+	</view>
+</template>
+
+<script setup lang="ts">
+import { computed, getCurrentInstance, nextTick, onMounted, ref, watch, type PropType } from "vue";
+import { parseClass, parsePt } from "@/.cool";
+import type { PassThroughProps } from "../../types";
+import { useForm } from "../../hooks";
+
+defineOptions({
+	name: "cl-slider"
+});
+
+// 组件属性定义
+const props = defineProps({
+	// 样式穿透对象
+	pt: {
+		type: Object,
+		default: () => ({})
+	},
+	// v-model 绑定的值，单值模式使用
+	modelValue: {
+		type: Number,
+		default: 0
+	},
+	// v-model:values 绑定的值，范围模式使用
+	values: {
+		type: Array as PropType<number[]>,
+		default: () => [0, 0]
+	},
+	// 最小值
+	min: {
+		type: Number,
+		default: 0
+	},
+	// 最大值
+	max: {
+		type: Number,
+		default: 100
+	},
+	// 步长
+	step: {
+		type: Number,
+		default: 1
+	},
+	// 是否禁用
+	disabled: {
+		type: Boolean,
+		default: false
+	},
+	// 滑块的大小
+	blockSize: {
+		type: Number,
+		default: 20
+	},
+	// 线的高度
+	trackHeight: {
+		type: Number,
+		default: 4
+	},
+	// 是否显示当前值
+	showValue: {
+		type: Boolean,
+		default: false
+	},
+	// 是否启用范围选择
+	range: {
+		type: Boolean,
+		default: false
+	}
+});
+
+const emit = defineEmits(["update:modelValue", "update:values", "change", "changing"]);
+
+const { proxy } = getCurrentInstance()!;
+
+// 样式穿透类型定义
+type PassThrough = {
+	className?: string;
+	track?: PassThroughProps;
+	progress?: PassThroughProps;
+	thumb?: PassThroughProps;
+	value?: PassThroughProps;
+};
+
+// 计算样式穿透对象
+const pt = computed(() => parsePt<PassThrough>(props.pt));
+
+// cl-form 上下文
+const { disabled } = useForm();
+
+// 是否禁用
+const isDisabled = computed(() => props.disabled || disabled.value);
+
+// 当前滑块的值，单值模式
+const value = ref<number>(props.modelValue);
+
+// 当前范围值，范围模式
+const rangeValue = ref<number[]>([...props.values]);
+
+// 轨道宽度（像素）
+const trackWidth = ref<number>(0);
+
+// 轨道左侧距离屏幕的距离（像素）
+const trackLeft = ref<number>(0);
+
+// 当前活动的滑块索引（0: min, 1: max），仅在范围模式下使用
+const activeThumbIndex = ref<number>(0);
+
+// 计算当前值在滑块轨道上的百分比位置（单值模式专用）
+const percentage = computed(() => {
+	if (props.range) return 0;
+	return ((value.value - props.min) / (props.max - props.min)) * 100;
+});
+
+// 计算范围模式下两个滑块的百分比位置
+type RangePercentage = {
+	min: number; // 最小值滑块的位置百分比
+	max: number; // 最大值滑块的位置百分比
+};
+
+const rangePercentage = computed<RangePercentage>(() => {
+	if (!props.range) return { min: 0, max: 0 };
+
+	const currentValues = rangeValue.value;
+	const valueRange = props.max - props.min;
+
+	// 分别计算两个滑块在轨道上的位置百分比
+	const minPercent = ((currentValues[0] - props.min) / valueRange) * 100;
+	const maxPercent = ((currentValues[1] - props.min) / valueRange) * 100;
+
+	return { min: minPercent, max: maxPercent };
+});
+
+// 计算进度条的样式属性
+const progressStyle = computed(() => {
+	const style = {};
+
+	if (props.range) {
+		// 范围模式：进度条从最小值滑块延伸到最大值滑块
+		const { min, max } = rangePercentage.value;
+		style["left"] = `${min}%`;
+		style["width"] = `${max - min}%`;
+	} else {
+		// 单值模式：进度条从轨道起点延伸到当前滑块位置
+		style["width"] = `${percentage.value}%`;
+	}
+
+	return style;
+});
+
+// 创建滑块的定位样式（通用函数）
+function createThumbStyle(percentPosition: number) {
+	const style = {};
+
+	// 计算滑块的有效移动范围（扣除滑块自身宽度，防止超出轨道）
+	const effectiveTrackWidth = trackWidth.value - props.blockSize + 1;
+	const leftPosition = (percentPosition / 100) * effectiveTrackWidth;
+
+	// 确保滑块位置在有效范围内
+	const finalLeftPosition = Math.max(0, Math.min(effectiveTrackWidth, leftPosition));
+
+	// 设置滑块的位置和尺寸
+	style["left"] = `${finalLeftPosition}px`;
+	style["width"] = `${props.blockSize}px`;
+	style["height"] = `${props.blockSize}px`;
+
+	return style;
+}
+
+// 单值模式滑块的样式
+const singleThumbStyle = computed(() => {
+	return createThumbStyle(percentage.value);
+});
+
+// 范围模式最小值滑块的样式
+const minThumbStyle = computed(() => {
+	return createThumbStyle(rangePercentage.value.min);
+});
+
+// 范围模式最大值滑块的样式
+const maxThumbStyle = computed(() => {
+	return createThumbStyle(rangePercentage.value.max);
+});
+
+// 计算要显示的数值文本
+const displayValue = computed<string>(() => {
+	if (props.range) {
+		// 范围模式：显示"最小值 - 最大值"格式
+		const currentValues = rangeValue.value;
+		return `${currentValues[0]} - ${currentValues[1]}`;
+	}
+
+	// 单值模式：显示当前值
+	return `${value.value}`;
+});
+
+// 获取滑块轨道的位置和尺寸信息，这是触摸计算的基础数据
+function getTrackInfo(): Promise<void> {
+	return new Promise((resolve) => {
+		uni.createSelectorQuery()
+			.in(proxy)
+			.select(".cl-slider__track")
+			.boundingClientRect((node) => {
+				// 保存轨道的宽度和左侧偏移量，用于后续的触摸位置计算
+				trackWidth.value = (node as NodeInfo).width ?? 0;
+				trackLeft.value = (node as NodeInfo).left ?? 0;
+
+				resolve();
+			})
+			.exec();
+	});
+}
+
+// 根据触摸点的横坐标计算对应的滑块数值
+function calculateValue(clientX: number): number {
+	// 如果轨道宽度为0（还未初始化），直接返回最小值
+	if (trackWidth.value == 0) return props.min;
+
+	// 计算触摸点相对于轨道左侧的偏移距离
+	const touchOffset = clientX - trackLeft.value;
+
+	// 将偏移距离转换为0~1的百分比，并限制在有效范围内
+	const progressPercentage = Math.max(0, Math.min(1, touchOffset / trackWidth.value));
+
+	// 根据百分比计算在min~max范围内的实际数值
+	const valueRange = props.max - props.min;
+	let calculatedValue = props.min + progressPercentage * valueRange;
+
+	// 如果设置了步长，按步长进行取整对齐
+	if (props.step > 0) {
+		calculatedValue =
+			Math.round((calculatedValue - props.min) / props.step) * props.step + props.min;
+	}
+
+	// 确保最终值在[min, max]范围内
+	return Math.max(props.min, Math.min(props.max, calculatedValue));
+}
+
+// 在范围模式下，根据触摸点离哪个滑块更近来确定应该移动哪个滑块
+function determineActiveThumb(clientX: number): number {
+	if (!props.range) return 0;
+
+	const currentValues = rangeValue.value;
+	const touchValue = calculateValue(clientX);
+
+	// 计算触摸位置到两个滑块的距离，选择距离更近的滑块进行操作
+	const distanceToMinThumb = Math.abs(touchValue - currentValues[0]);
+	const distanceToMaxThumb = Math.abs(touchValue - currentValues[1]);
+
+	// 返回距离更近的滑块索引（0: 最小值滑块，1: 最大值滑块）
+	return distanceToMinThumb <= distanceToMaxThumb ? 0 : 1;
+}
+
+// 更新滑块的值，并触发相应的事件
+function updateValue(newValue: number | number[]) {
+	if (props.range) {
+		// 范围模式：处理双滑块
+		const newRangeValues = newValue as number[];
+		const currentRangeValues = rangeValue.value;
+
+		// 当左滑块超过右滑块时，自动交换活动滑块索引，实现滑块角色互换
+		if (newRangeValues[0] > newRangeValues[1]) {
+			activeThumbIndex.value = 1 - activeThumbIndex.value; // 0变1，1变0
+		}
+
+		// 确保最小值始终不大于最大值，自动排序
+		const sortedValues = [
+			Math.min(newRangeValues[0], newRangeValues[1]),
+			Math.max(newRangeValues[0], newRangeValues[1])
+		];
+
+		// 只有值真正改变时才更新和触发事件，避免不必要的渲染
+		if (JSON.stringify(currentRangeValues) !== JSON.stringify(sortedValues)) {
+			rangeValue.value = sortedValues;
+			emit("update:values", sortedValues);
+			emit("changing", sortedValues);
+		}
+	} else {
+		// 单值模式：处理单个滑块
+		const newSingleValue = newValue as number;
+		const currentSingleValue = value.value;
+
+		if (currentSingleValue !== newSingleValue) {
+			value.value = newSingleValue;
+			emit("update:modelValue", newSingleValue);
+			emit("changing", newSingleValue);
+		}
+	}
+}
+
+// 触摸开始事件：获取轨道信息并初始化滑块位置
+async function onTouchStart(e: TouchEvent) {
+	if (isDisabled.value) return;
+
+	// 先获取轨道的位置和尺寸信息，这是后续计算的基础
+	await getTrackInfo();
+
+	// 等待DOM更新后再处理触摸逻辑
+	nextTick(() => {
+		const clientX = e.touches[0].clientX;
+		const calculatedValue = calculateValue(clientX);
+
+		if (props.range) {
+			// 范围模式：确定要操作的滑块，然后更新对应滑块的值
+			activeThumbIndex.value = determineActiveThumb(clientX);
+			const updatedValues = [...rangeValue.value];
+			updatedValues[activeThumbIndex.value] = calculatedValue;
+			updateValue(updatedValues);
+		} else {
+			// 单值模式：直接更新滑块值
+			updateValue(calculatedValue);
+		}
+	});
+}
+
+// 触摸移动事件：实时更新滑块位置
+function onTouchMove(e: TouchEvent) {
+	if (isDisabled.value) return;
+
+	const clientX = e.touches[0].clientX;
+	const calculatedValue = calculateValue(clientX);
+
+	if (props.range) {
+		// 范围模式：更新当前活动滑块的值
+		const updatedValues = [...rangeValue.value];
+		updatedValues[activeThumbIndex.value] = calculatedValue;
+		updateValue(updatedValues);
+	} else {
+		// 单值模式：直接更新滑块值
+		updateValue(calculatedValue);
+	}
+}
+
+// 触摸结束事件：完成拖动，触发最终的change事件
+function onTouchEnd() {
+	if (isDisabled.value) return;
+
+	// 触发change事件，表示用户完成了一次完整的拖动操作
+	if (props.range) {
+		emit("change", rangeValue.value);
+	} else {
+		emit("change", value.value);
+	}
+}
+
+// 监听外部传入的modelValue变化，保持单值模式内部状态同步
+watch(
+	computed(() => props.modelValue),
+	(newModelValue: number) => {
+		// 当外部值与内部值不同时，更新内部值并限制在有效范围内
+		if (newModelValue !== value.value) {
+			value.value = Math.max(props.min, Math.min(props.max, newModelValue));
+		}
+	},
+	{ immediate: true }
+);
+
+// 监听外部传入的values变化，保持范围模式内部状态同步
+watch(
+	computed(() => props.values),
+	(newValues: number[]) => {
+		// 将外部传入的数组值映射并限制在有效范围内
+		rangeValue.value = newValues.map((singleValue) => {
+			return Math.max(props.min, Math.min(props.max, singleValue));
+		});
+	},
+	{ immediate: true }
+);
+
+// 监听最大值变化，确保当前值不会超过新的最大值
+watch(
+	computed(() => props.max),
+	(newMaxValue: number) => {
+		if (props.range) {
+			// 范围模式：检查并调整两个滑块的值
+			const currentRangeValues = rangeValue.value;
+			if (currentRangeValues[0] > newMaxValue || currentRangeValues[1] > newMaxValue) {
+				updateValue([
+					Math.min(currentRangeValues[0], newMaxValue),
+					Math.min(currentRangeValues[1], newMaxValue)
+				]);
+			}
+		} else {
+			// 单值模式：检查并调整单个滑块的值
+			const currentSingleValue = value.value;
+			if (currentSingleValue > newMaxValue) {
+				updateValue(newMaxValue);
+			}
+		}
+	},
+	{ immediate: true }
+);
+
+// 监听最小值变化，确保当前值不会小于新的最小值
+watch(
+	computed(() => props.min),
+	(newMinValue: number) => {
+		if (props.range) {
+			// 范围模式：检查并调整两个滑块的值
+			const currentRangeValues = rangeValue.value;
+			if (currentRangeValues[0] < newMinValue || currentRangeValues[1] < newMinValue) {
+				updateValue([
+					Math.max(currentRangeValues[0], newMinValue),
+					Math.max(currentRangeValues[1], newMinValue)
+				]);
+			}
+		} else {
+			// 单值模式：检查并调整单个滑块的值
+			const currentSingleValue = value.value;
+			if (currentSingleValue < newMinValue) {
+				updateValue(newMinValue);
+			}
+		}
+	},
+	{ immediate: true }
+);
+
+onMounted(() => {
+	watch(
+		computed(() => [props.showValue]),
+		() => {
+			nextTick(() => {
+				getTrackInfo();
+			});
+		}
+	);
+
+	getTrackInfo();
+});
+</script>
+
+<style lang="scss" scoped>
+.cl-slider {
+	@apply flex flex-row items-center w-full overflow-visible;
+
+	&--disabled {
+		@apply opacity-50;
+	}
+
+	&__inner {
+		@apply flex-1 relative h-full flex flex-row items-center overflow-visible;
+	}
+
+	&__picker {
+		@apply absolute left-0 w-full;
+	}
+
+	&__track {
+		@apply relative w-full rounded-full overflow-visible;
+		@apply bg-gray-200/10;
+	}
+
+	&__progress {
+		@apply absolute top-0 h-full rounded-full;
+		@apply bg-teal-400/10;
+	}
+
+	&__thumb {
+		@apply absolute rounded-full border border-solid border-white;
+		@apply bg-teal-500/10;
+		pointer-events: none;
+		z-index: 1;
+		border-width: 2px;
+		box-shadow: 0 0 1px 1px rgba(100, 100, 100, 0.1);
+
+		&--min {
+			z-index: 2;
+		}
+
+		&--max {
+			z-index: 2;
+		}
+	}
+}
+</style>

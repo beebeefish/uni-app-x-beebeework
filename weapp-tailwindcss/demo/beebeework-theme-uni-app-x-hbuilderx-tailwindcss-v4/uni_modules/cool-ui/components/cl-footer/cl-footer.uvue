@@ -1,0 +1,163 @@
+<template>
+	<view
+		class="cl-footer-placeholder"
+		:style="{ height: getUnit(placeholderHeight) }"
+		v-if="visible"
+	>
+	</view>
+
+	<view class="cl-footer-wrapper" :class="[pt.wrapper?.className]">
+		<view
+			class="cl-footer"
+			:class="[
+				{
+					'is-dark': isDark
+				},
+				pt.className
+			]"
+			:style="{ backgroundColor }"
+			v-if="visible"
+		>
+			<view class="cl-footer__content" :class="[pt.content?.className]" :style="contentStyle">
+				<slot></slot>
+			</view>
+		</view>
+	</view>
+</template>
+
+<script setup lang="ts">
+import { getConfig, getSafeAreaHeight, getUnit, isDark, isHarmony, parsePt } from "@/.cool";
+import { computed, getCurrentInstance, nextTick, onMounted, ref, watch } from "vue";
+import type { PassThroughProps } from "../../types";
+import { clFooterOffset } from "./offset";
+
+defineOptions({
+	name: "cl-footer"
+});
+
+const props = defineProps({
+	pt: {
+		type: Object,
+		default: () => ({})
+	},
+	// 最小高度，小于该高度时，不显示
+	minHeight: {
+		type: Number,
+		default: 30
+	},
+	// 监听值，触发更新
+	vt: {
+		type: Number,
+		default: 0
+	},
+	// 内容高度
+	height: {
+		type: Number,
+		default: null
+	},
+	// 背景颜色
+	backgroundColor: {
+		type: String,
+		default: null
+	}
+});
+
+const { proxy } = getCurrentInstance()!;
+
+type PassThrough = {
+	className?: string;
+	content?: PassThroughProps;
+	wrapper?: PassThroughProps;
+};
+
+const pt = computed(() => parsePt<PassThrough>(props.pt));
+
+// 内容样式
+const contentStyle = computed(() => {
+	const style = {};
+
+	if (props.height != null) {
+		style["height"] = props.height + "px";
+	}
+
+	return style;
+});
+
+// 背景色
+const backgroundColor = computed(() => {
+	if (props.backgroundColor == null) {
+		return isDark.value ? getConfig("tabBgColor") : "white";
+	} else {
+		return props.backgroundColor;
+	}
+});
+
+// 占位高度
+const placeholderHeight = ref(0);
+
+// 是否显示
+const visible = ref(true);
+
+// 设置内容高度
+function setHeight(val: number) {
+	// 设置高度
+	placeholderHeight.value = val;
+
+	// 如果内容高度大于最小高度，则显示
+	visible.value = val > props.minHeight + getSafeAreaHeight("bottom");
+
+	// 隔离高度
+	clFooterOffset.set(visible.value ? val : 0);
+}
+
+// 获取内容高度
+function getHeight() {
+	if (props.height != null) {
+		setHeight(props.height + getSafeAreaHeight("bottom"));
+		return;
+	}
+
+	nextTick(() => {
+		setTimeout(
+			() => {
+				uni.createSelectorQuery()
+					.in(proxy)
+					.select(".cl-footer")
+					.boundingClientRect((res) => {
+						setHeight(Math.floor((res as NodeInfo).height ?? 0));
+					})
+					.exec();
+			},
+			isHarmony() ? 50 : 0
+		);
+	});
+}
+
+onMounted(() => {
+	watch(
+		computed(() => props.vt),
+		() => {
+			visible.value = true;
+			getHeight();
+		},
+		{
+			immediate: true
+		}
+	);
+});
+</script>
+
+<style lang="scss" scoped>
+.cl-footer {
+	@apply overflow-visible;
+	padding-bottom: env(safe-area-inset-bottom);
+
+	&__content {
+		@apply px-3 py-3 overflow-visible;
+	}
+
+	&-wrapper {
+		@apply fixed bottom-0 left-0 w-full overflow-visible;
+	}
+}
+</style>

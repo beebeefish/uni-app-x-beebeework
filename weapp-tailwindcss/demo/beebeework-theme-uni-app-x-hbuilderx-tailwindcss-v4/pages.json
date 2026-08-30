@@ -1,0 +1,59 @@
+{
+	"easycom": {
+        "autoscan": true,
+        "custom": {
+            "^cl-(.*)": "@/uni_modules/cool-ui/components/cl-$1/cl-$1.uvue",
+			"^block-(.*)$": "@/components/blocks/block-$1.uvue",
+			"^dynamic-(.*)$": "@/components/page-wrap/dynamic-$1.uvue",
+			"^page-wrap$": "@/components/page-wrap/page-wrap.uvue",
+			"^tab-bar$": "@/components/tab-bar/tab-bar.uvue",
+			"^scale-card$": "@/components/scale-card/scale-card.uvue",
+			"^svg-coin$": "@/components/svg-coin/svg-coin.uvue",
+			"^generic-page$": "@/views/common/generic-page.uvue",
+            "^common-(.*)$": "@/components/comp/common-$1.uvue",
+            "^addon-renderer$": "@/components/addons/addon-renderer.uvue"
+        }
+    },
+	"pages": [
+		{
+			"path": "pages/index/index",
+			"style": {
+				"navigationBarTitleText": "探索",
+				"navigationStyle": "custom"
+			}
+		}
+	],
+	"subPackages": [
+		{
+            "root": "pages/topic",
+            "pages": [
+                {
+                    "path": "detail",
+                    "style": {
+                        "navigationStyle": "custom",
+						"renderer": "skyline",
+                		"disableSwipeBack": false
+                    }
+                }
+            ]
+        },
+		{
+			"root": "pages/user",
+			"pages": [
+				{
+					"path": "login",
+					"style": {
+						"navigationStyle": "custom",
+						"disableScroll": true
+					}
+				}
+			]
+		}
+	],
+	"globalStyle": {
+		"navigationBarTextStyle": "@navTextStyle",
+		"navigationBarBackgroundColor": "@navBgColor",
+		"backgroundColor": "@bgColor"
+	},
+	"uniIdRouter": {}
+}

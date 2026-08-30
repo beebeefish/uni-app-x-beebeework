@@ -1,0 +1,68 @@
+---
+title: uni-app cli vue3 vite
+description: '接着直接运行 npm run dev:mp-weixin，'
+keywords:
+  - 快速开始
+  - 安装
+  - 配置
+  - uni-app
+  - cli
+  - vue3
+  - vite
+  - quick start
+  - v4
+  - uni app vite
+  - weapp-tailwindcss
+  - tailwindcss
+  - 小程序
+  - 微信小程序
+  - taro
+  - rax
+---
+import CssImportReminder from '@site/src/components/CssImportReminder'
+import UniappCliStyle from './UniappCliStyle.mdx'
+
+# uni-app cli vue3 vite
+
+:::tip
+主线接入文档已合并到 [uni-app CLI Vue3 Vite](/docs/quick-start/frameworks/uni-app-vite)。本页保留给旧链接和 Tailwind CSS 4 专项排障。
+:::
+
+## 1. 安装
+
+```bash npm2yarn
+npm install -D tailwindcss weapp-tailwindcss
+```
+
+## 2. 配置 `vite.config.ts`
+
+```ts title="vite.config.ts"
+import { defineConfig } from "vite";
+import uni from "@dcloudio/vite-plugin-uni";
+import { WeappTailwindcss } from 'weapp-tailwindcss/vite'
+
+export default defineConfig({
+  plugins: [
+    uni(),
+    WeappTailwindcss({
+      rem2rpx: true,
+    }),
+  ],
+});
+
+```
+
+> 常规 Vite 项目会自动识别被引入的 Tailwind CSS 入口。只有多入口、入口未被框架引入、自动识别失败等场景，才需要手动配置 `cssEntries`。
+> Tailwind CSS 4 入口建议放在纯 `.css` 文件里，不要直接写进 `scss`、`less` 等预处理样式文件。
+
+## 3. 添加样式
+
+<UniappCliStyle/>
+
+接着直接运行 `npm run dev:mp-weixin`，
+
+微信开发者工具导入这个项目，即可看到效果
+
+## 参考模板
+
+[uni-app-tailwindcss-v4](https://github.com/icebreaker-template/uni-app-tailwindcss-v4) 

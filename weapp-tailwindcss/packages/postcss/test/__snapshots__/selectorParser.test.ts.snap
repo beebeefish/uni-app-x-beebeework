@@ -1,0 +1,19 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`selectorParser > fallbackRemove case 0 1`] = `"#app-provider .space-x-4>view+view"`;
+
+exports[`selectorParser > fallbackRemove case 1 1`] = `"#app .space-x-0>view+view"`;
+
+exports[`selectorParser > fallbackRemove case 2 1`] = `"button:not(n),input:not(n)"`;
+
+exports[`selectorParser > fallbackRemove case 3 1`] = `"[hidden]:where(:not([hidden="until-found"])):not(n):not(n):not(n)"`;
+
+exports[`selectorParser > fallbackRemove case 4 1`] = `"button:not(n),input:not(n)"`;
+
+exports[`selectorParser > fallbackRemove transformSync normalizes options for rule input 1`] = `"#app .space-x-4>view+view{}"`;
+
+exports[`selectorParser > ruleTransformSync caches parser per options instance 1`] = `".foo :is(view,text){}"`;
+
+exports[`selectorParser > ruleTransformSync caches parser per options instance 2`] = `".bar :where(.buzz>view+view){}"`;
+
+exports[`selectorParser > ruleTransformSync case 0 1`] = `".dark .darkcbg-black,.dark .darkcbg-black"`;

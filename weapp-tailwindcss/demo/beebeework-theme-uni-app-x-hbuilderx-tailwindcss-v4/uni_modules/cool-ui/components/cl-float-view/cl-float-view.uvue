@@ -1,0 +1,303 @@
+<template>
+	<view
+		class="cl-float-view"
+		:style="viewStyle"
+		@touchstart="onTouchStart"
+		@touchmove.stop.prevent="onTouchMove"
+		@touchend="onTouchEnd"
+		@touchcancel="onTouchEnd"
+	>
+		<slot></slot>
+	</view>
+</template>
+
+<script setup lang="ts">
+import { getSafeAreaHeight, getTabBarHeight, hasCustomTabBar, router } from "@/.cool";
+import { computed, nextTick, reactive, watch } from "vue";
+import { clFooterOffset } from "../cl-footer/offset";
+
+defineOptions({
+	name: "cl-float-view"
+});
+
+const props = defineProps({
+	// 图层
+	zIndex: {
+		type: Number,
+		default: 500
+	},
+	// 尺寸，单位px
+	size: {
+		type: Number,
+		default: 40
+	},
+	// 左边距，单位px
+	left: {
+		type: Number,
+		default: 10
+	},
+	// 底部距离，单位px
+	bottom: {
+		type: Number,
+		default: 10
+	},
+	// 距离边缘的间距，单位px
+	gap: {
+		type: Number,
+		default: 10
+	},
+	// 是否禁用
+	disabled: {
+		type: Boolean,
+		default: false
+	},
+	// 不吸附边缘
+	noSnapping: {
+		type: Boolean,
+		default: false
+	}
+});
+
+// 获取设备屏幕信息
+const { screenWidth, statusBarHeight, screenHeight } = uni.getWindowInfo();
+
+/**
+ * 悬浮按钮位置状态类型定义
+ */
+type Position = {
+	x: number; // 水平位置（左边距）
+	y: number; // 垂直位置（相对底部的距离）
+	isDragging: boolean; // 是否正在拖拽中
+};
+
+/**
+ * 悬浮按钮位置状态管理
+ * 控制按钮在屏幕上的位置和拖拽状态
+ */
+const position = reactive<Position>({
+	x: props.left, // 初始左边距10px
+	y: props.bottom, // 初始距离底部10px
+	isDragging: true // 初始状态为拖拽
+});
+
+/**
+ * 拖拽操作状态类型定义
+ */
+type DragState = {
+	startX: number; // 拖拽开始时的X坐标
+	startY: number; // 拖拽开始时的Y坐标
+};
+
+/**
+ * 拖拽操作状态管理
+ * 记录拖拽过程中的关键信息
+ */
+const dragState = reactive<DragState>({
+	startX: 0,
+	startY: 0
+});
+
+/**
+ * 动态位置样式计算
+ * 根据当前位置和拖拽状态计算组件的CSS样式
+ */
+const viewStyle = computed(() => {
+	const style = {};
+
+	// 额外的底部偏移
+	let bottomOffset = 0;
+
+	// 标签页需要额外减去标签栏高度和安全区域
+	if (hasCustomTabBar()) {
+		bottomOffset += getTabBarHeight();
+	} else {
+		// 获取其他组件注入的底部偏移
+		bottomOffset += clFooterOffset.get();
+	}
+
+	// 设置水平位置
+	style["left"] = `${position.x}px`;
+	// 设置垂直位置（从底部计算）
+	style["bottom"] = `${bottomOffset + position.y}px`;
+	// 设置z-index
+	style["z-index"] = props.zIndex;
+	// 设置尺寸
+	style["width"] = `${props.size}px`;
+	// 设置高度
+	style["height"] = `${props.size}px`;
+
+	// 拖拽过渡效果
+	if (position.isDragging) {
+		style["transition-property"] = "none";
+	} else {
+		style["transition-property"] = "left, bottom";
+		style["transition-duration"] = "300ms";
+	}
+
+	return style;
+});
+
+/**
+ * 计算垂直方向的边界限制
+ * @returns 返回最大Y坐标值（距离底部的最大距离）
+ */
+function calculateMaxY(): number {
+	let maxY = screenHeight - props.size;
+
+	// 根据导航栏状态调整顶部边界
+	if (router.isCustomNavbarPage()) {
+		// 自定义导航栏页面，只需减去状态栏高度
+		maxY -= statusBarHeight;
+	} else {
+		// 默认导航栏页面，减去导航栏高度(44px)和状态栏高度
+		maxY -= 44 + statusBarHeight;
+	}
+
+	// 标签页需要额外减去标签栏高度和安全区域
+	if (router.isTabPage()) {
+		maxY -= getTabBarHeight();
+	}
+
+	return maxY;
+}
+
+// 计算垂直边界
+const maxY = calculateMaxY();
+
+/**
+ * 触摸开始事件处理
+ * 初始化拖拽状态，记录起始位置和时间
+ */
+function onTouchStart(e: TouchEvent) {
+	// 如果禁用，直接返回
+	if (props.disabled) return;
+
+	// 确保有触摸点存在
+	if (e.touches.length > 0) {
+		const touch = e.touches[0];
+		// 记录拖拽开始的位置
+		dragState.startX = touch.clientX;
+		dragState.startY = touch.clientY;
+		// 标记为拖拽状态，关闭过渡动画
+		position.isDragging = true;
+	}
+}
+
+/**
+ * 触摸移动事件处理
+ * 实时更新按钮位置，实现拖拽效果
+ */
+function onTouchMove(e: TouchEvent) {
+	// 如果禁用，直接返回
+	if (props.disabled) return;
+
+	// 如果不在拖拽状态或没有触摸点，直接返回
+	if (!position.isDragging || e.touches.length == 0) return;
+
+	// 阻止默认的滚动行为
+	e.preventDefault();
+
+	const touch = e.touches[0];
+	// 计算相对于起始位置的偏移量
+	const deltaX = touch.clientX - dragState.startX;
+	const deltaY = dragState.startY - touch.clientY; // Y轴方向相反（屏幕坐标系向下为正，我们的bottom向上为正）
+
+	// 计算新的位置
+	let newX = position.x + deltaX;
+	let newY = position.y + deltaY;
+
+	// 水平方向边界限制：确保按钮不超出屏幕左右边界
+	newX = Math.max(0, Math.min(screenWidth - props.size, newX));
+
+	// 垂直方向边界限制
+	let minY = 0;
+	// 非标签页时，底部需要考虑安全区域
+	if (!router.isTabPage()) {
+		minY += getSafeAreaHeight("bottom");
+	}
+
+	// 确保按钮不超出屏幕上下边界
+	newY = Math.max(minY, Math.min(maxY, newY));
+
+	// 更新按钮位置
+	position.x = newX;
+	position.y = newY;
+
+	// 更新拖拽起始点，为下次移动计算做准备
+	dragState.startX = touch.clientX;
+	dragState.startY = touch.clientY;
+}
+
+/**
+ * 执行边缘吸附逻辑
+ * 拖拽结束后自动将按钮吸附到屏幕边缘
+ */
+function performEdgeSnapping() {
+	const edgeThreshold = 60; // 吸附触发阈值（像素）
+	const edgePadding = props.gap; // 距离边缘的间距
+
+	// 判断按钮当前更靠近左边还是右边
+	const centerX = screenWidth / 2;
+	const isLeftSide = position.x < centerX;
+
+	// 水平方向吸附逻辑
+	if (position.x < edgeThreshold) {
+		// 距离左边缘很近，吸附到左边
+		position.x = edgePadding;
+	} else if (position.x > screenWidth - props.size - edgeThreshold) {
+		// 距离右边缘很近，吸附到右边
+		position.x = screenWidth - props.size - edgePadding;
+	} else if (isLeftSide) {
+		// 在左半屏且不在边缘阈值内，吸附到左边
+		position.x = edgePadding;
+	} else {
+		// 在右半屏且不在边缘阈值内，吸附到右边
+		position.x = screenWidth - props.size - edgePadding;
+	}
+
+	// 垂直方向边界修正
+	const verticalPadding = props.gap;
+	if (position.y > maxY - verticalPadding) {
+		position.y = maxY - verticalPadding;
+	}
+	if (position.y < verticalPadding) {
+		position.y = verticalPadding;
+	}
+}
+
+/**
+ * 触摸结束事件处理
+ * 结束拖拽状态并执行边缘吸附
+ */
+function onTouchEnd() {
+	// 如果禁用，直接返回
+	if (props.disabled) return;
+
+	// 如果不在拖拽状态，直接返回
+	if (!position.isDragging) return;
+
+	nextTick(() => {
+		// 结束拖拽状态，恢复过渡动画
+		position.isDragging = false;
+
+		// 执行边缘吸附逻辑
+		if (!props.noSnapping) {
+			performEdgeSnapping();
+		}
+	});
+}
+
+// 监听底部偏移变化
+watch(
+	computed(() => [clFooterOffset.get()]),
+	() => {
+		position.isDragging = true;
+	}
+);
+</script>
+
+<style lang="scss" scoped>
+.cl-float-view {
+	@apply fixed;
+}
+</style>

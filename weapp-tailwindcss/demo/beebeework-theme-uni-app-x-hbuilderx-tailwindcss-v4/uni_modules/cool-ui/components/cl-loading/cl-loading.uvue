@@ -1,0 +1,158 @@
+<template>
+	<view
+		ref="loadingRef"
+		class="cl-loading"
+		:class="[
+			{
+				'cl-loading--dark': isDark && color == '',
+				'!border-r-transparent': true
+			},
+			pt.className
+		]"
+		:style="loadingStyle"
+		v-if="loading"
+	>
+	</view>
+</template>
+
+<script setup lang="ts">
+import { computed, onMounted, shallowRef, watch } from "vue";
+import { createAnimation, ctx, isAppAndroid, isDark, parsePt } from "@/.cool";
+import type { ClIconProps } from "../cl-icon/props";
+import { useSize } from "../../hooks";
+
+defineOptions({
+	name: "cl-loading"
+});
+
+// 定义组件属性
+const props = defineProps({
+	// 透传样式
+	pt: {
+		type: Object,
+		default: () => ({})
+	},
+	// 是否加载中
+	loading: {
+		type: Boolean,
+		default: true
+	},
+	// 图标大小
+	size: {
+		type: Number,
+		default: 14
+	},
+	// 图标颜色
+	color: {
+		type: String,
+		default: ""
+	}
+});
+
+const { toScale } = useSize();
+
+// 透传样式类型定义
+type PassThrough = {
+	className?: string;
+	icon?: ClIconProps;
+};
+
+// 解析透传样式
+const pt = computed(() => parsePt<PassThrough>(props.pt));
+
+// 组件引用
+const loadingRef = shallowRef<UniElement | null>(null);
+
+// 颜色值
+const color = computed<string>(() => {
+	if (props.color == "") {
+		return isDark.value ? "#ffffff" : "var(--color-zinc-700)";
+	}
+
+	switch (props.color) {
+		case "primary":
+			return "var(--color-teal-500)";
+		case "success":
+			return "#22c55e";
+		case "warn":
+			return "#eab308";
+		case "error":
+			return "#ef4444";
+		case "info":
+			return "#71717a";
+		case "dark":
+			return "#3f3f46";
+		case "light":
+			return "#ffffff";
+		case "disabled":
+			return "#d4d4d8";
+		default:
+			return props.color;
+	}
+});
+
+// 大小
+const size = computed(() => toScale(props.size) + "px");
+
+// 加载样式
+const loadingStyle = computed(() => {
+	const style = {
+		height: size.value,
+		width: size.value,
+		borderWidth: "1px",
+		borderTopColor: color.value,
+		borderRightColor: "transparent",
+		borderBottomColor: color.value,
+		borderLeftColor: color.value
+	};
+
+	// 手动校准偏移量
+	if (isAppAndroid()) {
+		if (props.size <= 16) {
+			style["position"] = "relative";
+			style["top"] = "-0.5px";
+		}
+	}
+
+	return style;
+});
+
+// 开始旋转动画
+async function start() {
+	createAnimation(loadingRef.value, {
+		duration: 2500,
+		loop: -1,
+		timingFunction: "linear"
+	})
+		.rotate("0deg", "360deg")
+		.play();
+}
+
+// 组件挂载后监听loading状态
+onMounted(() => {
+	watch(
+		computed(() => props.loading),
+		(val: boolean) => {
+			// 当loading为true时开始旋转
+			if (val) {
+				start();
+			}
+		},
+		{
+			immediate: true
+		}
+	);
+});
+</script>
+
+<style lang="scss" scoped>
+.cl-loading {
+	@apply flex flex-row items-center justify-center rounded-full;
+	@apply border-zinc-700 border-solid;
+
+	&--dark {
+		border-color: white !important;
+		border-right-color: transparent !important;
+	}
+}
+</style>

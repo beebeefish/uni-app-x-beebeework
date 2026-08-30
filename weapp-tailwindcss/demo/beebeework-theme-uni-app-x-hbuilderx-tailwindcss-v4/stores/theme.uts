@@ -1,0 +1,92 @@
+import { reactive, ref } from 'vue'
+import { fetchThemeConfig, getTabList } from '@/api/data.js'
+
+export const globalTheme = ref(null)
+
+export type LayoutInfo = {
+  navBarTop: number
+  navBarHeight: number
+  headerHeight: number
+  screenHeight: number
+  windowWidth: number
+  windowHeight: numbe
+}
+
+export type ThemeState = {
+  tabbar: any[]
+  addActionList: any[]
+  aiConfig: any | null
+  pagesConfig: any | null
+  isLoaded: boolean
+  layout: LayoutInfo
+}
+
+export const themeState = reactive({
+  tabbar: [],
+  addActionList: [],
+  aiConfig: null,
+  pagesConfig: null,
+  isLoaded: false,
+  layout: {
+    navBarTop: 40,
+    navBarHeight: 44,
+    headerHeight: 80
+  }
+} as ThemeState)
+
+export const loadGlobalThemeConfig = async () => {
+  const STORAGE_KEY = 'theme_config_cache'
+
+  const cachedConfig = uni.getStorageSync(STORAGE_KEY)
+  
+  if (cachedConfig != null) {
+    const cacheObj = cachedConfig as ThemeState
+    if (cacheObj.pagesConfig != null && cacheObj.pagesConfig.length > 0) {
+      themeState.pagesConfig = cacheObj.pagesConfig
+      themeState.tabbar = getTabList(cacheObj.pagesConfig)
+      themeState.addActionList = cacheObj.addActionList || []
+      themeState.aiConfig = cacheObj.aiConfig || null
+      themeState.isLoaded = true
+      console.log('🚀 已从本地缓存加载主题配置，页面秒开！')
+    }
+  }
+
+  try {
+    const res = await fetchThemeConfig()
+    const remoteData = res != null ? res : null
+
+    if (remoteData != null) {
+      themeState.pagesConfig = remoteData.pagesConfig || []
+      themeState.tabbar = getTabList(themeState.pagesConfig)
+      themeState.addActionList = remoteData.addActionList || []
+      themeState.aiConfig = remoteData.ai_config || null
+      themeState.isLoaded = true
+
+      uni.setStorageSync(STORAGE_KEY, {
+        pagesConfig: themeState.pagesConfig,
+        addActionList: themeState.addActionList,
+        aiConfig: themeState.aiConfig
+      })
+
+      console.log('远程配置请求成功，已静默更新并写入本地缓存')
+    }
+  } catch (e) {
+    console.error('全局主题 Store 加载失败:', e)
+  }
+}
+
+export const initSystemLayout = () => {
+  try {
+    const menuButtonInfo = uni.getMenuButtonBoundingClientRect()
+    themeState.layout.navBarTop = menuButtonInfo.top
+    themeState.layout.navBarHeight = menuButtonInfo.height
+    themeState.layout.headerHeight = menuButtonInfo.top + menuButtonInfo.height + 12
+
+    const windowInfo = uni.getWindowInfo()
+    themeState.layout.screenHeight = windowInfo.screenHeight
+    themeState.layout.windowWidth = windowInfo.windowWidth
+    themeState.layout.windowHeight = windowInfo.windowHeight
+  } catch (e) {
+    console.error('获取系统信息失败', e)
+  }
+}

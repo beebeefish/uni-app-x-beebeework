@@ -1,0 +1,507 @@
+<template>
+	<view
+		class="cl-slide-verify"
+		:class="[
+			{
+				'cl-slide-verify--disabled': disabled,
+				'cl-slide-verify--success': isSuccess,
+				'cl-slide-verify--fail': isFail
+			},
+			pt.className
+		]"
+	>
+		<!-- 背景图片（图片验证模式） -->
+		<image
+			v-if="mode == 'image' && imageUrl != ''"
+			class="cl-slide-verify__image"
+			:class="[pt.image?.className]"
+			:src="imageUrl"
+			:style="{
+				transform: `rotate(${currentAngle}deg)`,
+				height: getUnit(imageSize),
+				width: getUnit(imageSize)
+			}"
+			mode="aspectFill"
+		></image>
+
+		<!-- 滑动轨道 -->
+		<view
+			class="cl-slide-verify__track"
+			:class="[
+				{
+					'cl-slide-verify__track--success': isSuccess,
+					'cl-slide-verify__track--fail': isFail,
+					'cl-slide-verify__track--dark': isDark
+				},
+				pt.track?.className
+			]"
+			:style="{
+				height: getUnit(size)
+			}"
+		>
+			<!-- 滑动进度条 -->
+			<view
+				class="cl-slide-verify__progress"
+				:class="[
+					{
+						'cl-slide-verify__progress--success': isSuccess,
+						'cl-slide-verify__progress--fail': isFail,
+						'no-dragging': !isDragging
+					},
+					pt.progress?.className
+				]"
+				:style="progressStyle"
+			></view>
+
+			<!-- 滑动按钮 -->
+			<view
+				class="cl-slide-verify__slider"
+				:class="[
+					{
+						'cl-slide-verify__slider--active': isDragging,
+						'cl-slide-verify__slider--success': isSuccess,
+						'cl-slide-verify__slider--fail': isFail,
+						'cl-slide-verify__slider--dark': isDark,
+						'no-dragging': !isDragging
+					},
+					pt.slider?.className
+				]"
+				:style="sliderStyle"
+				@touchstart="onTouchStart"
+				@touchmove.stop.prevent="onTouchMove"
+				@touchend="onTouchEnd"
+				@touchcancel="onTouchEnd"
+			>
+				<cl-icon
+					:name="sliderIcon"
+					:size="22"
+					:color="sliderColor"
+					:pt="{
+						className: parseClass([pt.icon?.className])
+					}"
+				></cl-icon>
+			</view>
+
+			<!-- 文字提示 -->
+			<view class="cl-slide-verify__text" :class="[pt.text?.className]">
+				<cl-text
+					:color="textColor"
+					:pt="{
+						className: parseClass([pt.label?.className])
+					}"
+				>
+					{{ currentText }}
+				</cl-text>
+			</view>
+		</view>
+	</view>
+</template>
+
+<script setup lang="ts">
+import { computed, ref, watch, nextTick, getCurrentInstance, type PropType } from "vue";
+import { isDark, parseClass, parsePt, getUnit, random, t } from "@/.cool";
+import type { PassThroughProps } from "../../types";
+
+defineOptions({
+	name: "cl-slide-verify"
+});
+
+// 组件属性定义
+const props = defineProps({
+	// 样式穿透
+	pt: {
+		type: Object,
+		default: () => ({})
+	},
+	// 是否验证成功
+	modelValue: {
+		type: Boolean,
+		default: false
+	},
+	// 验证模式：slide-直接滑动验证, image-图片旋转验证
+	mode: {
+		type: String as PropType<"slide" | "image">,
+		default: "slide"
+	},
+	// 滑块大小
+	size: {
+		type: Number,
+		default: 40
+	},
+	// 是否禁用
+	disabled: {
+		type: Boolean,
+		default: false
+	},
+	// 图片URL（图片模式使用）
+	imageUrl: {
+		type: String,
+		default: ""
+	},
+	// 图片大小（图片模式使用）
+	imageSize: {
+		type: [Number, String],
+		default: 150
+	},
+	// 角度容错范围
+	angleThreshold: {
+		type: Number,
+		default: 10
+	},
+	// 提示文字
+	text: {
+		type: String,
+		default: ""
+	},
+	// 成功文字
+	successText: {
+		type: String,
+		default: () => t("验证成功")
+	},
+	// 是否错误提示
+	showFail: {
+		type: Boolean,
+		default: true
+	},
+	// 错误提示文字
+	failText: {
+		type: String,
+		default: () => t("验证失败")
+	}
+});
+
+// 事件定义
+const emit = defineEmits(["update:modelValue", "success", "fail", "change"]);
+
+const { proxy } = getCurrentInstance()!;
+
+// 样式穿透类型
+type PassThrough = {
+	className?: string;
+	track?: PassThroughProps;
+	image?: PassThroughProps;
+	progress?: PassThroughProps;
+	slider?: PassThroughProps;
+	icon?: PassThroughProps;
+	text?: PassThroughProps;
+	label?: PassThroughProps;
+};
+
+// 样式穿透计算
+const pt = computed(() => parsePt<PassThrough>(props.pt));
+
+// 滑动状态相关变量
+const isDragging = ref(false); // 是否正在拖动
+const isSuccess = ref(false); // 是否验证成功
+const isFail = ref(false); // 是否验证失败
+const sliderLeft = ref(0); // 滑块左侧距离
+const progressWidth = ref(0); // 进度条宽度
+const startX = ref(0); // 触摸起始点X坐标
+const currentAngle = ref(0); // 当前图片角度
+const initialAngle = ref(0); // 初始图片角度
+
+// 轨道宽度
+const trackWidth = ref(0); // 滑动轨道宽度
+
+// 当前显示的提示文字
+const currentText = computed(() => {
+	if (isSuccess.value) {
+		// 成功时显示成功文字
+		return props.successText;
+	}
+	if (isFail.value) {
+		// 失败时显示失败文字
+		return props.failText;
+	}
+	if (props.text != "") {
+		// 有自定义文字时显示自定义文字
+		return props.text;
+	}
+	if (props.mode == "image") {
+		// 图片模式下默认提示
+		return t("向右滑动转动图片");
+	}
+	return t("向右滑动验证"); // 默认提示
+});
+
+// 滑块图标
+const sliderIcon = computed(() => {
+	if (isSuccess.value) {
+		// 成功时显示对勾
+		return "check-line";
+	}
+	return "arrow-right-double-line"; // 其他情况显示双箭头
+});
+
+// 滑块颜色
+const sliderColor = computed(() => {
+	if (isSuccess.value || isFail.value) {
+		// 成功或失败时为白色
+		return "white";
+	}
+	return "primary"; // 其他情况为主题色
+});
+
+// 文字颜色
+const textColor = computed(() => {
+	if (isSuccess.value) {
+		// 成功时为绿色
+		return "success";
+	}
+	if (isFail.value) {
+		// 失败时为红色
+		return "error";
+	}
+	if (isDragging.value) {
+		// 拖动时为主题色
+		return "primary";
+	}
+	return "info"; // 默认为信息色
+});
+
+// 进度条样式
+const progressStyle = computed(() => {
+	const style = {}; // 样式对象
+	let width = progressWidth.value; // 当前进度条宽度
+	if (width > props.size) {
+		// 超过滑块宽度时，增加宽度
+		width += props.size / 2;
+	}
+	style["width"] = width + "px"; // 设置宽度
+	return style; // 返回样式对象
+});
+
+// 滑块样式
+const sliderStyle = computed(() => {
+	const style = {
+		left: sliderLeft.value + "px", // 滑块左侧距离
+		height: props.size + "px", // 滑块高度
+		width: props.size + "px" // 滑块宽度
+	};
+	return style; // 返回样式对象
+});
+
+// 检查验证是否成功
+function checkVerification(): boolean {
+	if (props.mode == "slide") {
+		// 滑动模式下，滑块到达最右侧即为成功
+		return sliderLeft.value / (trackWidth.value - props.size) == 1;
+	} else if (props.mode == "image") {
+		// 图片模式下，角度在容错范围内即为成功
+		const angle = currentAngle.value % 360;
+		return angle <= props.angleThreshold || angle >= 360 - props.angleThreshold;
+	}
+	return false; // 其他情况返回失败
+}
+
+// 重置组件状态
+function reset() {
+	sliderLeft.value = 0; // 滑块归零
+	progressWidth.value = 0; // 进度条归零
+	isSuccess.value = false; // 清除成功状态
+	isFail.value = false; // 清除失败状态
+	isDragging.value = false; // 清除拖动状态
+	// 图片模式下重新设置随机初始角度
+	if (props.mode == "image") {
+		initialAngle.value = random(100, 180); // 随机初始角度
+		currentAngle.value = initialAngle.value; // 当前角度等于初始角度
+	}
+}
+
+// 初始化组件
+function init() {
+	nextTick(() => {
+		// 等待DOM更新后执行
+		reset(); // 重置组件状态
+		// 获取轨道宽度
+		uni.createSelectorQuery()
+			.in(proxy)
+			.select(".cl-slide-verify")
+			.boundingClientRect()
+			.exec((res) => {
+				trackWidth.value = (res[0] as NodeInfo).width ?? 0; // 设置轨道宽度
+			});
+	});
+}
+
+// 触摸开始事件
+function onTouchStart(e: TouchEvent) {
+	// 禁用或已完成时不处理
+	if (props.disabled || isSuccess.value || isFail.value) return;
+
+	// 标记为拖动中
+	isDragging.value = true;
+
+	// 记录起始X坐标
+	startX.value = e.touches[0].clientX;
+
+	// 震动反馈
+	uni.$emit("cool.vibrate");
+}
+
+// 触摸移动事件
+function onTouchMove(e: TouchEvent) {
+	if (!isDragging.value || props.disabled || isSuccess.value || isFail.value) return; // 非拖动或禁用/完成时不处理
+	const currentX = e.touches[0].clientX; // 当前X坐标
+	const deltaX = currentX - startX.value; // 计算滑动距离
+	// 限制滑动范围
+	const newLeft = Math.max(0, Math.min(trackWidth.value - props.size, deltaX));
+	sliderLeft.value = newLeft; // 设置滑块位置
+	progressWidth.value = newLeft; // 设置进度条宽度
+	// 图片模式下，根据滑动距离旋转图片
+	if (props.mode == "image") {
+		const progress = newLeft / (trackWidth.value - props.size); // 计算滑动进度
+		// 从初始错误角度线性旋转到正确角度
+		currentAngle.value = initialAngle.value + initialAngle.value * progress * 3;
+	}
+	emit("change", {
+		progress: newLeft / trackWidth.value, // 当前进度
+		angle: currentAngle.value // 当前角度
+	});
+}
+
+// 触摸结束事件
+function onTouchEnd() {
+	if (!isDragging.value || props.disabled || isSuccess.value || isFail.value) return; // 非拖动或禁用/完成时不处理
+	isDragging.value = false; // 结束拖动
+	// 检查验证是否成功
+	const isComplete = checkVerification();
+	if (isComplete) {
+		// 验证成功
+		isSuccess.value = true;
+		emit("update:modelValue", true); // 通知父组件
+		emit("success", {
+			mode: props.mode,
+			progress: sliderLeft.value / trackWidth.value,
+			angle: currentAngle.value
+		});
+	} else {
+		if (props.showFail) {
+			isFail.value = true; // 显示失败状态
+		} else {
+			// 验证失败，重置位置
+			reset();
+		}
+		emit("update:modelValue", false); // 通知父组件
+		emit("fail", {
+			mode: props.mode,
+			progress: sliderLeft.value / trackWidth.value,
+			angle: currentAngle.value
+		});
+	}
+
+	// 震动反馈
+	uni.$emit("cool.vibrate");
+}
+
+// 监听模式变化，重新初始化
+watch(
+	computed(() => props.mode),
+	() => {
+		reset();
+		init();
+	},
+	{ immediate: true }
+);
+
+// 监听图片URL变化
+watch(
+	computed(() => props.imageUrl),
+	() => {
+		if (props.mode == "image") {
+			reset();
+		}
+	}
+);
+
+defineExpose({
+	init,
+	reset
+});
+</script>
+
+<style lang="scss" scoped>
+.cl-slide-verify {
+	@apply relative rounded-lg w-full flex flex-col items-center justify-center;
+
+	.no-dragging {
+		@apply duration-300;
+		transition-property: left;
+	}
+
+	&__track {
+		@apply relative w-full h-full;
+		@apply bg-gray-100/10 rounded-lg;
+
+		&--success {
+			@apply bg-green-50;
+		}
+
+		&--fail {
+			@apply bg-red-50;
+		}
+
+		&--dark {
+			@apply bg-zinc-700/10;
+		}
+	}
+
+	&__image {
+		@apply rounded-full mb-3;
+	}
+
+	&__progress {
+		@apply absolute left-0 top-0 h-full transition-none;
+		@apply bg-teal-100/10;
+
+		&--success {
+			@apply bg-green-200;
+		}
+
+		&--fail {
+			@apply bg-red-200;
+		}
+	}
+
+	&__slider {
+		@apply absolute top-1/2 left-0 z-20 transition-none;
+		@apply bg-white rounded-lg;
+		@apply flex items-center justify-center;
+		@apply border border-gray-200/10;
+		transform: translateY(-50%);
+
+		&--active {
+			@apply shadow-lg border-teal-300/10;
+		}
+
+		&--success {
+			@apply bg-green-500 border-green-500;
+		}
+
+		&--fail {
+			@apply bg-red-500 border-red-500;
+		}
+
+		&--dark {
+			@apply bg-gray-900/10;
+		}
+	}
+
+	&__text {
+		@apply absolute flex items-center justify-center h-full w-full;
+		@apply pointer-events-none z-10;
+	}
+
+	&--disabled {
+		@apply opacity-50;
+	}
+
+	&--success {
+		@apply border-green-300;
+	}
+
+	&--fail {
+		@apply border-red-300;
+	}
+}
+</style>

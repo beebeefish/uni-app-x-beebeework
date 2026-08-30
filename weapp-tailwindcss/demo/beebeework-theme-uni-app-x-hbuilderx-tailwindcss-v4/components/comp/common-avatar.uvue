@@ -1,0 +1,108 @@
+<template>
+  <view class="flex flex-col h-full text-gray-900 dark:text-white pb-safe">
+
+    <!-- 列表区域：直接从全局状态的 addActionList 动态循环渲染 -->
+    <view class="flex-col flex-1">
+      <!-- Popover Content -->
+    <view class="w-full">
+      <!-- Header -->
+      <view class="py-3 px-4 border-b border-gray-300/50 dark:border-neutral-800/50">
+        <view class="flex flex-row items-center gap-x-3">
+          <image :src="userInfo.avatar" class="shrink-0 inline-block size-12 rounded-full bg-gray-200 dark:bg-neutral-800 object-cover border-2 border-gray-500/50" mode="aspectFill" />
+          <view class="flex flex-1 grow flex-col gap-y-0.5">
+            <text class="text-base font-bold text-gray-800 dark:text-neutral-200">{{ userInfo.nickname }}</text>
+            <view class="flex flex-row flex-wrap gap-1 min-h-4 items-center">
+              <text v-if="userInfo.role && userInfo.role !==''" class="rounded-sm h-4 px-1 flex justify-center items-center orange-btn text-[0.625rem] cursor-default">{{ userInfo.role }}</text>
+              <view class="relative">
+                <view class="rounded-sm flex flex-row justify-center items-center">
+                  <view class="rounded-sm text-[0.625rem] border border-gray-300/50 h-4 flex flex-row justify-center items-center relative overflow-hidden">
+                    <text v-if="userInfo.niceid" class="h-[1.125rem] -mt-[0.0625rem] text-[#FFDFBA] bg-neutral-800 flex flex-row items-center px-1 relative z-[2]">靓</text>
+                    <text v-if="userInfo.niceid" class="absolute left-[0.75rem] w-2 h-[140%] bg-neutral-800 [transform:rotate(15deg)] z-[1]"></text>
+                    <text class="text-[0.625rem] text-neutral-500 cursor-default px-1">{{userInfo.level}}</text>
+                  </view>
+                </view>
+              </view>
+            </view>
+          </view>
+          <button type="button" class="shrink-0 py-1.5 px-3 inline-flex items-center gap-x-2 text-sm rounded-full primary-btn">
+            关注
+          </button>
+        </view>
+      </view>
+      <!-- End Header -->
+      <!-- List -->
+      <view class="py-4 px-4 space-y-1">
+        <view>
+          <view class="inline-flex flex-row items-center gap-x-3 text-sm text-gray-600 dark:text-gray-400">
+            <svg-icon :size="16"><text class="i-[mingcute--building-6-line] size-[16px]"></text></svg-icon>
+            <text>比比软件工作室</text>
+          </view>
+        </view>
+        <view>
+          <view class="inline-flex flex-row items-center gap-x-3 text-sm text-gray-600 dark:text-gray-400">
+            <svg-icon :size="16"><text class="i-[mingcute--cellphone-line] size-[16px]"></text></svg-icon>
+            <text>86-13123456789</text>
+          </view>
+        </view>
+        <view>
+          <view class="inline-flex flex-row items-center gap-x-3 text-sm text-gray-600 dark:text-gray-400">
+            <svg-icon :size="16"><text class="i-[mingcute--mail-line] size-[16px]"></text></svg-icon>
+            <text>week7day@msn.com</text>
+          </view>
+        </view>
+      </view>
+      <!-- End List -->
+      <!-- Footer -->
+      <view class="px-4">
+        <view class="py-3 px-4 flex flex-row items-center bg-gray-200/50 dark:bg-neutral-800/50 gap-x-6 rounded-lg">
+          <view class="inline-flex flex-row items-center gap-x-1 text-gray-600 dark:text-neutral-400">
+            <svg-icon :size="20"><text class="i-[mingcute--drink-line] size-[20px]"></text></svg-icon>
+            <text class="text-sm">打赏(3)</text>
+          </view>
+          <view class="inline-flex flex-row items-center gap-x-1 text-gray-600 dark:text-neutral-400">
+            <svg-icon :size="20"><text class="i-[mingcute--thumb-up-2-line] size-[20px]"></text></svg-icon>
+            <text class="text-sm">赞(38)</text>
+          </view>
+          <view class="inline-flex flex-row items-center gap-x-1 text-gray-600 dark:text-neutral-400">
+            <svg-icon :size="20"><text class="i-[mingcute--thumb-down-2-line] size-[20px]"></text></svg-icon>
+            <text class="text-sm">踩(1)</text>
+          </view>
+        </view>
+      </view>
+      <!-- End Footer -->
+    </view>
+    <!-- End Popover Content -->
+    </view>
+
+  </view>
+</template>
+
+<script setup>
+import { computed } from 'vue'
+import { themeState } from '@/stores/theme.uts'
+import { router } from '@/.cool/router'
+
+defineProps({
+  userInfo: {
+    type: Object,
+    default: () => ({})
+  }
+})
+
+const emit = defineEmits(['close', 'select'])
+
+// 直接从全局缓存的 themeState 中获取配置好的 addActionList
+const addActionList = computed(() => {
+  return themeState.addActionList || []
+})
+
+const onSelect = (subItem) => {
+  if (subItem.path) {
+    // 自动处理路径拼接、tabBar判断、参数传递
+    router.push({ path: subItem.path })
+  }
+  
+  // 默认点击后自动关闭弹窗
+  emit('close')
+}
+</script>

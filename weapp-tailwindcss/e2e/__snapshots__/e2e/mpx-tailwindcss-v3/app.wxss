@@ -1,0 +1,3 @@
+@import './styles/base.wxss';
+@import './styles/components.wxss';
+@import './styles/utilities.wxss';

@@ -1,0 +1,249 @@
+<template>
+	<view
+		v-if="fixed"
+		class="cl-topbar-placeholder"
+		:style="{ marginTop: offsetTop, height }"
+	></view>
+
+	<view
+		class="cl-topbar"
+		:class="[{ 'cl-topbar--fixed': fixed }, pt.className]"
+		:style="topbarStyle"
+	>
+		<view class="cl-topbar__inner" :style="{ height }">
+			<view class="cl-topbar__prepend">
+				<view v-if="showBack" class="cl-topbar__icon" @tap="back()">
+					<cl-icon
+						:pt="{
+							className: parseClass([[!backable, 'opacity-50'], pt.back?.className])
+						}"
+						:name="backIcon"
+						:size="pt.back?.size ?? 24"
+						:color="pt.back?.color ?? color"
+					></cl-icon>
+				</view>
+
+				<slot name="prepend"></slot>
+			</view>
+
+			<view class="cl-topbar__content">
+				<slot>
+					<cl-text
+						:size="16"
+						:color="color"
+						:pt="{
+							className: parseClass([pt.title?.className])
+						}"
+					>
+						{{ title }}
+					</cl-text>
+				</slot>
+			</view>
+
+			<view class="cl-topbar__append">
+				<slot name="append"></slot>
+			</view>
+		</view>
+	</view>
+</template>
+
+<script setup lang="ts">
+import { computed, type PropType } from "vue";
+import { getConfig, getSafeAreaHeight, getUnit, parseClass, parsePt, router } from "@/.cool";
+import type { PassThroughProps } from "../../types";
+import type { ClIconProps } from "../cl-icon/props";
+
+defineOptions({
+	name: "cl-topbar"
+});
+
+const props = defineProps({
+	// 样式透传对象，
+	pt: {
+		type: Object,
+		default: () => ({})
+	},
+	// 顶部栏标题文本
+	title: {
+		type: String,
+		default: ""
+	},
+	// 文字颜色，优先级最高
+	color: {
+		type: String,
+		default: ""
+	},
+	// 背景颜色，优先级最高
+	backgroundColor: {
+		type: String,
+		default: ""
+	},
+	// 是否显示返回按钮
+	showBack: {
+		type: Boolean,
+		default: true
+	},
+	// 是否可以返回
+	backable: {
+		type: Boolean,
+		default: true
+	},
+	// 返回按钮的跳转路径
+	backPath: {
+		type: String,
+		default: ""
+	},
+	// 返回按钮的图标
+	backIcon: {
+		type: String,
+		default: "arrow-left-s-line"
+	},
+	// 是否使用安全区域顶部边距
+	safeAreaTop: {
+		type: Boolean,
+		default: false
+	},
+	// 是否固定在顶部
+	fixed: {
+		type: Boolean,
+		default: false
+	},
+	// 内容高度
+	height: {
+		type: [Number, String] as PropType<number | string | null>,
+		default: null
+	}
+});
+
+// 定义样式透传的类型接口
+type PassThrough = {
+	className?: string;
+	title?: PassThroughProps;
+	back?: ClIconProps;
+};
+
+// 解析样式透传配置，返回处理后的样式对象
+const pt = computed(() => parsePt<PassThrough>(props.pt));
+
+// 使用设备安全区域顶部边距
+const offsetTop = computed(() => {
+	if (props.safeAreaTop) {
+		return getSafeAreaHeight("top") + "px";
+	}
+
+	return "0px";
+});
+
+// 计算内容高度
+const height = computed(() => {
+	if (props.height == null) {
+		return "44px";
+	}
+
+	return getUnit(props.height);
+});
+
+// 计算背景颜色，优先级：props > 页面配置 > 全局配置
+const backgroundColor = computed(() => {
+	// 如果组件属性中指定了背景色，优先使用
+	if (props.backgroundColor != "") {
+		return props.backgroundColor;
+	}
+
+	// 获取当前路由页面信息
+	const { style } = router.route()!;
+
+	// 如果页面配置了导航栏背景色，使用页面配置
+	if (style != null) {
+		if (style.navigationBarBackgroundColor != null) {
+			return style.navigationBarBackgroundColor as string;
+		}
+	}
+
+	// 最后使用全局配置的导航栏背景色
+	return getConfig("navBgColor");
+});
+
+// 计算文字颜色，优先级：props > 页面配置 > 全局配置
+const color = computed(() => {
+	// 如果组件属性中指定了文字颜色，优先使用
+	if (props.color != "") {
+		return props.color;
+	}
+
+	// 获取当前路由页面信息
+	const { style } = router.route()!;
+
+	// 如果页面配置了导航栏文字样式，使用页面配置
+	if (style != null) {
+		if (style.navigationBarTextStyle != null) {
+			return style.navigationBarTextStyle as string;
+		}
+	}
+
+	// 最后使用全局配置的导航栏文字样式
+	return getConfig("navTxtStyle");
+});
+
+// 导航栏样式
+const topbarStyle = computed(() => {
+	const style = {
+		paddingTop: offsetTop.value
+	};
+
+	// 不与 pt 样式中的背景色冲突
+	if (pt.value.className == null || !pt.value.className.includes("bg-")) {
+		style["backgroundColor"] = backgroundColor.value;
+	}
+
+	return style;
+});
+
+// 返回按钮点击事件
+function back() {
+	if (props.backable) {
+		if (props.backPath != "") {
+			router.to(props.backPath);
+		} else {
+			if (router.isFirstPage()) {
+				router.home();
+			} else {
+				router.back();
+			}
+		}
+	}
+}
+</script>
+
+<style lang="scss" scoped>
+.cl-topbar {
+	&__inner {
+		@apply flex flex-row items-center w-full;
+	}
+
+	&__icon {
+		@apply flex items-center justify-center h-full;
+		width: 30px;
+	}
+
+	&__prepend {
+		@apply absolute left-0 top-0 z-10 h-full flex flex-row items-center;
+		margin-left: 3px;
+	}
+
+	&__content {
+		@apply flex flex-col items-center justify-center h-full;
+		flex: 1;
+	}
+
+	&__append {
+		@apply absolute right-0 top-0 z-10 h-full flex flex-row items-center;
+		margin-right: 3px;
+	}
+
+	&--fixed {
+		@apply fixed top-0 left-0 right-0 w-full;
+		z-index: 998;
+	}
+}
+</style>

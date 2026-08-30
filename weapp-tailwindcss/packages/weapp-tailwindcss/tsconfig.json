@@ -1,0 +1,70 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "lib": [
+      "ES2022"
+    ],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "paths": {
+      "@/*": [
+        "./src/*"
+      ],
+      "@weapp-tailwindcss/logger": [
+        "../logger/src/index.ts"
+      ],
+      "@weapp-tailwindcss/postcss": [
+        "../postcss/src/index.ts"
+      ],
+      "@weapp-tailwindcss/postcss/*": [
+        "../postcss/src/*"
+      ],
+      "@weapp-tailwindcss/postcss/types": [
+        "../postcss/src/types.ts"
+      ],
+      "@weapp-tailwindcss/reset": [
+        "../reset/src/index.ts"
+      ],
+      "@weapp-tailwindcss/reset/*": [
+        "../reset/src/*"
+      ],
+      "@weapp-tailwindcss/shared": [
+        "../shared/src/index.ts"
+      ],
+      "@weapp-tailwindcss/shared/*": [
+        "../shared/src/*"
+      ],
+      "#test/*": [
+        "./test/*"
+      ]
+    },
+    "types": [
+      "webpack",
+      "node",
+      "vitest/globals"
+    ],
+    "allowImportingTsExtensions": true,
+    "allowJs": true,
+    "strict": true,
+    "strictPropertyInitialization": false,
+    "exactOptionalPropertyTypes": true,
+    "noImplicitOverride": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "noUncheckedIndexedAccess": true,
+    "noEmit": true,
+    "outDir": "dist",
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true
+  },
+  "include": [
+    "src/**/*",
+    "test/**/*"
+  ],
+  "exclude": [
+    "dist",
+    "node_modules",
+    "test/types",
+    "test/fixtures/**/*"
+  ]
+}

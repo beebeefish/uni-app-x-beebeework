@@ -1,0 +1,40 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "jsx": "preserve",
+    "lib": [
+      "ES2022",
+      "DOM"
+    ],
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "paths": {
+      "@site/*": [
+        "./*"
+      ]
+    },
+    "allowJs": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true
+  },
+  "include": [
+    "src",
+    "config",
+    "scripts",
+    "tests",
+    "docusaurus.config.ts",
+    "sidebars.ts",
+    "tailwind.config.ts",
+    "playwright.config.ts",
+    "env.d.ts"
+  ],
+  "exclude": [
+    "build",
+    ".docusaurus",
+    ".turbo",
+    "node_modules",
+    "playwright-report",
+    "test-results"
+  ]
+}

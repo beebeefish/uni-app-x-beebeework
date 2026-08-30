@@ -1,0 +1,58 @@
+# wetw
+
+## 0.1.3-next.1
+
+### Patch Changes
+
+- 📦 **Dependencies** [`aaba811`](https://github.com/sonofmagic/weapp-tailwindcss/commit/aaba811cfc2ad003d3daf2cf290c9d8b770c6dfb)
+  → `@weapp-tailwindcss/shared@2.0.0-next.1`
+
+## 0.1.3-next.0
+
+### Patch Changes
+
+- 📦 **Dependencies** [`2d2acf2`](https://github.com/sonofmagic/weapp-tailwindcss/commit/2d2acf29cfee02ffb32783c8bd3c5de8d9aab9df)
+  → `@weapp-tailwindcss/shared@2.0.0-next.0`
+
+## 0.1.2
+
+### Patch Changes
+
+- 🐛 **升级 `tailwindcss-patch` 到 `9` 系列最新版本，并同步更新相关依赖。** [`38c11e7`](https://github.com/sonofmagic/weapp-tailwindcss/commit/38c11e78a0c1f31d7635a98c95fbfe624723c4c3) by @sonofmagic
+- 📦 **Dependencies** [`49e50d8`](https://github.com/sonofmagic/weapp-tailwindcss/commit/49e50d8bde7327d47e9ba649537092ea57bcdf16)
+  → `@weapp-tailwindcss/shared@1.1.3`
+
+## 0.1.2-alpha.1
+
+### Patch Changes
+
+- 🐛 **升级 `tailwindcss-patch` 到 `8.7.4-alpha.0`，同步消费最新的 alpha 版本依赖。** [#819](https://github.com/sonofmagic/weapp-tailwindcss/pull/819) by @sonofmagic
+- 📦 **Dependencies** [`cbead4c`](https://github.com/sonofmagic/weapp-tailwindcss/commit/cbead4ced4b7cba116488d745d47bf826bc83859)
+  → `@weapp-tailwindcss/shared@1.1.3-alpha.1`
+
+## 0.1.2-alpha.0
+
+### Patch Changes
+
+- 📦 **Dependencies** [`49e50d8`](https://github.com/sonofmagic/weapp-tailwindcss/commit/49e50d8bde7327d47e9ba649537092ea57bcdf16)
+  → `@weapp-tailwindcss/shared@1.1.3-alpha.0`
+
+## 0.1.1
+
+### Patch Changes
+
+- 🐛 **提取常用字符串/数组工具到 shared，并在相关包中复用。** [`ccc0a33`](https://github.com/sonofmagic/weapp-tailwindcss/commit/ccc0a330b5cd455665a0f2f2c3e8895b27a04b52) by @sonofmagic
+- 📦 **Dependencies** [`ccc0a33`](https://github.com/sonofmagic/weapp-tailwindcss/commit/ccc0a330b5cd455665a0f2f2c3e8895b27a04b52)
+  → `@weapp-tailwindcss/shared@1.1.2`
+
+## 0.1.0
+
+### Minor Changes
+
+- [`4cc94da`](https://github.com/sonofmagic/weapp-tailwindcss/commit/4cc94da01247a6d3fbe4e40516a6d2fa4b319501) Thanks [@sonofmagic](https://github.com/sonofmagic)! - 为 wetw 增加基于 cac 的 CLI（init/list/add），支持自定义配置路径、工作目录以及强制覆盖；init 时可选择框架类型（mp-weixin/uni-app vue3/taro react），默认写出含 framework 的 wetw.config.ts；同时内置 counter/tag 多端模板与线上 registry 示例。
+
+## 0.1.0-alpha.0
+
+### Minor Changes
+
+- [`4cc94da`](https://github.com/sonofmagic/weapp-tailwindcss/commit/4cc94da01247a6d3fbe4e40516a6d2fa4b319501) Thanks [@sonofmagic](https://github.com/sonofmagic)! - 为 wetw 增加基于 cac 的 CLI（init/list/add），支持自定义配置路径、工作目录以及强制覆盖；init 时可选择框架类型（mp-weixin/uni-app vue3/taro react），默认写出含 framework 的 wetw.config.ts；同时内置 counter/tag 多端模板与线上 registry 示例。

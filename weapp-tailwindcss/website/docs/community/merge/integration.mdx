@@ -1,0 +1,99 @@
+---
+id: integration
+title: 集成与排障指南
+description: 在真实项目中集成 @weapp-tailwindcss/merge 的注意事项，以及针对不同打包器的调试技巧。
+keywords:
+  - 社区
+  - 模板
+  - 案例
+  - 集成与排障指南
+  - community
+  - merge
+  - integration
+  - weapp-tailwindcss
+  - tailwindcss
+  - 小程序
+  - 微信小程序
+  - uni-app
+  - taro
+  - rax
+  - mpx
+---
+
+:::tip 已迁移到 packages-runtime
+运行时包的完整 API 与多端 Demo 已整理在 [packages-runtime](/docs/community/packages-runtime) 章节。
+:::
+
+## 与构建工具协作
+
+### 保留关键函数名
+
+`weapp-tailwindcss` 会在编译阶段扫描源码中的 `twMerge`、`twJoin`、`cva`、`cn`、`tv`、`weappTwIgnore` 等标识符。当打包器在压缩环节改写了函数名（如将 `twMerge` 压成 `a`），扫描就会失败，导致运行时字符串无法还原。
+
+- **esbuild / Vite**
+
+  ```ts title="vite.config.ts"
+  export default defineConfig({
+    build: {
+      minify: 'esbuild',
+      terserOptions: undefined,
+      rollupOptions: {},
+    },
+    esbuild: {
+      keepNames: true,
+    },
+  })
+  ```
+
+- **Terser / Webpack**
+
+  ```js title="webpack.config.js"
+  optimization: {
+    minimize: true,
+    minimizer: [
+      new TerserPlugin({
+        terserOptions: {
+          mangle: {
+            keep_classnames: true,
+            keep_fnames: true,
+          },
+        },
+      }),
+    ],
+  },
+  ```
+
+完整示例可参考 [`packages/minify-preserve`](https://github.com/sonofmagic/weapp-tailwindcss/tree/main/packages/minify-preserve)。
+
+## 运行时包选择
+
+| Tailwind 版本 | 合并运行时 | 变体运行时 | 说明 |
+| --- | --- | --- | --- |
+| v4 | `@weapp-tailwindcss/merge` | `@weapp-tailwindcss/variants` | 默认组合，适配 `tailwind-merge@3` |
+| v3 | `@weapp-tailwindcss/merge-v3` | `@weapp-tailwindcss/variants-v3` | 旧项目长期维护 |
+| v3 Web | `tailwind-variant-v3` | `tailwind-variant-v3` | 仅 Web 场景可直接用上游 |
+
+## 与 weapp-tailwindcss 插件联动
+
+1. **同步依赖版本**：确保 `weapp-tailwindcss` 编译期插件与运行时主版本一致，避免映射表不一致。
+2. **配置忽略列表**：如果封装了新的工具函数来代理 `twMerge`/`cva` 等 API，请把这些名称添加到 `ignoreCallExpressionIdentifiers`；模板标签同理使用 `ignoreTaggedTemplateExpressionIdentifiers`。
+3. **第三方类名**：需要把类名原样传给第三方库时，用 `weappTwIgnore` 跳过编译期转义。
+
+## rpx 长度与任意值
+
+`@weapp-tailwindcss/merge` 内置 rpx 归一化（例如 `text-[12rpx]` ➜ `text-[length:12rpx]`），避免 `tailwind-merge` 误合并。若你自定义了 rpx 前缀组合，可基于 `createRuntimeFactory` + `createRpxLengthTransform` 构建自定义运行时。
+
+## 调试建议
+
+- **验证运行时版本**：输出 `tailwindMergeVersion`，确认 v3/v4 分支是否正确。
+- **确认转义链路**：本地执行脚本，检查 `twMerge` 是否完成「还原 ➜ 合并 ➜ 重新转义」。
+
+  ```bash
+  node - <<'NODE'
+  const { twMerge } = require('@weapp-tailwindcss/merge')
+  console.log(twMerge('text-[#ececec]', 'text-[#ECECEC]'))
+  NODE
+  ```
+
+- **排查压缩产物**：打包后搜索产物中是否仍然存在 `twMerge`、`weappTwIgnore` 等关键字。
+- **快照回归**：对 `twMerge`/`tv` 输出做快照测试，升级 Tailwind 或运行时时便于比对。

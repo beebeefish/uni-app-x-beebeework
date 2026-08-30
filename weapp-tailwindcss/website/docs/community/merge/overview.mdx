@@ -1,0 +1,128 @@
+---
+id: overview
+title: 概览
+slug: /community/merge
+description: '@weapp-tailwindcss/merge 的定位、安装方式、快速上手示例以及多端项目的常见用法。'
+keywords:
+  - 社区
+  - 模板
+  - 案例
+  - 概览
+  - community
+  - merge
+  - overview
+  - weapp-tailwindcss
+  - tailwindcss
+  - 小程序
+  - 微信小程序
+  - uni-app
+  - taro
+  - rax
+  - mpx
+---
+
+:::tip 已迁移到 packages-runtime
+本页为旧入口，内容已按最新源码同步更新；完整体系请参考：  
+- [packages-runtime 总览](/docs/community/packages-runtime)  
+- [@weapp-tailwindcss/merge](/docs/community/packages-runtime/merge)  
+- [多端 Demo（小程序 + Web）](/docs/community/packages-runtime/multi-platform-demos)
+:::
+
+`@weapp-tailwindcss/merge` 是面向小程序生态的 `tailwind-merge` 运行时封装，适配 `tailwindcss@4`。它在合并前后自动执行 escape/unescape，并内置 rpx 长度归一化，保证小程序与编译期插件输出保持一致。
+
+## 运行时矩阵
+
+| 包名 | 适用场景 | 说明 |
+| --- | --- | --- |
+| `@weapp-tailwindcss/runtime` | 共享依赖 | 提供 escape/unescape、`clsx`、`weappTwIgnore`、`createRuntimeFactory` |
+| `@weapp-tailwindcss/merge` | `tailwindcss@4` | 基于 `tailwind-merge@3`，默认入口 |
+| `@weapp-tailwindcss/merge-v3` | `tailwindcss@3` | 基于 `tailwind-merge@2`，旧项目使用 |
+| `@weapp-tailwindcss/cva` | 组件变体 | `class-variance-authority` 运行时封装 |
+| `@weapp-tailwindcss/variants` | 组件变体 + slots | `tailwind-variants` 运行时封装 |
+| `@weapp-tailwindcss/variants-v3` | v3 小程序 | `tailwind-variant-v3` + `merge-v3` |
+| `tailwind-variant-v3` | v3 Web | 上游 v3 runtime，可自定义合并器 |
+
+## 运行时流程（小程序）
+
+`@weapp-tailwindcss/merge` 的默认 `twMerge` 会按以下流程处理：
+
+1. **可选 unescape**：输入包含占位符或 unicode 片段时先还原。
+2. **rpx 长度归一化**：`text-[12rpx]` ➜ `text-[length:12rpx]`，避免被合并规则误判。
+3. **tailwind-merge 合并**：执行冲突移除。
+4. **还原 rpx**：把 `length:` 占位还原回原始写法。
+5. **escape 输出**：得到小程序可用的类名。
+
+为了减少重复计算，运行时还内置了短缓存（256 条）。
+
+## 安装
+
+```bash npm2yarn
+pnpm add @weapp-tailwindcss/merge
+```
+
+> 如果项目仍在使用 `tailwindcss@3`，请安装 `@weapp-tailwindcss/merge-v3`。
+
+## 快速上手
+
+```ts
+import { twMerge } from '@weapp-tailwindcss/merge'
+
+const className = twMerge(
+  'px-2 py-1 bg-red hover:bg-dark-red',
+  'p-3 bg-[#B91C1C]'
+)
+
+// => 已转义的类名，可直接写入小程序 class
+```
+
+## rpx 长度归一化
+
+运行时会在合并前把以下前缀的 `rpx` 任意值转换为 `length:` 语义，再在合并后还原：
+
+- `text-*`
+- `border-*`
+- `bg-*`
+- `outline-*`
+- `ring-*`
+
+这一步能让 `tailwind-merge` 正确理解 `rpx` 维度，避免误合并。
+
+## 与 weapp-tailwindcss 编译期协作
+
+- `twMerge`、`twJoin`、`cva` 等函数名若被改名，请补充 `ignoreCallExpressionIdentifiers`。
+- 需要跳过编译期转义时，使用 `weappTwIgnore` 模板标签：
+
+  ```ts
+  import { weappTwIgnore } from '@weapp-tailwindcss/merge'
+
+  const raw = weappTwIgnore`text-[#123456]`
+  ```
+
+## 多端项目：按需控制转义
+
+```ts
+import { create } from '@weapp-tailwindcss/merge'
+
+// 跨平台框架请自行判断是否为 H5 构建，通常可从环境变量读取。
+const isH5 = false
+const { twMerge } = create({
+  escape: !isH5,
+  unescape: !isH5,
+})
+```
+
+H5 环境将 `isH5` 设为 `true` 即可保持原始类名。
+
+## 相关运行时
+
+- [@weapp-tailwindcss/variants](/docs/community/packages-runtime/variants)
+- [@weapp-tailwindcss/cva](/docs/community/packages-runtime/cva)
+- [@weapp-tailwindcss/variants-v3](/docs/community/packages-runtime/variants-v3)
+
+## 在线体验
+
+```jsx live
+function () {
+  return <MergeDemo/>
+}
+```

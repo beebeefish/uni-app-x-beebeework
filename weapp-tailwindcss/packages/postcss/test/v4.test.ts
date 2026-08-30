@@ -1,0 +1,839 @@
+import fs from 'fs-extra'
+import path from 'pathe'
+import prettier from 'prettier'
+import autoprefixer from 'autoprefixer'
+import { createStyleHandler } from '@/index'
+
+const WEBKIT_HYPHENS_RE = /-webkit-hyphens\s*:\s*none/
+const MARGIN_TRIM_RE = /margin-trim\s*:\s*inline/
+const MOZ_ORIENT_RE = /-moz-orient\s*:\s*inline/
+const COLOR_RGB_FROM_RE = /color\s*:\s*rgb\(\s*from\s+red\s+r\s+g\s+b\s*\)/
+
+function getPropertyDeclarations(css: string, prop: string) {
+  const regex = new RegExp(`${prop}:\\s*([^;]+);`, 'g')
+  const declarations: Array<{ value: string, index: number }> = []
+  let match: RegExpExecArray | null = regex.exec(css)
+  while (match !== null) {
+    declarations.push({
+      value: match[1].trim(),
+      index: match.index,
+    })
+    match = regex.exec(css)
+  }
+  return declarations
+}
+
+function assertNoDuplicateLiteral(css: string, prop: string) {
+  const declarations = getPropertyDeclarations(css, prop)
+  const counts = new Map<string, number>()
+
+  for (const decl of declarations) {
+    if (decl.value.includes('var(')) {
+      continue
+    }
+    const key = decl.value
+    const next = (counts.get(key) ?? 0) + 1
+    counts.set(key, next)
+  }
+
+  for (const count of counts.values()) {
+    expect(count).toBeLessThanOrEqual(1)
+  }
+}
+
+function assertLiteralBeforeVariable(css: string, prop: string) {
+  const declarations = getPropertyDeclarations(css, prop)
+  if (declarations.length <= 1) {
+    return
+  }
+
+  let literalIndex = -1
+  let variableIndex = -1
+
+  for (const decl of declarations) {
+    if (decl.value.includes('var(')) {
+      if (variableIndex === -1) {
+        variableIndex = decl.index
+      }
+    }
+    else if (literalIndex === -1) {
+      literalIndex = decl.index
+    }
+  }
+
+  if (literalIndex >= 0 && variableIndex >= 0) {
+    expect(literalIndex).toBeLessThan(variableIndex)
+  }
+}
+
+describe('v4', () => {
+  it('vite', async () => {
+    const styleHandler = createStyleHandler({
+      isMainChunk: true,
+    })
+    const code = await fs.readFile(path.resolve(__dirname, './fixtures/css/v4-vite.css'), 'utf8')
+    const { css } = await styleHandler(code)
+    expect(css).toMatchSnapshot()
+  })
+
+  it('postcss', async () => {
+    const styleHandler = createStyleHandler({
+      isMainChunk: true,
+    })
+    const code = await fs.readFile(path.resolve(__dirname, './fixtures/css/v4-postcss.css'), 'utf8')
+    const { css } = await styleHandler(code, {
+      isMainChunk: true,
+    })
+    expect(css).toMatchSnapshot()
+  })
+
+  it('postcss uni-app x', async () => {
+    const styleHandler = createStyleHandler({
+      isMainChunk: true,
+      uniAppX: true,
+    })
+    const code = await fs.readFile(path.resolve(__dirname, './fixtures/css/v4-postcss.css'), 'utf8')
+    const { css } = await styleHandler(code, {
+      isMainChunk: true,
+    })
+    expect(css).toMatchSnapshot()
+  })
+
+  it('v4', async () => {
+    const styleHandler = createStyleHandler({
+      isMainChunk: true,
+    })
+    const code = await fs.readFile(path.resolve(__dirname, './fixtures/css/v4.css'), 'utf8')
+    const { css } = await styleHandler(code, {
+      isMainChunk: true,
+    })
+    expect(css).toMatchSnapshot()
+    await fs.writeFile(path.resolve(__dirname, './fixtures/css/v4.out.css'), css, 'utf8')
+  })
+
+  it('v4.1.1', async () => {
+    const styleHandler = createStyleHandler({
+      isMainChunk: true,
+    })
+    const code = await fs.readFile(path.resolve(__dirname, './fixtures/css/v4.1.1.css'), 'utf8')
+    const { css } = await styleHandler(code, {
+      isMainChunk: true,
+    })
+    expect(css).toMatchSnapshot()
+    await fs.writeFile(path.resolve(__dirname, './fixtures/css/v4.1.1.out.css'), css, 'utf8')
+  })
+
+  it('v4.1.2', async () => {
+    const styleHandler = createStyleHandler({
+      isMainChunk: true,
+    })
+    const code = await fs.readFile(path.resolve(__dirname, './fixtures/css/v4.1.2.css'), 'utf8')
+    const { css } = await styleHandler(code, {
+      isMainChunk: true,
+    })
+    expect(css).toMatchSnapshot()
+    await fs.writeFile(path.resolve(__dirname, './fixtures/css/v4.1.2.out.css'), css, 'utf8')
+  })
+
+  it('taro vite tailwindcss v4 app-origin', async () => {
+    const styleHandler = createStyleHandler({
+      isMainChunk: true,
+    })
+    const code = await fs.readFile(path.resolve(__dirname, './fixtures/css/taro-vite-react-tailwindcss-v4-app-origin.css'), 'utf8')
+    const { css } = await styleHandler(code, {
+      isMainChunk: true,
+    })
+    expect(css).not.toContain('@layer')
+    expect(css).not.toContain(':not(#\\#)')
+    expect(css).not.toContain(':not(#n)')
+    expect(css).not.toContain('--tw-content')
+    expect(await prettier.format(css, { parser: 'css' })).toMatchSnapshot()
+  })
+
+  it('v4 space-y-*', async () => {
+    const styleHandler = createStyleHandler({
+      isMainChunk: true,
+    })
+    // .space-x-2d5>view+view,.space-x-2d5>view+text,.space-x-2d5>text+view,.space-x-2d5>text+text {
+    //   --tw-space-x-reverse: 0;
+    //   margin-right: calc(20rpx * var(--tw-space-x-reverse));
+    //   margin-left: calc(20rpx * (1 - var(--tw-space-x-reverse)));
+    //   margin-left: calc(20rpx * calc(1 - var(--tw-space-x-reverse)));
+    // }
+    const code = `
+      :where(.space-y-0 > :not(:last-child)) {
+    --tw-space-y-reverse: 0;
+    margin-block-start: calc(calc(var(--spacing) * 0) * var(--tw-space-y-reverse));
+    margin-block-end: calc(calc(var(--spacing) * 0) * calc(1 - var(--tw-space-y-reverse)));
+  }
+    `
+    const { css } = await styleHandler(code, {
+      isMainChunk: true,
+    })
+    expect(css).toMatchSnapshot()
+  })
+
+  it('v4 space-y-* nesting', async () => {
+    const styleHandler = createStyleHandler({
+      isMainChunk: true,
+    })
+    const code = `
+.space-y-0 {
+  & > :not(:last-child) {
+    --tw-space-y-reverse: 0;
+    margin-block-start: calc(calc(var(--spacing) * 0) * var(--tw-space-y-reverse));
+    margin-block-end: calc(calc(var(--spacing) * 0) * calc(1 - var(--tw-space-y-reverse)));
+  }
+}
+`
+    const { css } = await styleHandler(code, {
+      isMainChunk: true,
+    })
+    expect(css).toMatchSnapshot()
+  })
+
+  it('v4 space-x-* fallback dedupe', async () => {
+    const styleHandler = createStyleHandler({
+      isMainChunk: true,
+      cssChildCombinatorReplaceValue: ['view', 'text'],
+    })
+
+    const code = `
+:where(.space-x-4 > :not(:last-child)) {
+  --tw-space-x-reverse: 0;
+  margin-inline-start: calc((var(--spacing) * 4) * var(--tw-space-x-reverse));
+  margin-inline-end: calc((var(--spacing) * 4) * calc(1 - var(--tw-space-x-reverse)));
+  margin-inline-start: 32rpx;
+  margin-inline-end: 0rpx;
+  margin-left: 32rpx;
+  margin-right: 0rpx;
+}
+`
+
+    const { css } = await styleHandler(code, {
+      isMainChunk: true,
+      cssChildCombinatorReplaceValue: ['view', 'text'],
+    })
+
+    assertNoDuplicateLiteral(css, 'margin-left')
+    assertNoDuplicateLiteral(css, 'margin-right')
+    assertLiteralBeforeVariable(css, 'margin-left')
+    assertLiteralBeforeVariable(css, 'margin-right')
+  })
+
+  it('v4 divide-x-* fallback dedupe', async () => {
+    const styleHandler = createStyleHandler({
+      isMainChunk: true,
+      cssChildCombinatorReplaceValue: ['view', 'text'],
+    })
+
+    const code = `
+:where(.divide-x-4 > :not(:last-child)) {
+  --tw-divide-x-reverse: 0;
+  border-inline-end-width: calc(4px * var(--tw-divide-x-reverse));
+  border-inline-start-width: calc(4px * calc(1 - var(--tw-divide-x-reverse)));
+  border-inline-end-width: 4px;
+  border-inline-start-width: 4px;
+  border-right-width: 0px;
+  border-left-width: 4px;
+}
+`
+
+    const { css } = await styleHandler(code, {
+      isMainChunk: true,
+      cssChildCombinatorReplaceValue: ['view', 'text'],
+    })
+
+    assertNoDuplicateLiteral(css, 'border-left-width')
+    assertNoDuplicateLiteral(css, 'border-right-width')
+    assertLiteralBeforeVariable(css, 'border-left-width')
+    assertLiteralBeforeVariable(css, 'border-right-width')
+  })
+
+  it('removes v4 display-p3 media and keeps default font declarations', async () => {
+    const styleHandler = createStyleHandler({
+      isMainChunk: true,
+    })
+    const code = `
+:host,page,.tw-root,wx-root-portal-content {
+  --font-sans: ui-sans-serif, system-ui, sans-serif;
+  --font-mono: ui-monospace, monospace;
+  --default-font-family: var(--font-sans);
+  --font-weight-bold: 700;
+  --color-blue-500: rgb(50, 128, 255);
+}
+@media (color-gamut: p3) {
+  .bg-blue-500_f50 {
+    background-color: color(display-p3 0.26642 0.49122 0.98862 / 0.5);
+  }
+}
+.bg-blue-500_f50 {
+  background-color: rgb(50 128 255 / 0.5);
+  background-color: color(display-p3 0.26642 0.49122 0.98862 / 0.5);
+}
+.font-sans {
+  font-family: var(--font-sans);
+}
+.default-font {
+  font-family: ui-sans-serif, system-ui, sans-serif;
+}
+`
+
+    const { css } = await styleHandler(code, {
+      isMainChunk: true,
+    })
+
+    expect(css).toContain('--font-weight-bold: 700')
+    expect(css).toContain('--color-blue-500: rgb(50, 128, 255)')
+    expect(css).toContain('background-color: rgba(50, 128, 255, 0.5)')
+    expect(css).not.toContain('color-gamut')
+    expect(css).not.toContain('display-p3')
+    expect(css).toContain('ui-sans-serif')
+    expect(css).toContain('font-family: var(--font-sans)')
+    expect(css).toContain('--font-sans')
+    expect(css).toContain('--font-mono')
+    expect(css).toContain('--default-font-family')
+  })
+
+  it('v4 space-y-* case 2', async () => {
+    const styleHandler = createStyleHandler({
+      isMainChunk: true,
+      cssChildCombinatorReplaceValue: ['view', 'text'],
+    })
+    const code = `
+:where(.space-y-0 > :not(:last-child)) {}
+    `
+    const { css } = await styleHandler(code, {
+      isMainChunk: true,
+    })
+    expect(css).toMatchSnapshot()
+  })
+
+  it('--tw-gradient-position', async () => {
+    const styleHandler = createStyleHandler({
+      isMainChunk: true,
+    })
+    const code = `.bg-gradient-to-b:not(n):not(n):not(n) {
+    --tw-gradient-position: to bottom in oklab;
+    background-image: linear-gradient(var(--tw-gradient-stops));
+  }
+.bg-gradient-to-t:not(n):not(n):not(n) {
+    --tw-gradient-position: to top in oklab;
+    background-image: linear-gradient(var(--tw-gradient-stops));
+  }
+.bg-gradient-to-tr:not(n):not(n):not(n) {
+    --tw-gradient-position: to top right in oklab;
+    background-image: linear-gradient(var(--tw-gradient-stops));
+  }`
+    const { css } = await styleHandler(code, {
+      isMainChunk: true,
+    })
+    expect(css).toMatchSnapshot()
+  })
+
+  it('removes Tailwind CSS v4 lab linear-gradient supports guard', async () => {
+    const styleHandler = createStyleHandler({
+      isMainChunk: true,
+    })
+    const code = `.bg-linear-to-r {
+  --tw-gradient-position: to right;
+  @supports (background-image: linear-gradient(in lab, red, red)) {
+    --tw-gradient-position: to right in oklab;
+  }
+  background-image: linear-gradient(var(--tw-gradient-stops));
+}`
+    const { css } = await styleHandler(code, {
+      isMainChunk: true,
+      majorVersion: 4,
+    })
+
+    expect(css).toBe(`.bg-linear-to-r {
+  --tw-gradient-position: to right;
+}
+.bg-linear-to-r {
+  background-image: linear-gradient(var(--tw-gradient-stops));
+}`)
+    expect(css).not.toContain('@supports')
+    expect(css).not.toContain('in oklab')
+  })
+
+  it('removes Tailwind CSS v4 display-p3 variable supports guard', async () => {
+    const styleHandler = createStyleHandler({
+      isMainChunk: true,
+    })
+    const code = `:root,:host {
+  --color-blue-500: rgb(50, 128, 255);
+}
+@supports (color: color(display-p3 0 0 0%)) {
+  :root,:host {
+    --color-blue-500: color(display-p3 0.26642 0.49122 0.98862);
+  }
+}`
+    const { css } = await styleHandler(code, {
+      isMainChunk: true,
+      majorVersion: 4,
+    })
+
+    expect(css).toContain('--color-blue-500: rgb(50, 128, 255);')
+    expect(css).not.toContain('@supports')
+    expect(css).not.toContain('display-p3')
+  })
+
+  it('v4.1.1 uni-app vue 3', async () => {
+    const styleHandler = createStyleHandler({
+      isMainChunk: true,
+    })
+    const code = `/*! tailwindcss v4.1.1 | MIT License | https://tailwindcss.com */
+@supports ((-webkit-hyphens: none) and (not (margin-trim: inline))) or ((-moz-orient: inline) and (not (color: rgb(from red r g b)))) {
+  @layer base {
+    *, :before, :after, ::backdrop {
+      --tw-font-weight: initial;
+    }
+  }
+}
+
+@supports (((-webkit-hyphens:none)) and (not (margin-trim:inline))) or ((-moz-orient:inline) and (not (color:rgb(from red r g b)))) {
+
+  ::before,
+  ::after {
+    --tw-content: ""
+  }
+
+}
+
+:root, :host {
+  --color-white: #fff;
+  --spacing: .25rem;
+  --font-weight-bold: 700;
+}
+
+*, :after, :before, ::backdrop {
+  box-sizing: border-box;
+  border: 0 solid;
+  margin: 0;
+  padding: 0;
+}
+
+.i-mdi-home {
+  width: 1em;
+  height: 1em;
+  -webkit-mask-image: var(--svg);
+  -webkit-mask-image: var(--svg);
+  -webkit-mask-image: var(--svg);
+  mask-image: var(--svg);
+  --svg: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Cpath fill='black' d='M10 20v-6h4v6h5v-8h3L12 3L2 12h3v8z'/%3E%3C/svg%3E");
+  background-color: currentColor;
+  display: inline-block;
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+}
+
+.flex {
+  display: flex;
+}
+
+.aspect-\\(--my-aspect-ratio\\) {
+  aspect-ratio: var(--my-aspect-ratio);
+}
+
+.aspect-\\[calc\\(4\\*3\\+1\\)\\/3\\] {
+  aspect-ratio: 13 / 3;
+}
+
+.h-20 {
+  height: calc(var(--spacing) * 20);
+}
+
+.w-20 {
+  width: calc(var(--spacing) * 20);
+}
+
+.flex-col {
+  flex-direction: column;
+}
+
+.bg-\\[\\#0000ff\\] {
+  background-color: #00f;
+}
+
+.text-\\[45rpx\\] {
+  font-size: 45rpx;
+}
+
+.text-\\[88rpx\\] {
+  font-size: 88rpx;
+}
+
+.font-bold {
+  --tw-font-weight: var(--font-weight-bold);
+  font-weight: var(--font-weight-bold);
+}
+
+.text-\\[\\#00f285\\] {
+  color: #00f285;
+}
+
+.text-white {
+  color: var(--color-white);
+}
+
+.underline {
+  text-decoration-line: underline;
+}
+
+@property --tw-font-weight {
+  syntax: "*";
+  inherits: false
+}
+
+
+/* @import 'tailwindcss'; */
+page{--status-bar-height:25px;--top-window-height:0px;--window-top:0px;--window-bottom:0px;--window-left:0px;--window-right:0px;--window-magin:0px}[data-c-h="true"]{display: none !important;}`
+    const { css } = await styleHandler(code, {
+      isMainChunk: true,
+    })
+    expect(css).toMatchSnapshot()
+    await fs.writeFile(path.resolve(__dirname, './fixtures/css/v4.1.1-uniapp-vue3.out.css'), css, 'utf8')
+  })
+
+  it('regex', () => {
+    function t(str: string) {
+      return [
+        WEBKIT_HYPHENS_RE,
+        MARGIN_TRIM_RE,
+        MOZ_ORIENT_RE,
+        COLOR_RGB_FROM_RE,
+      ].every(regex => regex.test(str))
+    }
+    expect(
+      t('(((-webkit-hyphens:none)) and (not (margin-trim:inline))) or ((-moz-orient:inline) and (not (color:rgb(from red r g b))))'),
+    ).toBe(true)
+    expect(
+      t('((-webkit-hyphens: none) and (not (margin-trim: inline))) or ((-moz-orient: inline) and (not (color: rgb(from red r g b))))'),
+    ).toBe(true)
+  })
+
+  it('v4.1.2 vite plugin case 0', async () => {
+    const styleHandler = createStyleHandler({
+      isMainChunk: true,
+    })
+    const code = `/*! tailwindcss v4.1.2 | MIT License | https://tailwindcss.com */@layer properties{@supports (((-webkit-hyphens:none)) and (not (margin-trim:inline))) or ((-moz-orient:inline) and (not (color:rgb(from red r g b)))){*,:before,:after,::backdrop{--tw-space-y-reverse:0;--tw-space-x-reverse:0;--tw-border-style:solid;--tw-gradient-position:initial;--tw-gradient-from:#0000;--tw-gradient-via:#0000;--tw-gradient-to:#0000;--tw-gradient-stops:initial;--tw-gradient-via-stops:initial;--tw-gradient-from-position:0%;--tw-gradient-via-position:50%;--tw-gradient-to-position:100%}}}:root,:host{--color-red-700:oklch(50.5% .213 27.518);--color-amber-300:oklch(87.9% .169 91.605);--spacing:.25rem}*,:after,:before,::backdrop{box-sizing:border-box;border:0 solid;margin:0;padding:0}.container{width:100%}@media (min-width:40rem){.container{max-width:40rem}}@media (min-width:48rem){.container{max-width:48rem}}@media (min-width:64rem){.container{max-width:64rem}}@media (min-width:80rem){.container{max-width:80rem}}@media (min-width:96rem){.container{max-width:96rem}}.i-mdi-home{width:1em;height:1em;-webkit-mask-image:var(--svg);mask-image:var(--svg);--svg:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24'%3E%3Cpath fill='black' d='M10 20v-6h4v6h5v-8h3L12 3L2 12h3v8z'/%3E%3C/svg%3E");background-color:currentColor;display:inline-block;-webkit-mask-size:100% 100%;mask-size:100% 100%;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat}.inline-block{display:inline-block}.h-10{height:calc(var(--spacing)*10)}.h-\\[29\\.292px\\]{height:29.292px}.h-\\[30px\\]{height:30px}.h-\\[45px\\]{height:45px}.w-\\[50px\\]{width:50px}.w-\\[323px\\]{width:323px}:where(.space-y-2\\.5>:not(:last-child)){--tw-space-y-reverse:0;margin-block-start:calc(calc(var(--spacing)*2.5)*var(--tw-space-y-reverse));margin-block-end:calc(calc(var(--spacing)*2.5)*calc(1 - var(--tw-space-y-reverse)))}:where(.space-x-2\\.5>:not(:last-child)){--tw-space-x-reverse:0;margin-inline-start:calc(calc(var(--spacing)*2.5)*var(--tw-space-x-reverse));margin-inline-end:calc(calc(var(--spacing)*2.5)*calc(1 - var(--tw-space-x-reverse)))}.border-4{border-style:var(--tw-border-style);border-width:4px}.bg-\\[\\#3a32d1\\]{background-color:#3a32d1}.bg-\\[\\#7d7ac2\\]{background-color:#7d7ac2}.bg-amber-300{background-color:var(--color-amber-300)}.bg-gradient-to-b{--tw-gradient-position:to bottom in oklab;background-image:linear-gradient(var(--tw-gradient-stops))}.bg-gradient-to-t{--tw-gradient-position:to top in oklab;background-image:linear-gradient(var(--tw-gradient-stops))}.bg-gradient-to-tr{--tw-gradient-position:to top right in oklab;background-image:linear-gradient(var(--tw-gradient-stops))}.from-\\[\\#2f73f1\\]{--tw-gradient-from:#2f73f1;--tw-gradient-stops:var(--tw-gradient-via-stops,var(--tw-gradient-position),var(--tw-gradient-from)var(--tw-gradient-from-position),var(--tw-gradient-to)var(--tw-gradient-to-position))}.to-\\[\\#4bcefd\\]{--tw-gradient-to:#4bcefd;--tw-gradient-stops:var(--tw-gradient-via-stops,var(--tw-gradient-position),var(--tw-gradient-from)var(--tw-gradient-from-position),var(--tw-gradient-to)var(--tw-gradient-to-position))}.text-\\[100px\\]{font-size:100px}.text-\\[\\#123456\\]{color:#123456}.text-\\[100rpx\\]{color:100rpx}.text-red-700{color:var(--color-red-700)}@property --tw-space-y-reverse{syntax:"*";inherits:false;initial-value:0}@property --tw-space-x-reverse{syntax:"*";inherits:false;initial-value:0}@property --tw-border-style{syntax:"*";inherits:false;initial-value:solid}@property --tw-gradient-position{syntax:"*";inherits:false}@property --tw-gradient-from{syntax:"<color>";inherits:false;initial-value:#0000}@property --tw-gradient-via{syntax:"<color>";inherits:false;initial-value:#0000}@property --tw-gradient-to{syntax:"<color>";inherits:false;initial-value:#0000}@property --tw-gradient-stops{syntax:"*";inherits:false}@property --tw-gradient-via-stops{syntax:"*";inherits:false}@property --tw-gradient-from-position{syntax:"<length-percentage>";inherits:false;initial-value:0%}@property --tw-gradient-via-position{syntax:"<length-percentage>";inherits:false;initial-value:50%}@property --tw-gradient-to-position{syntax:"<length-percentage>";inherits:false;initial-value:100%}
+/*$vite$:1*/`
+    await fs.writeFile(path.resolve(__dirname, './fixtures/css/v4.1.2-vite-plugin.css'), code, 'utf8')
+    const { css } = await styleHandler(code, {
+      isMainChunk: true,
+    })
+    expect(css).toMatchSnapshot()
+    await fs.writeFile(path.resolve(__dirname, './fixtures/css/v4.1.2-vite-plugin.out.css'), css, 'utf8')
+  })
+
+  it('v4.1.2 vite plugin case 1', async () => {
+    const styleHandler = createStyleHandler({
+      isMainChunk: true,
+    })
+    const code = await fs.readFile(path.resolve(__dirname, './fixtures/css/v4.1.2-vite-plugin.format.css'), 'utf8')
+
+    const { css } = await styleHandler(code, {
+      isMainChunk: true,
+    })
+    expect(css).toMatchSnapshot()
+    await fs.writeFile(path.resolve(__dirname, './fixtures/css/v4.1.2-vite-plugin.format.out.css'), css, 'utf8')
+  })
+
+  it('v4.1.10 case 0', async () => {
+    const styleHandler = createStyleHandler({
+      isMainChunk: true,
+    })
+    const code = await fs.readFile(path.resolve(__dirname, './fixtures/css/v4.1.10.css'), 'utf8')
+
+    const { css } = await styleHandler(code, {
+      isMainChunk: true,
+    })
+    expect(css).toMatchSnapshot()
+    await fs.writeFile(path.resolve(__dirname, './fixtures/css/v4.1.10.out.css'), css, 'utf8')
+  })
+
+  it('recovers misparsed arbitrary lengths when tailwind patch is missing', async () => {
+    const styleHandler = createStyleHandler({
+      isMainChunk: true,
+    })
+    const code = `
+.border-_b10rpx_B { border-style: var(--tw-border-style); border-color: 10rpx; }
+.text-_b32rpx_B { color: 32rpx; }
+.bg-_b10rpx_B { background-color: 10rpx; }
+.outline-_b5rpx_B { outline-color: 5rpx; }
+.ring-_b8rpx_B { --tw-ring-color: 8rpx; }
+`
+    const { css } = await styleHandler(code, {
+      isMainChunk: true,
+      majorVersion: 4,
+    })
+
+    expect(css).toContain('border-width: 10rpx')
+    expect(css).not.toContain('border-color: 10rpx')
+    expect(css).toContain('font-size: 32rpx')
+    expect(css).not.toContain('color: 32rpx')
+    expect(css).toContain('background-size: 10rpx')
+    expect(css).not.toContain('background-color: 10rpx')
+    expect(css).toContain('outline-width: 5rpx')
+    expect(css).not.toContain('outline-color: 5rpx')
+    expect(css).toContain('--tw-ring-offset-width: 8rpx')
+    expect(css).not.toContain('--tw-ring-color: 8rpx')
+
+    const v3 = await styleHandler(code, {
+      isMainChunk: true,
+      majorVersion: 3,
+    })
+    expect(v3.css).toContain('border-width: 10rpx')
+    expect(v3.css).toContain('font-size: 32rpx')
+
+    const v2jit = await styleHandler(code, {
+      isMainChunk: true,
+      majorVersion: 2,
+    })
+    expect(v2jit.css).toContain('border-width: 10rpx')
+    expect(v2jit.css).toContain('font-size: 32rpx')
+  })
+
+  it('keeps Tailwind CSS v4 border default style when only border utility is generated', async () => {
+    const styleHandler = createStyleHandler({
+      isMainChunk: true,
+    })
+    const code = [
+      '/*! tailwindcss v4.1.10 | MIT License | https://tailwindcss.com */',
+      '.border{border-style:var(--tw-border-style);border-width:1px}',
+      '@property --tw-border-style{syntax:"*";inherits:false;initial-value:solid}',
+    ].join('')
+    const { css } = await styleHandler(code, {
+      isMainChunk: true,
+      majorVersion: 4,
+    })
+
+    expect(css).toContain('view,text,:after,:before{--tw-border-style:solid}')
+    expect(css).toContain('.border{border-style:var(--tw-border-style);border-width:1px}')
+    expect(css).not.toContain('@property')
+  })
+
+  it('does not duplicate Tailwind CSS v4 border defaults when a default scope already exists', async () => {
+    const styleHandler = createStyleHandler({
+      isMainChunk: true,
+    })
+    const code = [
+      '/*! tailwindcss v4.1.10 | MIT License | https://tailwindcss.com */',
+      ':root,:host{--tw-border-style:solid}',
+      '.border{border-style:var(--tw-border-style);border-width:1px}',
+      '@property --tw-border-style{syntax:"*";inherits:false;initial-value:solid}',
+    ].join('')
+    const { css } = await styleHandler(code, {
+      isMainChunk: true,
+      majorVersion: 4,
+    })
+
+    expect(css).not.toContain('view,text,:after,:before{--tw-border-style:solid}')
+    expect(css.match(/--tw-border-style:solid/g)).toHaveLength(1)
+    expect(css).toContain('page,.tw-root,wx-root-portal-content,:host{--tw-border-style:solid}')
+    expect(css).not.toContain('@property')
+  })
+
+  it('recovers misparsed arbitrary rpx lengths in non-main chunks', async () => {
+    const styleHandler = createStyleHandler({
+      isMainChunk: true,
+    })
+    const code = `
+.text-_b55rpx_B { color: 55rpx; }
+.border-_b10rpx_B { border-color: 10rpx; }
+`
+    const { css } = await styleHandler(code, {
+      isMainChunk: false,
+      majorVersion: 4,
+    })
+
+    expect(css).toContain('font-size: 55rpx')
+    expect(css).not.toContain('color: 55rpx')
+    expect(css).toContain('border-width: 10rpx')
+    expect(css).not.toContain('border-color: 10rpx')
+  })
+
+  it('adds webkit background clip for Tailwind CSS v4 bg-clip-text', async () => {
+    const styleHandler = createStyleHandler({
+      isMainChunk: true,
+    })
+    const { css } = await styleHandler('.bg-clip-text { background-clip: text; }', {
+      isMainChunk: true,
+      majorVersion: 4,
+    })
+
+    expect(css).toContain('-webkit-background-clip: text')
+    expect(css).toContain('background-clip: text')
+    expect(css).toMatch(/-webkit-background-clip:\s*text;\s*background-clip:\s*text/)
+  })
+
+  it('does not add webkit background clip when autoprefixer is disabled', async () => {
+    const styleHandler = createStyleHandler({
+      isMainChunk: true,
+    })
+    const { css } = await styleHandler('.bg-clip-text { background-clip: text; }', {
+      autoprefixer: false,
+      isMainChunk: true,
+      majorVersion: 4,
+    })
+
+    expect(css).not.toContain('-webkit-background-clip: text')
+    expect(css).toContain('background-clip: text')
+  })
+
+  it('adds webkit background clip for Tailwind CSS v3 by default', async () => {
+    const styleHandler = createStyleHandler({
+      isMainChunk: true,
+    })
+    const { css } = await styleHandler('.bg-clip-text { background-clip: text; }', {
+      isMainChunk: true,
+      majorVersion: 3,
+    })
+
+    expect(css).toContain('-webkit-background-clip: text')
+    expect(css).toContain('background-clip: text')
+  })
+
+  it('does not add legacy flexbox prefixes by default', async () => {
+    const styleHandler = createStyleHandler({
+      isMainChunk: true,
+    })
+    const { css } = await styleHandler([
+      '.flex-center {',
+      '  display: flex;',
+      '  flex-direction: column;',
+      '  align-items: center;',
+      '  justify-content: center;',
+      '}',
+    ].join('\n'), {
+      isMainChunk: true,
+      majorVersion: 4,
+    })
+
+    expect(css).not.toContain('display: -webkit-flex')
+    expect(css).not.toContain('-webkit-flex-direction')
+    expect(css).not.toContain('-webkit-align-items')
+    expect(css).not.toContain('-webkit-justify-content')
+    expect(css).toContain('display: flex')
+    expect(css).toContain('flex-direction: column')
+    expect(css).toContain('align-items: center')
+    expect(css).toContain('justify-content: center')
+  })
+
+  it('removes legacy flexbox prefixes from user postcss autoprefixer output', async () => {
+    const styleHandler = createStyleHandler({
+      isMainChunk: true,
+      postcssOptions: {
+        plugins: [autoprefixer()],
+      },
+    })
+    const { css } = await styleHandler([
+      '.flex-center {',
+      '  display: -webkit-flex;',
+      '  display: flex;',
+      '  -webkit-flex-direction: column;',
+      '  flex-direction: column;',
+      '  -webkit-align-items: center;',
+      '  align-items: center;',
+      '  -webkit-justify-content: center;',
+      '  justify-content: center;',
+      '  -webkit-background-clip: text;',
+      '  background-clip: text;',
+      '}',
+    ].join('\n'), {
+      isMainChunk: true,
+      majorVersion: 4,
+    })
+
+    expect(css).not.toContain('display: -webkit-flex')
+    expect(css).not.toContain('-webkit-flex-direction')
+    expect(css).not.toContain('-webkit-align-items')
+    expect(css).not.toContain('-webkit-justify-content')
+    expect(css).toContain('display: flex')
+    expect(css).toContain('flex-direction: column')
+    expect(css).toContain('align-items: center')
+    expect(css).toContain('justify-content: center')
+    expect(css).toContain('-webkit-background-clip: text')
+    expect(css).toContain('background-clip: text')
+  })
+
+  it('keeps only mini-program useful webkit prefixes', async () => {
+    const styleHandler = createStyleHandler({
+      isMainChunk: true,
+    })
+    const { css } = await styleHandler([
+      '.demo {',
+      '  background-clip: text;',
+      '  mask-image: var(--svg);',
+      '  mask-size: 100% 100%;',
+      '  display: -webkit-box;',
+      '  -webkit-box-orient: vertical;',
+      '  -webkit-line-clamp: 2;',
+      '  -webkit-overflow-scrolling: touch;',
+      '  -webkit-text-fill-color: transparent;',
+      '  -webkit-text-stroke: 1px currentColor;',
+      '  text-decoration-line: underline;',
+      '  backdrop-filter: blur(16px);',
+      '  filter: blur(4px);',
+      '  clip-path: inset(0);',
+      '  writing-mode: vertical-rl;',
+      '  appearance: none;',
+      '  transform: translateX(1px);',
+      '  transition-property: color, text-decoration-color, transform, filter, backdrop-filter;',
+      '  transition: transform .2s;',
+      '  animation: spin 1s;',
+      '}',
+      '@keyframes spin { to { transform: rotate(1turn); } }',
+    ].join('\n'), {
+      isMainChunk: true,
+      majorVersion: 4,
+    })
+
+    expect(css).toContain('-webkit-background-clip: text')
+    expect(css).toContain('-webkit-mask-image: var(--svg)')
+    expect(css).toContain('-webkit-mask-size: 100% 100%')
+    expect(css).toContain('display: -webkit-box')
+    expect(css).toContain('-webkit-box-orient: vertical')
+    expect(css).toContain('-webkit-line-clamp: 2')
+    expect(css).toContain('-webkit-overflow-scrolling: touch')
+    expect(css).toContain('-webkit-text-fill-color: transparent')
+    expect(css).toContain('-webkit-text-stroke: 1px currentColor')
+    expect(css).not.toContain('-webkit-text-decoration-line')
+    expect(css).not.toContain('-webkit-text-decoration-color')
+    expect(css).not.toContain('-webkit-backdrop-filter')
+    expect(css).not.toContain('-webkit-filter')
+    expect(css).not.toContain('-webkit-clip-path')
+    expect(css).not.toContain('-webkit-writing-mode')
+    expect(css).not.toContain('-webkit-appearance')
+    expect(css).not.toContain('-webkit-transform')
+    expect(css).not.toContain('-webkit-animation')
+    expect(css).not.toContain('@-webkit-keyframes')
+    expect(css).not.toContain('transition-property: color, text-decoration-color, transform, filter, backdrop-filter, -webkit-text-decoration-color')
+    expect(css).not.toContain('transition: transform .2s, -webkit-transform .2s')
+  })
+
+  it('deduplicates transition-property declarations after mini-program prefix cleanup', async () => {
+    const styleHandler = createStyleHandler({
+      isMainChunk: true,
+      majorVersion: 3,
+    })
+    const { css } = await styleHandler([
+      '.transition {',
+      '  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;',
+      '  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);',
+      '  transition-duration: 150ms;',
+      '}',
+    ].join('\n'))
+    const transitionRule = css.match(/\.transition\s*\{[\s\S]*?\}/)?.[0] ?? ''
+
+    expect(transitionRule.match(/transition-property:/g) ?? []).toHaveLength(1)
+    expect(transitionRule).toContain('transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter')
+    expect(transitionRule).not.toContain('-webkit-text-decoration-color')
+    expect(transitionRule).not.toContain('-webkit-transform')
+    expect(transitionRule).not.toContain('-webkit-filter')
+    expect(transitionRule).not.toContain('-webkit-backdrop-filter')
+  })
+})

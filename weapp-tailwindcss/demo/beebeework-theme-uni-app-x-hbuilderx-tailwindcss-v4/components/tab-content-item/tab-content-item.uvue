@@ -1,0 +1,454 @@
+<template>
+  <cl-list-view
+    v-if="articleMod"
+    ref="listViewRef"
+    class="h-full w-full"
+    :data="listView"
+    :virtual="false"
+    :refresher-enabled="!isSwiping"
+    :scroll-with-animation="!isSwiping"
+    :show-back-top="false"
+    :show-scrollbar="false"
+    @scroll="onScroll"
+    @pull="onPull"
+    @bottom="loadMore"
+    :pt="{
+      scroller: {
+        className: 'h-full w-full overflow-y-auto relative'
+      },
+      refresher: {
+        className: 'absolute bottom-0 left-0 w-full translate-y-[var(--refreshheight)] w-full flex flex-row items-center justify-center opacity-50'
+      },
+      list: {
+        className: 'flex flex-col !overflow-visibles'
+      },
+      item: {
+        className: 'p-4 py-3 -mt-3 !overflow-visible'
+      }
+    }"
+  >
+    <!-- 1. 顶部插槽：放标题、非长列表模块、榜单横向滚动分类等 -->
+    <template #top>
+      <view class="" :style="{ paddingTop: (headerHeight) + 'px' }">
+        <text v-if="tab.label && tab.showLargeTitle !== false" class="px-4 text-3xl font-bold tracking-tight mt-3 mb-1">
+          {{ tab.label }}
+        </text>
+        <slot></slot>
+        
+        <!-- 渲染除长列表之外的其他动态模块 -->
+        <dynamic-modules 
+          :modules="nonArticleModules" 
+          @avatar-click="$emit('avatar-click', $event)" 
+          @item-click="$emit('item-click', $event)" 
+        />
+
+        <!-- 长列表专属分类标题 -->
+        <view v-if="articleMod && articleMod.title" class="flex px-4 flex-col pb-3">
+          <text class="text-base font-bold px-1">
+            {{ articleMod.title }}
+          </text>
+        </view>
+      </view>
+
+      <view v-if="articleMod && articleMod.block === 'block-card-rank'">
+        <scroll-view 
+          type="custom" 
+          scroll-x="true" 
+          class="w-full flex flex-row flex-nowrap h-18 -mt-1" 
+          :show-scrollbar="false"
+          :scroll-into-view="toViewId"
+          :scroll-with-animation="!isSwiping"
+        >
+        <view class="py-4 flex flex-row flex-nowrap gap-3">
+          <view 
+            v-for="item in categoryTabs" 
+            :key="item.id"
+            :id="`tab-${item.id}`" 
+            class="flex flex-row flex-shrink-0 first:pl-4 last:pr-4"
+            @click="onMenuClick(item)"
+          >
+            <view :class="[
+              'dropdown-pop-deep px-4 h-8 flex flex-row items-center justify-center rounded-full text-xs font-semibold transition-all',
+              currentRankId === item.id
+                ? ' !primary-btn' 
+                : ' !accent-btn'
+            ]">
+              {{ item.label + '榜' }}
+            </view>
+          </view>
+        </view>
+        </scroll-view>
+      </view>
+
+      <view v-if="articleMod && articleMod.block === 'block-points-shop'">
+        <view class="w-full h-4"> </view>
+      </view>
+    </template>
+
+    <!-- 2. 列表项插槽 -->
+    <template #item="{ value: item }">
+      <view v-if="item.isGroupHeader" class="pt-4">
+        <view class="flex flex-col gap-0.5">
+          <text class="text-lg font-bold text-gray-900 dark:text-white tracking-tight">
+            {{ item.title }}
+          </text>
+          <text v-if="item.excerpt" class="text-xs text-gray-500 dark:text-neutral-400">
+            {{ item.excerpt.replace(/<\/?[^>]+(>|$)/g, "") }}
+          </text>
+        </view>
+      </view>
+
+      <share-element 
+        v-else-if="articleMod && articleMod.block === 'block-card-mixed'"
+        :key="'topic-cover-' + item.id"
+        transition-on-gesture
+      >
+      <block-card-mixed 
+        :item="item" 
+        :is-swiping="isSwiping"
+        card-class="rounded-3xl"
+        :disabled-scale="false" 
+        @avatar-click="$emit('avatar-click', $event)"
+        @item-click="$emit('item-click', $event)"
+      />
+      </share-element>
+
+      <block-card-rank 
+        :key="item.id"
+        v-else-if="articleMod && articleMod.block === 'block-card-rank'" 
+        :item="item" 
+        :is-swiping="isSwiping"
+        @avatar-click="$emit('avatar-click', $event)"
+        @item-click="$emit('item-click', $event)"
+      />
+
+      <block-points-shop 
+        v-else-if="articleMod && articleMod.block === 'block-points-shop'" 
+        :item="item" 
+        :is-swiping="isSwiping"
+        @avatar-click="$emit('avatar-click', $event)"
+        @item-click="$emit('item-click', $event)"
+      />
+    </template>
+
+    <template #bottom>
+      <view class="py-3 pb-20">
+        <cl-loadmore
+          v-if="list.length > 0"
+          :loading="loading"
+          :finish="finished"
+          safe-area-bottom
+          :pt="{
+            icon: { className: '!border-2 !size-3.5 !border-solid !border-gray-600 !opacity-50' },
+            text: { className: '!opacity-50' }
+          }"
+        ></cl-loadmore>
+      </view>
+    </template>
+  </cl-list-view>
+ 
+  <scroll-view 
+    v-else
+    scroll-y="true" 
+    class="h-full" 
+    :scroll-top="scrollTop" 
+    @scroll="onScroll"
+    :show-scrollbar="false"
+    :scroll-into-view="0"
+    :scroll-with-animation="!isSwiping"
+  >
+    <view class="pb-24" :style="{ paddingTop: headerHeight + 'px' }">
+      <text v-if="tab.label && tab.showLargeTitle !== false" class="px-4 text-3xl font-bold tracking-tight mt-3 mb-1">
+        {{ tab.label }}
+      </text>
+      <slot></slot>
+      <dynamic-modules 
+        :modules="nonArticleModules" 
+        @avatar-click="$emit('avatar-click', $event)" 
+        @item-click="$emit('item-click', $event)" 
+      />
+    </view>
+  </scroll-view>
+</template>
+
+<script setup>
+import { computed, onMounted, ref, watch } from 'vue'
+import { apiRegistry } from '@/api/data.js'
+import { usePager, t } from "@/.cool";
+import { themeState } from '@/stores/theme.uts'
+const layout = computed(() => themeState.layout)
+
+
+const props = defineProps({
+  tab: { type: Object, required: true },
+  headerHeight: { type: Number, default: 0 },
+  isSwiping: { type: Boolean, default: false }
+})
+
+const emit = defineEmits(['item-click', 'avatar-click', 'update:show-top'])
+
+
+const refreshHeightStyle = computed(() : string => {
+  // 确保 layout 取到对象并安全读取 headerHeight（如果没有则给个默认值 0）
+  const currentLayout = layout.value
+  const headerHeight = currentLayout != null ? currentLayout.headerHeight : 0
+  const val = headerHeight - 50
+  return `--refreshheight: ${val}px;`
+})
+
+const listViewRef = ref(null)
+const scrollTop = ref(0)
+
+// 1. 智能判断：当前 Tab 是否包含长列表模块
+const articleMod = computed(() => {
+  return props.tab.modules?.find(m => m.type === 'article-list')
+})
+
+// 2. 提取出“非长列表”的其他模块
+const nonArticleModules = computed(() => {
+  return props.tab.modules?.filter(m => m.type !== 'article-list') || []
+})
+
+const allRawList = ref([])
+const categoryTabs = ref([])
+const currentRankId = ref(null)
+const isRankReady = ref(false)
+
+// 加载榜单分类
+async function loadRankCategories() {
+  if (articleMod.value?.block !== 'block-card-rank') return
+  
+  const apiKey = articleMod.value.categoriesApiKey || 'rankCategories'
+  const apiFn = apiRegistry[apiKey]
+  
+  if (!apiFn) {
+    console.warn('【Rank】未找到分类聚合接口:', apiKey)
+    return
+  }
+  
+  try {
+    const res = await apiFn()
+    const cats = Array.isArray(res) ? res : (res?.data || [])
+    
+    categoryTabs.value = cats.map(c => ({
+      id: c.id,
+      label: c.name || c.label
+    }))
+    
+    if (categoryTabs.value.length > 0 && currentRankId.value == null) {
+      currentRankId.value = categoryTabs.value[0].id
+    }
+  } catch (e) {
+    console.error('【Rank】加载分类失败:', e)
+  }
+}
+
+const toViewId = ref('')
+
+const onMenuClick = (item) => {
+  if (currentRankId.value === item.id) return
+  currentRankId.value = item.id
+  finished.value = false
+  pagerInstance.refresh({ page: 1 })
+  toViewId.value = `tab-${item.id}`
+}
+
+// 3. 官方 usePager 逻辑
+const pagerInstance = usePager(async (params, pager) => {
+  if (!articleMod.value) {
+    pager.render({ list: [], pagination: { page: 1, size: 20, total: 0 } })
+    return
+  }
+
+  const apiKey = articleMod.value.apiKey || 'posts'
+  const apiFn = apiRegistry[apiKey]
+  
+  if (!apiFn) {
+    pager.done()
+    return
+  }
+  
+  if (articleMod.value.block === 'block-card-rank' && !isRankReady.value) {
+    return
+  }
+  
+  try {
+    const requestParams = {
+      ...(articleMod.value.params || {}),
+      page: params["page"],
+      size: params["size"] || 10
+    }
+
+    if (articleMod.value.block === 'block-card-rank' && currentRankId.value) {
+      requestParams.categoryId = currentRankId.value
+    }
+
+    const res = await apiFn(requestParams)
+    let rawList = []
+    let totalCount = 0
+
+    if (Array.isArray(res)) {
+      rawList = res
+      totalCount = res.length
+    } else if (res?.data && Array.isArray(res.data.list)) {
+      rawList = res.data.list
+      totalCount = res.data.pagination?.total || rawList.length
+    } else if (res?.data && Array.isArray(res.data)) {
+      rawList = res.data
+      totalCount = res.total || rawList.length
+    }
+
+    allRawList.value = rawList
+    const flattenedList = []
+    
+    rawList.forEach((item, index) => {
+      if (articleMod.value.block === 'block-card-rank') {
+        flattenedList.push({
+          isGroupHeader: false,
+          id: item.id || `rank-card-${index}`,
+          title: item.title,
+          displayTitle: item.displayTitle || item.title?.rendered || '未命名榜单',
+          description: item.description || item.excerpt?.rendered || '',
+          cover: item.cover,
+          meta: item.meta,
+          ranktype: item.ranktype || 'user',
+          rankdata: item.rankdata || [] 
+        })
+      } else if (articleMod.value.block === 'block-points-shop') {
+        flattenedList.push({
+          isGroupHeader: false,
+          id: item.id || `points-shop-${index}`,
+          title: item.title,
+          displayTitle: item.title?.rendered || '无标题',
+          description: item.excerpt?.rendered?.replace(/<\/?[^>]+(>|$)/g, '') || '',
+          cover: item.cover,
+          shopItems: item.acf?.shop_items || [],
+          meta: item.meta
+        })
+      } else {
+        let subItems = []
+        if (item.acf && typeof item.acf === 'object') {
+          const acfArrayKey = Object.keys(item.acf).find(k => Array.isArray(item.acf[k]))
+          if (acfArrayKey) subItems = item.acf[acfArrayKey]
+        }
+
+        if (subItems.length > 0) {
+          flattenedList.push({
+            isGroupHeader: true,
+            id: `header-${item.id || index}`,
+            title: item.title?.rendered || item.displayTitle || '',
+            excerpt: item.excerpt?.rendered || ''
+          })
+          subItems.forEach((subItem, sIndex) => {
+            flattenedList.push({
+              isGroupHeader: false,
+              id: subItem.id || `${item.id || index}-sub-${sIndex}`,
+              ...subItem
+            })
+          })
+        } else {
+          flattenedList.push({
+            isGroupHeader: false,
+            id: item.id || `item-${index}`,
+            ...item
+          })
+        }
+      }
+    })
+
+    pager.render({
+      list: flattenedList,
+      pagination: {
+        page: params["page"],
+        size: params["size"] || 10,
+        total: totalCount
+      }
+    })
+  } catch (e) {
+    console.error("请求失败:", e)
+    pager.done()
+  }
+})
+
+const { refresh, list, listView, loading, finished, loadMore } = pagerInstance
+
+// 4. 加载非长列表模块数据
+async function loadNonArticleModules() {
+  const modules = props.tab.modules || []
+  for (const mod of modules) {
+    const targetApiKey = mod.api || mod.apiKey
+    if (targetApiKey && mod.type !== 'article-list' && apiRegistry[targetApiKey]) {
+      try {
+        const res = await apiRegistry[targetApiKey](mod.params || {})
+        mod.data = Array.isArray(res) ? res : (res?.data || [])
+      } catch (e) {
+        console.error(`模块 [${mod.type}] 加载失败:`, e)
+      }
+    }
+  }
+}
+
+async function onPull() {
+  await refresh({ page: 1 })
+  setTimeout(() => {
+    listViewRef.value?.stopRefresh()
+  }, 300)
+}
+
+// 💡 关键补强：对外暴露出统一的数据刷新方法，供父页面切换或初始化时直接调用
+const refreshData = async () => {
+  await loadNonArticleModules()
+  if (articleMod.value?.block === 'block-card-rank') {
+    await loadRankCategories()
+    if (currentRankId.value) {
+      isRankReady.value = true
+      finished.value = false
+      await refresh({ page: 1 })
+    }
+  } else if (articleMod.value) {
+    await refresh({ page: 1 })
+  }
+}
+
+const scrollToTop = () => {
+	console.log('执行 Tab 内部的滚动归零')
+
+	if (articleMod.value && listViewRef.value != null) {
+		// 直接调用 cl-list-view 暴露出来的方法！
+		(listViewRef.value as any).scrollToTop()
+	} else {
+		// 普通 scroll-view 模式
+		scrollTop.value = 0.01
+		setTimeout(() => {
+			scrollTop.value = 0
+		}, 50)
+	}
+}
+
+const onScroll = (e) => {
+  const top = e.detail.scrollTop
+  emit('update:show-top', top > 100)
+}
+
+// 暴露给父组件的方法
+defineExpose({
+  refreshData,
+  scrollToTop
+})
+
+// 监听 Tab 切换
+watch(() => props.tab, async (newTab, oldTab) => {
+  if (!newTab) return
+  if (newTab.value !== oldTab?.value) {
+    scrollToTop()
+    categoryTabs.value = []
+    currentRankId.value = null
+    isRankReady.value = false
+  }
+  await refreshData()
+}, { deep: true })
+
+onMounted(async () => {
+  await refreshData()
+})
+</script>

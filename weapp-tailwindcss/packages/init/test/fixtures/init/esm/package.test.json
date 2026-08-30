@@ -1,0 +1,9 @@
+{
+  "type": "module",
+  "devDependencies": {
+    "tailwindcss": "^3.4.18",
+    "postcss": "^8.5.3",
+    "autoprefixer": "^10.4.21",
+    "weapp-tailwindcss": "^3.8.0-alpha.2"
+  }
+}

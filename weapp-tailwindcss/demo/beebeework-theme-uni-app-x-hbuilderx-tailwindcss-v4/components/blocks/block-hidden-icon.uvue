@@ -1,0 +1,54 @@
+<template>
+<view class="hidden" title="topnav">
+      <text class="hidden i-[mingcute--menu-line]"></text>
+      <text class="hidden i-[mingcute--search-line]"></text>
+      <text class="hidden i-[mingcute--settings-3-line]"></text>
+      <text class="hidden i-[mingcute--share-forward-line]"></text>
+      <text class="hidden i-[mingcute--arrow-left-line]"></text>
+    </view>
+    <view class="hidden" title="tabbar">
+      <text class="hidden i-[mingcute--compass-fill]"></text>
+      <text class="hidden i-[mingcute--game-2-fill]"></text>
+      <text class="hidden i-[mingcute--inbox-fill]"></text>
+      <text class="hidden i-[mingcute--user-2-fill]"></text>
+    </view>
+    <view class="hidden" title="addActionList">
+      <text class="hidden i-[mingcute--board-line]"></text>
+      <text class="hidden i-[mingcute--comment-line]"></text>
+      <text class="hidden i-[mingcute--rocket-line]"></text>
+      <text class="hidden i-[mingcute--edit-4-line]"></text>
+    </view>
+    <view class="hidden" title="index-discover">
+      <text class="hidden i-[mingcute--board-line]"></text>
+      <text class="hidden i-[mingcute--shopping-bag-3-line]"></text>
+      <text class="hidden i-[mingcute--shopping-bag-1-line]"></text>
+      <text class="hidden i-[mingcute--planet-line]"></text>
+      <text class="hidden i-[mingcute--target-line]"></text>
+      <text class="hidden i-[mingcute--comment-line]"></text>
+    </view>
+    <view class="hidden" title="park-park">
+    </view>
+    <view class="hidden" title="inbox-message">
+      <text class="hidden i-[mingcute--notification-line]"></text>
+      <text class="hidden i-[mingcute--chat-3-line]"></text>
+      <text class="hidden i-[mingcute--heart-line]"></text>
+      <text class="hidden i-[mingcute--wallet-5-line]"></text>
+      <text class="hidden i-[mingcute--bill-line]"></text>
+    </view>
+    <view class="hidden" title="my-mylist">
+      <text class="hidden i-[mingcute--bottle-line]"></text>
+    </view>
+    <view class="hidden" title="other">
+      <text class="hidden i-[mingcute--right-line]"></text>
+      <text class="hidden i-[mingcute--right-line]"></text>
+    </view>
+    
+</template>
+
+<script setup>
+defineProps({
+  title: { type: String, default: '' },
+  data: { type: Array, default: () => [] }
+})
+defineEmits(['item-click'])
+</script>

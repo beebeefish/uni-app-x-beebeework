@@ -1,0 +1,192 @@
+<template>
+	<cl-popup
+		v-model="visible"
+		:pt="{
+			className: '!rounded-[30px]'
+		}"
+		size="300px"
+		:show-close="false"
+		:show-header="false"
+		:mask-closable="false"
+		direction="center"
+		@mask-close="onAction('close')"
+		@closed="onClosed"
+	>
+		<view class="cl-confirm">
+			<cl-text
+				:size="17"
+				:pt="{
+					className: parseClass(['cl-confirm__title font-bold p-1'])
+				}"
+				>{{ config.title }}</cl-text
+			>
+
+			<cl-text
+				:size="15"
+				color="info"
+				:pt="{
+					className: parseClass(['cl-confirm__message mb-6 p-1'])
+				}"
+				>{{ config.message }}</cl-text
+			>
+
+			<view class="cl-confirm__actions">
+				<cl-button
+					v-if="config.showCancel"
+					size="large"
+					text
+					rounded
+					border
+					type="info"
+					fluid
+					@tap="onAction('cancel')"
+					>{{ config.cancelText }}</cl-button
+				>
+				<cl-button
+					v-if="config.showConfirm"
+					size="large"
+					rounded
+					:loading="loading"
+					fluid
+					@tap="onAction('confirm')"
+					>{{ config.confirmText }}</cl-button
+				>
+			</view>
+		</view>
+	</cl-popup>
+</template>
+
+<script setup lang="ts">
+import { ref, reactive } from "vue";
+import type { ClConfirmAction, ClConfirmOptions } from "../../types";
+import { parseClass, t } from "@/.cool";
+
+// 控制弹窗显示/隐藏
+const visible = ref(false);
+
+// 控制弹窗是否关闭
+const closed = ref(true);
+
+// 确认弹窗配置项，包含标题、内容、按钮文本等
+const config = reactive<ClConfirmOptions>({
+	title: "",
+	message: ""
+});
+
+// 控制确认按钮loading状态
+const loading = ref(false);
+
+// 显示loading
+function showLoading() {
+	loading.value = true;
+}
+
+// 隐藏loading
+function hideLoading() {
+	loading.value = false;
+}
+
+// 关闭弹窗
+function close() {
+	visible.value = false;
+}
+
+/**
+ * 打开确认弹窗，并设置相关配置
+ * @param options ClConfirmOptions 配置项
+ */
+
+let timer: number = 0;
+
+function open(options: ClConfirmOptions) {
+	const next = () => {
+		// 清除之前的定时器
+		clearTimeout(timer);
+
+		// 设置弹窗状态为打开
+		closed.value = false;
+		// 显示弹窗
+		visible.value = true;
+
+		// 设置弹窗标题
+		config.title = options.title;
+		// 设置弹窗内容
+		config.message = options.message;
+		// 是否显示取消按钮，默认显示
+		config.showCancel = options.showCancel ?? true;
+		// 是否显示确认按钮，默认显示
+		config.showConfirm = options.showConfirm ?? true;
+		// 取消按钮文本，默认"取消"
+		config.cancelText = options.cancelText ?? t("取消");
+		// 确认按钮文本，默认"确定"
+		config.confirmText = options.confirmText ?? t("确定");
+		// 显示时长，默认0不自动关闭
+		config.duration = options.duration ?? 0;
+		// 回调函数
+		config.callback = options.callback;
+		// 关闭前钩子
+		config.beforeClose = options.beforeClose;
+
+		// 如果设置了显示时长且不为0，则启动自动关闭定时器
+		if (config.duration != 0) {
+			// 设置定时器，在指定时长后自动关闭弹窗
+			// @ts-ignore
+			timer = setTimeout(() => {
+				// 调用关闭方法
+				close();
+			}, config.duration!);
+		}
+	};
+
+	if (closed.value) {
+		next();
+	} else {
+		setTimeout(() => {
+			next();
+		}, 360);
+	}
+}
+
+// 弹窗关闭后，重置loading状态
+function onClosed() {
+	hideLoading();
+	closed.value = true;
+}
+
+/**
+ * 处理用户操作（确认、取消、关闭）
+ * @param action ClConfirmAction 操作类型
+ */
+function onAction(action: ClConfirmAction) {
+	// 如果没有beforeClose钩子，直接关闭并回调
+	if (config.beforeClose == null) {
+		visible.value = false;
+
+		if (config.callback != null) {
+			config.callback!(action);
+		}
+	} else {
+		// 有beforeClose钩子时，传递操作方法
+		config.beforeClose!(action, {
+			close,
+			showLoading,
+			hideLoading
+		});
+	}
+}
+
+defineExpose({
+	open,
+	close
+});
+</script>
+
+<style lang="scss" scoped>
+.cl-confirm {
+	@apply p-4;
+
+	&__actions {
+		@apply flex flex-row items-center justify-center;
+	}
+}
+</style>

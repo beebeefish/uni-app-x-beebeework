@@ -1,0 +1,1 @@
+export type Vibrate = (duration: number) => void;

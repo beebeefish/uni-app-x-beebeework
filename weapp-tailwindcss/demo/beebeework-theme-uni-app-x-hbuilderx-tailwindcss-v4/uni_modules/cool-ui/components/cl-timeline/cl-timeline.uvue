@@ -1,0 +1,33 @@
+<template>
+	<view class="cl-timeline" :class="[pt.className]">
+		<slot></slot>
+	</view>
+</template>
+
+<script setup lang="ts">
+import { computed } from "vue";
+import { parsePt } from "@/.cool";
+
+defineOptions({
+	name: "cl-timeline"
+});
+
+const props = defineProps({
+	pt: {
+		type: Object,
+		default: () => ({})
+	}
+});
+
+type PassThrough = {
+	className?: string;
+};
+
+const pt = computed(() => parsePt<PassThrough>(props.pt));
+</script>
+
+<style lang="scss" scoped>
+.cl-timeline {
+	@apply flex flex-col py-2;
+}
+</style>

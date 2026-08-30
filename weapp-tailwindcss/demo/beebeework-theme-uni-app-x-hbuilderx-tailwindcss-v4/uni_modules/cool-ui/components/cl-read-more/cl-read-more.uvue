@@ -1,0 +1,263 @@
+<template>
+	<view class="cl-read-more" :class="[pt.className]">
+		<!-- 内容区域 -->
+		<view class="cl-read-more__wrapper" :class="[pt.wrapper?.className]" :style="wrapperStyle">
+			<view class="cl-read-more__content" :class="[pt.content?.className]">
+				<slot>
+					<cl-text
+						:pt="{
+							className: pt.contentText?.className
+						}"
+						>{{ content }}</cl-text
+					>
+				</slot>
+			</view>
+
+			<view
+				class="cl-read-more__mask"
+				:class="[
+					{
+						'is-show': !isExpanded && isHide,
+						'is-dark': isDark
+					},
+					pt.mask?.className
+				]"
+				v-if="showMask"
+			></view>
+		</view>
+
+		<!-- 展开/收起按钮 -->
+		<slot name="toggle" :isExpanded="isExpanded">
+			<view
+				class="cl-read-more__toggle"
+				:class="[
+					{
+						'is-disabled': disabled
+					},
+					pt.toggle?.className
+				]"
+				@tap="toggle"
+				v-if="showToggle && isHide"
+			>
+				<cl-text
+					color="primary"
+					:pt="{
+						className: 'mr-1'
+					}"
+				>
+					{{ isExpanded ? collapseText : expandText }}
+				</cl-text>
+				<cl-icon :name="isExpanded ? collapseIcon : expandIcon" color="primary"></cl-icon>
+			</view>
+		</slot>
+	</view>
+</template>
+
+<script setup lang="ts">
+import { computed, getCurrentInstance, ref, onMounted, watch, nextTick } from "vue";
+import { isDark, parsePt, t } from "@/.cool";
+import type { PassThroughProps } from "../../types";
+
+defineOptions({
+	name: "cl-read-more"
+});
+
+// 组件属性定义
+const props = defineProps({
+	// 透传样式
+	pt: {
+		type: Object,
+		default: () => ({})
+	},
+	// 是否展开
+	modelValue: {
+		type: Boolean,
+		default: false
+	},
+	// 内容
+	content: {
+		type: String,
+		default: ""
+	},
+	// 收起状态下的最大高度
+	height: {
+		type: Number,
+		default: 40
+	},
+	// 展开文本
+	expandText: {
+		type: String,
+		default: () => t("展开")
+	},
+	// 收起文本
+	collapseText: {
+		type: String,
+		default: () => t("收起")
+	},
+	// 展开图标
+	expandIcon: {
+		type: String,
+		default: "arrow-down-s-line"
+	},
+	// 收起图标
+	collapseIcon: {
+		type: String,
+		default: "arrow-up-s-line"
+	},
+	// 是否禁用
+	disabled: {
+		type: Boolean,
+		default: false
+	},
+	// 显示切换按钮
+	showToggle: {
+		type: Boolean,
+		default: true
+	},
+	// 显示遮罩
+	showMask: {
+		type: Boolean,
+		default: true
+	}
+});
+
+// 事件定义
+const emit = defineEmits(["update:modelValue", "change", "toggle"]);
+
+// 插槽定义
+defineSlots<{
+	toggle(props: { isExpanded: boolean }): any;
+}>();
+
+const { proxy } = getCurrentInstance()!;
+
+// 透传样式类型
+type PassThrough = {
+	className?: string;
+	wrapper?: PassThroughProps;
+	content?: PassThroughProps;
+	contentText?: PassThroughProps;
+	mask?: PassThroughProps;
+	toggle?: PassThroughProps;
+};
+
+// 解析透传样式
+const pt = computed(() => parsePt<PassThrough>(props.pt));
+
+// 展开状态
+const isExpanded = ref(props.modelValue);
+
+// 内容实际高度
+const contentHeight = ref(0);
+
+// 是否隐藏内容
+const isHide = ref(true);
+
+// 包裹器样式
+const wrapperStyle = computed(() => {
+	const style = {};
+
+	if (isHide.value) {
+		style["height"] = isExpanded.value ? `${contentHeight.value}px` : `${props.height}px`;
+	}
+
+	return style;
+});
+
+/**
+ * 切换展开/收起状态
+ */
+function toggle() {
+	if (props.disabled) {
+		emit("toggle", isExpanded.value);
+		return;
+	}
+
+	isExpanded.value = !isExpanded.value;
+	emit("update:modelValue", isExpanded.value);
+	emit("change", isExpanded.value);
+}
+
+/**
+ * 获取内容高度
+ */
+function getContentHeight() {
+	nextTick(() => {
+		uni.createSelectorQuery()
+			.in(proxy)
+			.select(".cl-read-more__content")
+			.boundingClientRect((node) => {
+				// 获取内容高度
+				contentHeight.value = (node as NodeInfo).height ?? 0;
+
+				// 实际高度是否大于折叠高度
+				isHide.value = contentHeight.value > props.height;
+			})
+			.exec();
+	});
+}
+
+onMounted(() => {
+	// 监听modelValue变化
+	watch(
+		computed(() => props.modelValue),
+		(val: boolean) => {
+			isExpanded.value = val;
+		}
+	);
+
+	// 监听content变化
+	watch(
+		computed(() => props.content),
+		() => {
+			getContentHeight();
+		},
+		{
+			immediate: true
+		}
+	);
+});
+
+defineExpose({
+	toggle,
+	getContentHeight
+});
+</script>
+
+<style lang="scss" scoped>
+.cl-read-more {
+	@apply relative;
+
+	&__wrapper {
+		@apply relative duration-300;
+		transition-property: height;
+	}
+
+	&__mask {
+		@apply absolute bottom-0 left-0 w-full h-14 opacity-0 pointer-events-none;
+
+		// #ifndef APP-IOS
+		transition-duration: 200ms;
+		transition-property: opacity;
+		// #endif
+
+		background-image: linear-gradient(to top, rgba(255, 255, 255, 1), rgba(255, 255, 255, 0));
+
+		&.is-dark {
+			background-image: linear-gradient(to top, rgba(30, 30, 30, 1), rgba(30, 30, 30, 0));
+		}
+
+		&.is-show {
+			@apply opacity-100;
+		}
+	}
+
+	&__toggle {
+		@apply flex flex-row items-center justify-center mt-2;
+
+		&.is-disabled {
+			@apply opacity-50;
+		}
+	}
+}
+</style>

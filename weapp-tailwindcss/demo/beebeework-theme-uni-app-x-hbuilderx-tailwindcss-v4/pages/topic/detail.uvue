@@ -1,0 +1,308 @@
+<template>
+  <page-wrap
+    ref="pageWrapRef"
+    :hide-bg="true"
+    :show-close="true"
+    :show-back-top="showBackTop"
+    :show-fabs="['backtop']"
+    @back-to-top="handleBackTop"
+  >
+    <scroll-view 
+      scroll-y 
+      class="w-full h-full pb-12"
+      :scroll-top="scrollTop"
+      :scroll-with-animation="true"
+      @scroll="onPageScroll"
+    >
+      <view class="pb-24">
+        
+        <!-- 1. 共享元素区域：内部结构永远不变，只变内容 -->
+        <view class="">
+          <share-element 
+            :key="'topic-cover-' + pageMeta.id" 
+            class="block"
+            transition-on-gesture
+          >
+            <block-card-mixed 
+                :item="displayItem" 
+                :is-swiping="false"
+                card-class="rounded-none"
+                :disabled-scale="true"
+              />
+            
+          </share-element>
+        </view>
+
+        <!-- 2. 正文内容区（有真实数据才显示） -->
+        <view v-if="hasContentData" class="mt-2 animate-fade-in p-4">
+          <common-richtext v-if="topicContent"  
+          :content="topicContent"
+          :sanitize="true"
+          :scroll-table="true"
+          :preview-img="true"
+          theme-color="#0F766E"
+          theme="auto"
+          />
+          <text v-else class="text-gray-800 dark:text-neutral-100 text-base leading-relaxed px-4">
+            暂无详细内容...
+          </text>
+        </view>
+
+        <!-- 3. 关联推荐列表 -->
+        <view v-if="hasContentData && addons.length > 0" class="px-4 mt-6 !hidden">
+          <text class="text-base font-bold text-gray-900 dark:text-neutral-100 px-1 mb-3 block">
+            包含的项目
+          </text>
+          <view class="flex flex-col gap-3">
+            <view 
+              v-for="(item, index) in addons" 
+              :key="index"
+              class="flex items-center bg-white dark:bg-neutral-900 p-3 rounded-2xl shadow-sm"
+              @click="handleSubItemClick(item.path)"
+            >
+              <image 
+                :src="item.cover" 
+                mode="aspectFill" 
+                class="w-16 h-16 rounded-xl bg-gray-100 dark:bg-neutral-800 shrink-0" 
+              />
+              <view class="ml-3 flex-1 min-w-0">
+                <text class="text-sm font-bold text-gray-900 dark:text-neutral-200 truncate block">
+                  {{ item.title }}
+                </text>
+                <text class="text-xs text-gray-500 dark:text-neutral-400 truncate mt-1 block">
+                  {{ item.excerpt?.replace(/<\/?[^>]+(>|$)/g, '') || '' }}
+                </text>
+              </view>
+              <button class="text-xs px-3.5 py-1.5 bg-black text-white dark:bg-white dark:text-black rounded-full shrink-0">
+                获取
+              </button>
+            </view>
+          </view>
+        </view>
+
+        <!-- 4. 加载状态（放在 share-element 外面，不影响 DOM 结构） -->
+        <view v-if="!hasContentData" class="flex justify-center items-center py-40">
+          <text class="text-gray-400 text-sm">正在加载专题详情...</text>
+        </view>
+      </view>
+    </scroll-view>
+  </page-wrap>
+</template>
+
+<script setup lang="uts">
+import { ref, computed } from 'vue'
+import { onLoad } from '@dcloudio/uni-app'
+import { router } from '@/.cool'
+import { storage } from '@/.cool/utils'
+import { PageMessenger } from '@/stores/pageMessenger.uts'
+import { themeState } from '@/stores/theme.uts'
+import { mockTopicDetails } from '@/api/mock/topicDetail.js'
+
+const layout = computed(() => themeState.layout)
+const pageWrapRef = ref(null)
+const fullDetail = ref<any | null>(null)
+
+// ==========================================================
+// 🚀 阶段 1：setup() 同步执行 —— 这是首帧，必须拿到数据！
+// ==========================================================
+
+// 1. 从页面栈读参数（此时页面已创建，options 已就绪）
+const pages = getCurrentPages()
+const currentPage = pages[pages.length - 1]
+const preOptions = (currentPage as any)?.options || {}
+
+const navMeta = storage.get('__last_nav_meta') || {}
+const preId = String(navMeta.id || '')
+const preFrame = String(navMeta.frame || 'none-addon')
+const preSharp = String(navMeta.sharp || 'square')
+const preCover = String(navMeta.cover || '')
+
+// 2. 💡 关键：setup() 中同步读缓存，首帧就有真实数据！
+let initialData: any | null = null
+if (preId) {
+  initialData = PageMessenger.receive(`topic_${preId}`)
+  if (!initialData) {
+    initialData = storage.get(`topic_${preId}`)
+    if (initialData) storage.remove(`topic_${preId}`)
+  }
+  if (initialData) {
+    console.log('[Detail] setup() 同步命中:', preId)
+  }
+}
+
+// 3. 初始化响应式数据 —— topicDetail 首帧可能就是真实数据！
+const pageMeta = ref({ id: preId, frame: preFrame, sharp: preSharp, cover: preCover })
+const topicDetail = ref<any | null>(initialData)  // 💡 首帧直接是真实数据！
+
+const hasContentData = computed(() => fullDetail.value != null)
+
+const pageTitle = computed(() => {
+  if (topicDetail.value?.title?.rendered) return topicDetail.value.title.rendered
+  if (topicDetail.value?.title) return topicDetail.value.title
+  return '加载中...'
+})
+
+const addons = computed(() => {
+  return topicDetail.value?.acf?.addons?.items || []
+})
+
+// 专题正文内容：安全获取正文（优先取完整详情的 content.rendered）
+const topicContent = computed(() => {
+  return fullDetail.value?.content?.rendered || ''
+})
+
+// ==========================================================
+// 💡 displayItem：首帧直接渲染真实结构
+// ==========================================================
+const displayItem = computed(() => {
+  if (topicDetail.value != null) {
+    return normalizeItem(topicDetail.value, pageMeta.value.frame, pageMeta.value.sharp)
+  }
+  
+  // 兜底占位（直接访问、分享进入时首帧会走这里）
+  return {
+    id: pageMeta.value.id,
+    frame: pageMeta.value.frame,
+    sharp: pageMeta.value.sharp,
+    title: '',
+    excerpt: '',
+    cover: pageMeta.value.cover,
+    tagName: '',
+    color: '#ffffff',
+    followdark: false,
+    addons: { items: [] },
+    video: null,
+    type: 'topic',
+    posttype: 'beebee_topic',
+    acf: {
+      frame: pageMeta.value.frame,
+      addons: { items: [] },
+      video: null
+    }
+  }
+})
+
+// ==========================================================
+// 🚀 阶段 2：onLoad 只处理兜底（setup 没读到时）
+// ==========================================================
+onLoad((options) => {
+  const id = String(options.id || '')
+
+if (!id) return
+  
+    let item = PageMessenger.receive(`topic_${id}`)
+    if (!item) {
+      item = storage.get(`topic_${id}`)
+      if (item) storage.remove(`topic_${id}`)
+    }
+    if (item) {
+      topicDetail.value = item
+    }
+
+    loadTopicDetail(id)
+  
+  
+  // 用完清理固定 key（避免返回后再进其他页面串数据）
+  storage.remove('__last_nav_meta')
+})
+
+// ==========================================================
+// 数据归一化
+// ==========================================================
+function normalizeItem(raw: any, fallbackFrame: string = 'none-addon', fallbackSharp: string = 'square') {
+  const isFlatData = (raw.title !== undefined || raw.cover !== undefined) && !raw.acf?.choose_topic
+  const topic = isFlatData ? raw : (raw.acf?.choose_topic?.[0] || raw)
+  
+  const frame = topic.acf?.frame || raw.acf?.frame || raw.frame || fallbackFrame
+  const sharp = topic.acf?.addons?.sharp || raw.sharp || fallbackSharp
+
+  let tagName = '专题'
+  const targetTag = topic.tag || raw.tag || raw.tagName
+  if (Array.isArray(targetTag) && targetTag.length > 0) {
+    tagName = targetTag[0]?.name || targetTag[0] || '专题'
+  } else if (typeof targetTag === 'string') {
+    tagName = targetTag
+  }
+
+  let textColor = topic.color || raw.color || '#ffffff'
+  const followDarkVal = topic.followdark ?? raw.followdark
+  if (followDarkVal) textColor = '' 
+
+  let rawTitle = '无标题'
+  const targetTitle = topic.title || raw.title
+  if (typeof targetTitle === 'object' && targetTitle?.rendered) {
+    rawTitle = targetTitle.rendered
+  } else if (typeof targetTitle === 'string') {
+    rawTitle = targetTitle
+  }
+
+  let rawExcerpt = ''
+  const targetTopicExcerpt = topic.excerpt || raw.excerpt
+  if (typeof targetTopicExcerpt === 'object' && targetTopicExcerpt?.rendered) {
+    rawExcerpt = targetTopicExcerpt.rendered.replace(/<\/?[^>]+(>|$)/g, "")
+  } else if (typeof targetTopicExcerpt === 'string') {
+    rawExcerpt = targetTopicExcerpt.replace(/<\/?[^>]+(>|$)/g, "")
+  }
+
+  const addonsData = topic.acf?.addons || raw.addons || { items: [] }
+  const videoData = topic.acf?.video || raw.video || null
+
+  return {
+    id: topic.id || raw.id || pageMeta.value.id,
+    frame: frame,
+    sharp: sharp,
+    title: rawTitle,
+    excerpt: rawExcerpt,
+    cover: topic.cover || raw.cover || pageMeta.value.cover,
+    tagName: tagName,
+    color: textColor,
+    followdark: followDarkVal,
+    addons: addonsData,
+    video: videoData,
+    type: topic.type || raw.type || 'topic',
+    posttype: topic.posttype || raw.posttype || 'beebee_topic',
+    acf: {
+      frame: frame,
+      addons: addonsData,
+      video: videoData
+    }
+  }
+}
+
+// ==========================================================
+// 加载详情（mock + 真实接口）
+// ==========================================================
+const loadTopicDetail = (id: string) => {
+  const numId = parseInt(id) || 0
+  
+  if (mockTopicDetails[numId]) {
+    setTimeout(() => {
+      fullDetail.value = mockTopicDetails[numId]
+    }, 50)
+  }
+  
+}
+
+// ==========================================================
+// 滚动相关
+// ==========================================================
+const showBackTop = ref(false)
+const scrollTop = ref(0)
+const oldScrollTop = ref(0)
+
+const onPageScroll = (e : UniScrollEvent) => {
+  oldScrollTop.value = e.detail.scrollTop
+  showBackTop.value = e.detail.scrollTop > 300
+}
+
+const handleBackTop = () => {
+  scrollTop.value = oldScrollTop.value
+  setTimeout(() => { scrollTop.value = 0 }, 10)
+}
+
+const handleSubItemClick = (path: string) => {
+  if (path && path != '') {
+    router.to(path)
+  }
+}
+</script>

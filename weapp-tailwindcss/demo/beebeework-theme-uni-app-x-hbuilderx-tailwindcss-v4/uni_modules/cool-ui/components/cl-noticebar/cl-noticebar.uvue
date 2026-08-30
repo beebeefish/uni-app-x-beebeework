@@ -1,0 +1,261 @@
+<template>
+	<view
+		class="cl-noticebar"
+		:class="[pt.className]"
+		:style="{
+			height: getUnit(height)
+		}"
+	>
+		<view class="cl-noticebar__scroller" :class="[`is-${direction}`]" :style="scrollerStyle">
+			<view
+				v-for="(item, index) in list"
+				:key="index"
+				class="cl-noticebar__item"
+				:style="{
+					height: getUnit(height!)
+				}"
+			>
+				<slot name="text" :item="item">
+					<view class="cl-noticebar__text">
+						<cl-text
+							:pt="{
+								className: parseClass(['whitespace-nowrap', pt.text?.className])
+							}"
+							>{{ item }}</cl-text
+						>
+					</view>
+				</slot>
+			</view>
+		</view>
+	</view>
+</template>
+
+<script setup lang="ts">
+import {
+	onMounted,
+	onUnmounted,
+	reactive,
+	computed,
+	getCurrentInstance,
+	type PropType,
+	watch,
+	nextTick
+} from "vue";
+import { parsePt, parseClass, getUnit } from "@/.cool";
+import type { PassThroughProps } from "../../types";
+
+defineOptions({
+	name: "cl-noticebar"
+});
+
+defineSlots<{
+	text(props: { item: string }): any;
+}>();
+
+const props = defineProps({
+	// 样式穿透对象，允许外部自定义样式
+	pt: {
+		type: Object,
+		default: () => ({})
+	},
+	// 公告文本内容，支持字符串或字符串数组
+	text: {
+		type: [String, Array] as PropType<string | string[]>,
+		default: ""
+	},
+	// 滚动方向，支持 horizontal（水平）或 vertical（垂直）
+	direction: {
+		type: String as PropType<"horizontal" | "vertical">,
+		default: "horizontal"
+	},
+	// 垂直滚动时的切换间隔，单位：毫秒
+	duration: {
+		type: Number,
+		default: 3000
+	},
+	// 水平滚动时的速度，单位：px/s
+	speed: {
+		type: Number,
+		default: 100
+	},
+	// 公告栏高度，支持字符串或数字
+	height: {
+		type: [String, Number] as PropType<string | number>,
+		default: 40
+	}
+});
+
+// 事件定义，当前仅支持 close 事件
+const emit = defineEmits(["close"]);
+
+// 获取当前组件实例，用于后续 DOM 查询
+const { proxy } = getCurrentInstance()!;
+
+// 获取设备屏幕信息
+const { windowWidth } = uni.getWindowInfo();
+
+// 样式透传类型定义
+type PassThrough = {
+	className?: string;
+	text?: PassThroughProps;
+};
+
+// 计算样式透传对象，便于样式自定义
+const pt = computed(() => parsePt<PassThrough>(props.pt));
+
+// 滚动相关状态，包含偏移量、动画时长等
+type Scroll = {
+	left: number;
+	top: number;
+	translateX: number;
+	duration: number;
+};
+const scroll = reactive<Scroll>({
+	left: windowWidth,
+	top: 0,
+	translateX: 0,
+	duration: 0
+});
+
+// 定时器句柄，用于控制滚动动画
+let timer: number = 0;
+
+// 公告文本列表，统一为数组格式，便于遍历
+const list = computed<string[]>(() => {
+	return Array.isArray(props.text) ? (props.text as string[]) : [props.text as string];
+});
+
+// 滚动容器样式，动态计算滚动动画相关样式
+const scrollerStyle = computed(() => {
+	const style = {};
+
+	if (props.direction == "horizontal") {
+		style["left"] = `${scroll.left}px`;
+		style["transform"] = `translateX(-${scroll.translateX}px)`;
+		style["transition-duration"] = `${scroll.duration}ms`;
+	} else {
+		style["transform"] = `translateY(${scroll.top}px)`;
+	}
+
+	return style;
+});
+
+// 清除定时器，防止内存泄漏或重复动画
+function clear(): void {
+	if (timer != 0) {
+		clearInterval(timer);
+		clearTimeout(timer);
+		timer = 0;
+	}
+}
+
+// 刷新滚动状态
+function refresh() {
+	nextTick(() => {
+		// 先清除已有定时器，避免重复动画
+		clear();
+
+		// 查询公告栏容器尺寸
+		uni.createSelectorQuery()
+			.in(proxy)
+			.select(".cl-noticebar")
+			.boundingClientRect((box) => {
+				// 获取容器高度和宽度
+				const boxHeight = (box as NodeInfo).height ?? 0;
+				const boxWidth = (box as NodeInfo).width ?? 0;
+
+				// 查询文本节点尺寸
+				uni.createSelectorQuery()
+					.in(proxy)
+					.select(".cl-noticebar__text")
+					.boundingClientRect((text) => {
+						// 水平滚动逻辑
+						if (props.direction == "horizontal") {
+							// 获取文本宽度
+							const textWidth = (text as NodeInfo).width ?? 0;
+
+							// 启动水平滚动动画
+							function next() {
+								// 计算滚动距离和动画时长
+								scroll.translateX = textWidth + boxWidth;
+								scroll.duration = Math.ceil(
+									(scroll.translateX / props.speed) * 1000
+								);
+								scroll.left = boxWidth;
+
+								// 动画结束后重置，形成循环滚动
+								// @ts-ignore
+								timer = setTimeout(() => {
+									scroll.translateX = 0;
+									scroll.duration = 0;
+
+									setTimeout(() => {
+										next();
+									}, 100);
+								}, scroll.duration);
+							}
+
+							next();
+						}
+						// 垂直滚动逻辑
+						else {
+							// 定时切换文本，循环滚动
+							// @ts-ignore
+							timer = setInterval(() => {
+								if (Math.abs(scroll.top) >= boxHeight * (list.value.length - 1)) {
+									scroll.top = 0;
+								} else {
+									scroll.top -= boxHeight;
+								}
+							}, props.duration);
+						}
+					})
+					.exec();
+			})
+			.exec();
+	});
+}
+
+onMounted(() => {
+	watch(
+		computed(() => props.text!),
+		() => {
+			refresh();
+		},
+		{
+			immediate: true
+		}
+	);
+});
+
+onUnmounted(() => {
+	clear();
+});
+</script>
+
+<style lang="scss" scoped>
+.cl-noticebar {
+	@apply w-full;
+	flex-shrink: 1;
+
+	&__scroller {
+		@apply flex;
+		transition-property: transform;
+		transition-timing-function: linear;
+
+		&.is-horizontal {
+			@apply flex-row;
+			overflow: visible;
+		}
+
+		&.is-vertical {
+			@apply flex-col;
+			transition-duration: 0.5s;
+		}
+	}
+
+	&__item {
+		@apply flex flex-row items-center;
+	}
+}
+</style>

@@ -1,0 +1,333 @@
+<template>
+	<!-- #ifdef MP -->
+	<view
+		class="cl-text"
+		:class="[
+			{
+				'cl-text--pre-wrap': preWrap,
+				'cl-text--ellipsis': ellipsis
+			},
+			ptClassName
+		]"
+		:style="textStyle"
+		:selectable="selectable"
+		:space="space"
+		:decode="decode"
+		:key="cache.key"
+	>
+		<slot>{{ content }}</slot>
+	</view>
+	<!-- #endif -->
+
+	<!-- #ifndef MP -->
+	<text
+		class="cl-text"
+		:class="[
+			{
+				'cl-text--pre-wrap': preWrap,
+				'cl-text--ellipsis': ellipsis
+			},
+			ptClassName
+		]"
+		:style="textStyle"
+		:selectable="selectable"
+		:space="space"
+		:decode="decode"
+		:key="cache.key"
+	>
+		<slot>{{ content }}</slot>
+	</text>
+	<!-- #endif -->
+</template>
+
+<script setup lang="ts">
+import { computed, type PropType } from "vue";
+import { ctx, hasTextColor, hasTextSize, isDark, parsePt, useCache } from "@/.cool";
+import type { ClTextType } from "../../types";
+import { useSize } from "../../hooks";
+
+defineOptions({
+	name: "cl-text"
+});
+
+// 组件属性定义
+const props = defineProps({
+	// 透传样式
+	pt: {
+		type: Object,
+		default: () => ({})
+	},
+	// 显示的值
+	value: {
+		type: [String, Number] as PropType<string | number | null>,
+		default: null
+	},
+	// 文本颜色
+	color: {
+		type: String,
+		default: ""
+	},
+	// 字体大小
+	size: {
+		type: Number,
+		default: 14
+	},
+	// 文本类型
+	type: {
+		type: String as PropType<ClTextType>,
+		default: "default"
+	},
+	// 是否开启脱敏/加密
+	mask: {
+		type: Boolean,
+		default: false
+	},
+	// 金额货币符号
+	currency: {
+		type: String,
+		default: "¥"
+	},
+	// 金额小数位数
+	precision: {
+		type: Number,
+		default: 2
+	},
+	// 脱敏起始位置
+	maskStart: {
+		type: Number,
+		default: 3
+	},
+	// 脱敏结束位置
+	maskEnd: {
+		type: Number,
+		default: 4
+	},
+	// 脱敏替换字符
+	maskChar: {
+		type: String,
+		default: "*"
+	},
+	// 是否省略号
+	ellipsis: {
+		type: Boolean,
+		default: false
+	},
+	// 最大行数，仅在ellipsis时生效
+	lines: {
+		type: Number,
+		default: 1
+	},
+	// 是否可选择
+	selectable: {
+		type: Boolean,
+		default: false
+	},
+	// 显示连续空格
+	space: {
+		type: String as PropType<"ensp" | "emsp" | "nbsp">,
+		default: ""
+	},
+	// 是否解码 (app平台如需解析字符实体，需要配置为 true)
+	decode: {
+		type: Boolean,
+		default: false
+	},
+	// 是否保留单词
+	preWrap: {
+		type: Boolean,
+		default: false
+	}
+});
+
+// 缓存
+const { cache } = useCache(() => [props.color, props]);
+
+// 透传样式类型
+type PassThrough = {
+	className?: string;
+};
+
+// 解析透传样式
+const pt = computed(() => parsePt<PassThrough>(props.pt));
+
+// 文本大小
+const { toScale, ptClassName } = useSize(() => pt.value.className ?? "");
+
+// 文本颜色
+const color = computed(() => {
+	if (props.color != "") {
+		switch (props.color) {
+			case "primary":
+				return "var(--color-teal-500)";
+			case "success":
+				return "#22c55e";
+			case "warn":
+				return "#eab308";
+			case "error":
+				return "#ef4444";
+			case "info":
+				return isDark.value
+					? "var(--color-zinc-300)"
+					: "var(--color-zinc-500)";
+			case "dark":
+				return "var(--color-zinc-700)";
+			case "light":
+				return "var(--color-zinc-50)";
+			case "disabled":
+				return "var(--color-zinc-400)";
+			default:
+				return props.color;
+		}
+	}
+
+	return isDark.value ? "white" : "var(--color-zinc-700)";
+});
+
+// 文本样式
+const textStyle = computed(() => {
+	const style = {};
+
+	// 省略号
+	if (props.ellipsis) {
+		style["lines"] = props.lines;
+	}
+
+	// 判断是不是有颜色样式
+	if (!hasTextColor(ptClassName.value)) {
+		style["color"] = color.value;
+	}
+
+	// 字号
+	if (!hasTextSize(ptClassName.value)) {
+		style["fontSize"] = toScale(props.size ?? 14) + "px";
+	}
+
+	return style;
+});
+
+/**
+ * 手机号脱敏处理
+ * 保留前3位和后4位，中间4位替换为掩码
+ */
+function formatPhone(phone: string): string {
+	if (phone.length != 11 || !props.mask) return phone;
+	return phone.replace(/(\d{3})\d{4}(\d{4})/, `$1${props.maskChar.repeat(4)}$2`);
+}
+
+/**
+ * 姓名脱敏处理
+ * 2个字时保留第1个字
+ * 大于2个字时保留首尾字
+ */
+function formatName(name: string): string {
+	if (name.length <= 1 || !props.mask) return name;
+	if (name.length == 2) {
+		return name[0] + props.maskChar;
+	}
+	return name[0] + props.maskChar.repeat(name.length - 2) + name[name.length - 1];
+}
+
+/**
+ * 金额格式化
+ * 1. 处理小数位数
+ * 2. 添加千分位分隔符
+ * 3. 添加货币符号
+ */
+function formatAmount(amount: string | number): string {
+	let num: number;
+
+	if (typeof amount == "number") {
+		num = amount;
+	} else {
+		num = parseFloat(amount);
+	}
+
+	const formatted = num.toFixed(props.precision);
+	const parts = formatted.split(".");
+	parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+
+	return props.currency + parts.join(".");
+}
+
+/**
+ * 银行卡号脱敏
+ * 保留开头和结尾指定位数，中间用掩码替换
+ */
+function formatCard(card: string): string {
+	if (card.length < 8 || !props.mask) return card;
+
+	const start = card.substring(0, props.maskStart);
+	const end = card.substring(card.length - props.maskEnd);
+	const middle = props.maskChar.repeat(card.length - props.maskStart - props.maskEnd);
+	return start + middle + end;
+}
+
+/**
+ * 邮箱脱敏处理
+ * 保留用户名首尾字符和完整域名
+ */
+function formatEmail(email: string): string {
+	if (!props.mask) return email;
+
+	const atIndex = email.indexOf("@");
+	if (atIndex == -1) return email;
+
+	const username = email.substring(0, atIndex);
+	const domain = email.substring(atIndex);
+
+	if (username.length <= 2) return email;
+
+	const maskedUsername =
+		username[0] + props.maskChar.repeat(username.length - 2) + username[username.length - 1];
+	return maskedUsername + domain;
+}
+
+/**
+ * 根据不同类型格式化显示
+ */
+const content = computed(() => {
+	const val = props.value ?? "";
+
+	switch (props.type) {
+		case "phone":
+			return formatPhone(val as string);
+		case "name":
+			return formatName(val as string);
+		case "amount":
+			return formatAmount(val as number);
+		case "card":
+			return formatCard(val as string);
+		case "email":
+			return formatEmail(val as string);
+		default:
+			return val;
+	}
+});
+</script>
+
+<style lang="scss" scoped>
+.cl-text {
+	// #ifndef APP
+	flex-shrink: unset;
+	// #endif
+
+	&--pre-wrap {
+		// #ifndef APP
+		white-space: pre-wrap;
+		// #endif
+	}
+
+	&--ellipsis {
+		text-overflow: ellipsis;
+
+		// #ifndef APP
+		display: -webkit-box;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		-webkit-line-clamp: v-bind(lines);
+		line-break: anywhere;
+		-webkit-box-orient: vertical;
+		// #endif
+	}
+}
+</style>

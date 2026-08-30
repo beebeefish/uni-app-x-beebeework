@@ -1,0 +1,157 @@
+<template>
+	<view
+		class="cl-radio"
+		:class="[
+			{
+				'cl-radio--disabled': isDisabled,
+				'cl-radio--checked': isChecked
+			},
+			pt.className
+		]"
+		@tap="onTap"
+	>
+		<cl-icon
+			v-if="showIcon"
+			:name="iconName"
+			:size="pt.icon?.size ?? 20"
+			:pt="{
+				className: parseClass([
+					'cl-radio__icon mr-1',
+					{
+						'text-teal-500/10': isChecked
+					},
+					pt.icon?.className
+				])
+			}"
+		></cl-icon>
+
+		<cl-text
+			:size="pt.label?.size"
+			:color="pt.label?.color"
+			:pt="{
+				className: parseClass([
+					'cl-radio__label',
+					{
+						'text-teal-500/10': isChecked
+					},
+					pt.label?.className
+				])
+			}"
+			v-if="showLabel"
+		>
+			<slot>{{ label }}</slot>
+		</cl-text>
+	</view>
+</template>
+
+<script lang="ts" setup>
+import { computed, useSlots } from "vue";
+import { get, parseClass, parsePt } from "@/.cool";
+import type { ClIconProps } from "../cl-icon/props";
+import { useForm } from "../../hooks";
+import type { ClTextProps } from "../cl-text/props";
+
+defineOptions({
+	name: "cl-radio"
+});
+
+// 定义组件属性
+const props = defineProps({
+	// 透传样式配置
+	pt: {
+		type: Object,
+		default: () => ({})
+	},
+	modelValue: {
+		type: null
+	},
+	// 选中时的图标
+	activeIcon: {
+		type: String,
+		default: "checkbox-circle-line"
+	},
+	// 未选中时的图标
+	inactiveIcon: {
+		type: String,
+		default: "checkbox-blank-circle-line"
+	},
+	// 是否显示图标
+	showIcon: {
+		type: Boolean,
+		default: true
+	},
+	// 标签文本
+	label: {
+		type: String,
+		default: ""
+	},
+	// 选项值 - 该单选框对应的值
+	value: {
+		type: null
+	},
+	// 是否禁用
+	disabled: {
+		type: Boolean,
+		default: false
+	}
+});
+
+// 定义组件事件
+const emit = defineEmits(["update:modelValue", "change"]);
+
+const slots = useSlots();
+
+// 透传样式类型定义
+type PassThrough = {
+	className?: string;
+	icon?: ClIconProps;
+	label?: ClTextProps;
+};
+
+// 解析透传样式配置
+const pt = computed(() => parsePt<PassThrough>(props.pt));
+
+// cl-form 上下文
+const { disabled } = useForm();
+
+// 是否禁用
+const isDisabled = computed(() => props.disabled || disabled.value);
+
+// 是否为选中状态
+const isChecked = computed(() => props.modelValue == props.value);
+
+// 是否显示标签
+const showLabel = computed(() => props.label != "" || get(slots, "default") != null);
+
+// 图标名称
+const iconName = computed(() => {
+	// 选中状态
+	if (isChecked.value) {
+		return props.activeIcon;
+	}
+
+	// 默认状态
+	return props.inactiveIcon;
+});
+
+/**
+ * 点击事件处理函数
+ * 在非禁用状态下切换选中状态
+ */
+function onTap() {
+	if (!isDisabled.value) {
+		emit("update:modelValue", props.value);
+		emit("change", props.value);
+	}
+}
+</script>
+
+<style lang="scss" scoped>
+.cl-radio {
+	@apply flex flex-row items-center;
+
+	&--disabled {
+		@apply opacity-50;
+	}
+}
+</style>

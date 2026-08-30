@@ -1,0 +1,367 @@
+<template>
+  <page-wrap
+    ref="pageWrapRef"
+    :show-back-top="currentTabScrollState" 
+    :show-fabs="currentFabbar"
+    @back-to-top="handleGlobalBackTop"
+    @open-action="handleOpenAction"
+  >
+
+    <template #navbar class="w-full">
+      <common-header 
+        v-model:currentTab="activeTabValue"
+        :key="`header-${activeTabValue}-${isActive ? 'on' : 'off'}`"
+        :tabList="tabList" 
+        :title="pageTitle"
+        :leftBtns="currentLeftBtns"
+        :navBarTop="layout.navBarTop" 
+        :navBarHeight="layout.navBarHeight"
+        :isActive="isActive"
+        @drawer="openDrawer"
+        @search="onSearchClick"
+        @setting="onSettingClick"
+        @share="onShareClick"
+      ></common-header>
+    </template>
+
+    <!-- 多个 Tab 时走 Swiper -->
+    <swiper 
+      v-if="tabList.length > 1" 
+      class="w-full h-full" 
+      :current="currentTabIndex" 
+      @change="onSwiperChange"
+      @animationfinish="onAnimationFinish"
+      :key="pageData?.bar?.viewKey"
+    >
+      <swiper-item v-for="(tab, index) in tabList" :key="tab.value" class="w-full h-full">
+        <tab-content-item 
+        v-if="visitedSubTabs.has(index)"
+          :key="pageData?.bar?.viewKey + '-' + tab.value"
+          :ref="el => setTabRef(el, index)"
+          :tab="tab"
+          :header-height="layout.headerHeight"
+          :is-swiping="isSwiping && index !== targetIndex"
+          @update:show-top="val => onTabScrollUpdate(index, val)"
+          @avatar-click="handleAvatarClick"
+          @item-click="handleItemClick"
+        >
+          <template v-if="index===0" v-for="(addon, aIdx) in currentAddons" :key="aIdx">
+            <addon-renderer :data="addon" />
+          </template>
+        </tab-content-item>
+      </swiper-item>
+    </swiper>
+
+    <!-- 场景 B：只有一个 Tab 时 -->
+    <tab-content-item 
+      v-else-if="tabList.length === 1"
+      :key="pageData?.bar?.viewKey + '-single'"
+      :ref="el => setTabRef(el, 0)"
+      :tab="tabList[0]"
+      :header-height="layout.headerHeight"
+      @update:show-top="val => onTabScrollUpdate(0, val)"
+      @avatar-click="handleAvatarClick"
+      @item-click="handleItemClick"
+    >
+      <template v-for="(addon, aIdx) in currentAddons" :key="aIdx">
+        <addon-renderer :data="addon" />
+      </template>
+    </tab-content-item>
+
+    <!-- 场景 C：0 个 Tab 时的安全兜底 -->
+    <view v-else class="w-full h-full flex flex-col items-center justify-center" :style="{ paddingTop: (layout.headerHeight) + 'px' }">
+      <text class="text-sm text-gray-400 dark:text-neutral-500">正在加载配置或暂无页面数据...</text>
+    </view>
+
+    <!-- 动态注入内容 -->
+    <template #popup-content>
+      <common-drawer 
+        v-if="popupType === 'drawer'" 
+        @close="pageWrapRef?.closePopup()" 
+      ></common-drawer>
+      <common-avatar 
+        v-else-if="popupType === 'avatar'" 
+        :user-info="selectedUser"
+        @close="pageWrapRef?.closePopup()" 
+      ></common-avatar>
+      <common-addpub 
+        v-else-if="popupType === 'add'" 
+        @close="pageWrapRef?.closePopup()" 
+      ></common-addpub>
+      <common-shopdetail
+        v-else-if="popupType === 'shop-detail'"
+        :product="selectedProduct"
+        @close="pageWrapRef?.closePopup()"
+      />
+    </template>
+
+  </page-wrap>
+</template>
+
+<script setup lang="uts">
+import { ref, computed, onMounted, shallowRef, watch } from 'vue'
+import { router, CustomRouteType } from '@/.cool'
+import { storage } from '@/.cool/utils'
+import { PageMessenger } from '@/stores/pageMessenger.uts'
+import { themeState, loadGlobalThemeConfig } from '@/stores/theme.uts'
+
+const props = defineProps({
+  pageData: {
+    type: Object,
+    required: true,
+    default: () => ({})
+  },
+  isActive: Boolean
+})
+
+const layout = computed(() => themeState.layout)
+const tabList = computed(() : any[] => {
+  const pd = props.pageData as UTSJSONObject
+  if (pd != null) {
+    const tabs = pd['tabs']
+    if (tabs != null && Array.isArray(tabs)) {
+      return tabs as any[]
+    }
+  }
+  return []
+})
+
+// 安全提取页面标题
+const pageTitle = computed(() : string => {
+  const pd = props.pageData as UTSJSONObject
+  if (pd != null) {
+    const bar = pd['bar'] as UTSJSONObject
+    if (bar != null) {
+      return String(bar['name'] ?? '')
+    }
+  }
+  return ''
+})
+
+// 安全提取 navbar.leftBtns
+const currentLeftBtns = computed(() : string[] => {
+  const pd = props.pageData as UTSJSONObject
+  if (pd != null) {
+    const bar = pd['bar'] as UTSJSONObject
+    if (bar != null) {
+      const navbar = bar['navbar'] as UTSJSONObject
+      if (navbar != null) {
+        const leftBtns = navbar['leftBtns']
+        if (leftBtns != null && Array.isArray(leftBtns)) {
+          return leftBtns as string[]
+        }
+      }
+    }
+  }
+  return []
+})
+
+// 安全提取 fabbar
+const currentFabbar = computed(() : any[] => {
+  const pd = props.pageData as UTSJSONObject
+  if (pd != null) {
+    const bar = pd['bar'] as UTSJSONObject
+    if (bar != null) {
+      const fab = bar['fabbar'] ?? bar['bar']
+      if (fab != null && Array.isArray(fab)) {
+        return fab as any[]
+      }
+    }
+  }
+  return []
+})
+
+// 安全提取 addons
+const currentAddons = computed(() : any[] => {
+  const pd = props.pageData as UTSJSONObject
+  if (pd != null) {
+    const addons = pd['addons']
+    if (addons != null && Array.isArray(addons)) {
+      return addons as any[]
+    }
+  }
+  return []
+})
+
+// 内部当前 Tab 的 value
+const activeTabValue = ref('')
+const isSwiping = ref(false)
+const targetIndex = ref(0)
+
+// 修改计算属性或监听逻辑，让相邻的 Tab 提前渲染
+const visitedSubTabs = reactive(new Set<number>())
+
+const currentTabIndex = computed(() => {
+  const index = tabList.value.findIndex(item => {
+    const tabObj = item as UTSJSONObject
+    if (tabObj != null) {
+      return String(tabObj['value'] ?? '') === activeTabValue.value
+    }
+    return false
+  })
+  return index !== -1 ? index : 0
+})
+
+watch(currentTabIndex, (newIndex) => {
+  visitedSubTabs.add(newIndex)
+  visitedSubTabs.add(newIndex + 1)
+  if (newIndex > 0) {
+    visitedSubTabs.add(newIndex - 1)
+  }
+}, { immediate: true })
+
+// 统一监听 props.pageData：当底部菜单切换时，自动回到该容器的第一个 Tab，并静默刷新数据
+watch(
+  () => props.pageData,
+  (newVal) => {
+    if (newVal == null) return
+    
+    const newTabs = tabList.value
+    if (newTabs.length > 0) {
+      const firstTab = newTabs[0] as UTSJSONObject
+      const firstVal = String(firstTab['value'] ?? '')
+      activeTabValue.value = firstVal
+
+      visitedSubTabs.clear()
+      visitedSubTabs.add(0)
+      visitedSubTabs.add(1) // 顺便预加载第1页
+    }
+
+    setTimeout(() => {
+      const activeTabComponent = tabRefs[currentTabIndex.value]
+      if (activeTabComponent != null) {
+        if (typeof (activeTabComponent as any).refreshData === 'function') {
+          (activeTabComponent as any).refreshData()
+        }
+      }
+    }, 150)
+  },
+  { immediate: true, deep: true }
+)
+
+// 状态隔离字典：记录每个 Tab 是否显示返回顶部按钮
+const tabScrollStates = ref({})
+const currentTabScrollState = computed(() => {
+  return tabScrollStates.value[currentTabIndex.value] || false
+})
+
+const tabRefs = {}
+const setTabRef = (el, index) => {
+  if (el != null) {
+    tabRefs[index] = el
+  } else {
+    delete tabRefs[index]
+  }
+}
+
+// 接收来自当前 Tab 的滚动通知
+const onTabScrollUpdate = (index, show) => {
+  tabScrollStates.value[index] = show
+}
+
+// 点击全局返回顶部时，只让当前正在看的那个 Tab 滚回顶部
+const handleGlobalBackTop = () => {
+  console.log('handleGlobalBackTop')
+  const activeTabComponent = tabRefs[currentTabIndex.value]
+  if (activeTabComponent != null && typeof (activeTabComponent as any).scrollToTop === 'function') {
+    (activeTabComponent as any).scrollToTop()
+  }
+}
+
+const onSwiperChange = (e : UniSwiperChangeEvent) => {
+  const index = e.detail.current
+  targetIndex.value = index // 记录目标页
+  isSwiping.value = true
+
+  const tab = tabList.value[index] as UTSJSONObject
+  if (tab != null) {
+    activeTabValue.value = String(tab['value'] ?? '')
+  }
+
+  if (!visitedSubTabs.has(index)) {
+    visitedSubTabs.add(index)
+  }
+}
+
+const onAnimationFinish = (e : UniSwiperChangeEvent) => {
+  isSwiping.value = false
+  targetIndex.value = e.detail.current
+}
+
+const onSearchClick = () => {
+  uni.showToast({ title: '打开搜索', icon: 'none' })
+}
+
+const onSettingClick = () => {
+  console.log('点击了设置')
+}
+
+const onShareClick = () => {
+  console.log('点击了分享')
+}
+
+const selectedProduct = ref(null)
+const handleItemClick = (item) => { 
+  console.log('点击了商品', item)
+  const isPointsShopItem = item.price !== undefined && (item.currency === 'points' || item.stock !== undefined)
+
+  if (isPointsShopItem) {
+    selectedProduct.value = item
+    popupType.value = 'shop-detail'
+    pageWrapRef.value?.openPopup('center', '320px', false) 
+    return
+  }
+
+  const target = item.name || item.title || '详情'
+  const pathid = String(item.id)
+  const pathtype = item.type
+
+  const frame = item.frame || item.acf?.frame || 'none-addon'
+  const sharp = item.sharp || item.acf?.addons?.sharp || 'square'
+  const cover = item.cover || ''
+
+
+  if (pathid && pathtype) {
+    PageMessenger.send(`topic_${pathid}`, item, 30)
+    storage.set(`topic_${pathid}`, item, 60)
+    storage.set('__last_nav_meta', { id: pathid, frame, sharp, cover }, 60)
+    router.push({ 
+        path: `/pages/${pathtype}/detail`, 
+        query: { 
+          id: pathid,
+          cover,
+          frame,
+          sharp
+        },
+        routeType: CustomRouteType.OpacityTransition
+    })
+  } else {
+    uni.showToast({ title: `进入${target}`, icon: 'none' })
+  }
+}
+
+const pageWrapRef = ref(null)
+const currentComponent = shallowRef(null)
+const popupType = ref('')
+const selectedUser = ref(null)
+
+const openDrawer = () => {
+  popupType.value = 'drawer'
+  pageWrapRef.value?.openPopup('left', '75%', false)
+}
+
+const handleAvatarClick = (item) => {
+  selectedUser.value = item
+  popupType.value = 'avatar'
+  pageWrapRef.value?.openPopup('bottom', 'auto', true)
+}
+
+const handleOpenAction = () => {
+  popupType.value = 'add'
+  pageWrapRef.value?.openPopup('bottom', 'auto', true)
+}
+
+const handlePopupSelect = (item) => {
+  uni.showToast({ title: `点击了: ${item.label}`, icon: 'none' })
+}
+</script>

@@ -1,0 +1,132 @@
+import PictureDrawable from "android.graphics.drawable.PictureDrawable";
+import ImageView from "android.widget.ImageView";
+import File from "java.io.File";
+import FileInputStream from "java.io.FileInputStream";
+import Color from "android.graphics.Color";
+import RenderOptions from "com.caverock.androidsvg.RenderOptions";
+import Base64 from "android.util.Base64";
+import Charset from "java.nio.charset.Charset";
+import StandardCharsets from "java.nio.charset.StandardCharsets";
+
+/**
+ * CoolSvg Android 平台 SVG 渲染器
+ * 支持多种 SVG 数据格式：
+ * - base64 编码的数据 URL
+ * - URL 编码的数据 URL  
+ * - 本地文件路径
+ * - Android 资源文件
+ */
+export class CoolSvg {
+	/** 原生视图元素 */
+	$element: UniNativeViewElement;
+	/** Android ImageView 实例 */
+	imageView: ImageView | null = null;
+
+	/**
+	 * 构造函数
+	 * @param element uni-app x 原生视图元素
+	 */
+	constructor(element: UniNativeViewElement) {
+		this.$element = element;
+		this.imageView = new ImageView(UTSAndroid.getAppContext()!);
+		this.$element.bindAndroidView(this.imageView!);
+	}
+
+	/**
+	 * 加载并渲染 SVG
+	 * @param src SVG 数据源，支持以下格式：
+	 *   - data:image/svg+xml;base64,<base64数据>
+	 *   - data:image/svg+xml,<URL编码的SVG>
+	 *   - 本地文件路径
+	 * @param color 填充颜色，用于替换 SVG 中 path 元素的 fill 属性
+	 */
+	load(src: string, color: string) {
+		// 空字符串检查
+		if (src == "") {
+			return;
+		}
+
+		try {
+			if (src.startsWith("data:image/svg")) {
+				// 处理数据 URL 格式的 SVG
+				this.loadFromDataUrl(src, color);
+			} else {
+				// 处理本地文件或资源文件
+				this.loadFromFile(src, color);
+			}
+		} catch (e) {
+			// 打印异常信息用于调试
+			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * 从数据 URL 加载 SVG
+	 * @param dataUrl 数据 URL 字符串
+	 * @param color 填充颜色
+	 */
+	private loadFromDataUrl(dataUrl: string, color: string) {
+		let svgString: string;
+		
+		if (dataUrl.startsWith("data:image/svg+xml;base64,")) {
+			// 处理 base64 编码的 SVG
+			const base64Prefix = "data:image/svg+xml;base64,";
+			const base64Data = dataUrl.substring(base64Prefix.length);
+			const decodedBytes = Base64.decode(base64Data, Base64.DEFAULT);
+			svgString = String(decodedBytes, StandardCharsets.UTF_8);
+		} else {
+			// 处理 URL 编码的 SVG
+			const urlPrefix = "data:image/svg+xml,";
+			const encodedSvg = dataUrl.substring(urlPrefix.length);
+			svgString = decodeURIComponent(encodedSvg) ?? '';
+		}
+		
+		const svg = com.caverock.androidsvg.SVG.getFromString(svgString);
+		this.render(svg, color);
+	}
+
+	/**
+	 * 从文件加载 SVG
+	 * @param src 文件路径
+	 * @param color 填充颜色
+	 */
+	private loadFromFile(src: string, color: string) {
+		// uni-app x 正式打包会将资源文件放在 Android asset 中
+		const path = UTSAndroid.getResourcePath(src);
+
+		if (path.startsWith("/android_asset")) {
+			// 从 Android 资源文件中加载
+			const assetPath = path.substring(15); // 移除 "/android_asset" 前缀
+			const svg = com.caverock.androidsvg.SVG.getFromAsset(
+				UTSAndroid.getAppContext()!.getAssets(),
+				assetPath
+			);
+			this.render(svg, color);
+		} else {
+			// 从本地文件系统加载
+			const file = new File(path);
+			if (file.exists()) {
+				const svg = com.caverock.androidsvg.SVG.getFromInputStream(
+					new FileInputStream(file)
+				);
+				this.render(svg, color);
+			}
+		}
+	}
+
+	/**
+	 * 渲染 SVG 到 ImageView
+	 * @param svg AndroidSVG 对象
+	 * @param color 填充颜色，应用到所有 path 元素
+	 */
+	private render(svg: com.caverock.androidsvg.SVG, color: string) {
+		// 创建渲染选项，设置 CSS 样式来改变 SVG 的填充颜色
+		const options = RenderOptions.create().css(`path { fill: ${color}; }`);
+		
+		// 将 SVG 渲染为 Picture，然后转换为 Drawable
+		const drawable = new PictureDrawable(svg.renderToPicture(options));
+		
+		// 设置到 ImageView 中显示
+		this.imageView?.setImageDrawable(drawable);
+	}
+}

@@ -1,0 +1,191 @@
+<template>
+	<view
+		class="cl-select-trigger"
+		:class="[
+			{
+				'is-dark': isDark,
+				'cl-select-trigger--disabled': isDisabled,
+				'cl-select-trigger--focus': focus,
+				'cl-select-trigger--error': isError
+			},
+			pt.className
+		]"
+		@tap="open"
+	>
+		<view class="cl-select-trigger__content">
+			<cl-text
+				v-if="showText"
+				:pt="{
+					className: parseClass([
+						{
+							'text-gray-400/10': isDisabled
+						},
+						pt.text?.className
+					])
+				}"
+				ellipsis
+			>
+				{{ text }}
+			</cl-text>
+
+			<cl-text
+				:pt="{
+					className: parseClass(['text-gray-400/10', pt.placeholder?.className])
+				}"
+				v-else
+			>
+				{{ placeholder }}
+			</cl-text>
+		</view>
+
+		<view v-if="showText && !isDisabled" class="cl-select-trigger__icon" @tap.stop="clear">
+			<cl-icon
+				name="close-circle-fill"
+				:size="16"
+				:pt="{ className: 'text-gray-400/10' }"
+			></cl-icon>
+		</view>
+
+		<view v-if="!isDisabled && !showText" class="cl-select-trigger__icon">
+			<cl-icon
+				:name="pt.icon?.name ?? arrowIcon"
+				:size="pt.icon?.size ?? 16"
+				:pt="{
+					className: `text-gray-400/10 ${pt.icon?.className}`
+				}"
+			></cl-icon>
+		</view>
+	</view>
+</template>
+
+<script setup lang="ts">
+import { computed } from "vue";
+import type { ClIconProps } from "../cl-icon/props";
+import { isDark, parseClass, parsePt, t } from "@/.cool";
+import type { PassThroughProps } from "../../types";
+import { useForm, useFormItem } from "../../hooks";
+import type { ClTextProps } from "../cl-text/props";
+
+defineOptions({
+	name: "cl-select-trigger"
+});
+
+// 组件属性定义
+const props = defineProps({
+	// 透传样式配置
+	pt: {
+		type: Object,
+		default: () => ({})
+	},
+	// 显示文本
+	text: {
+		type: String,
+		default: ""
+	},
+	// 占位符文本
+	placeholder: {
+		type: String,
+		default: () => t("请选择")
+	},
+	// 箭头图标名称
+	arrowIcon: {
+		type: String,
+		default: "arrow-down-s-line"
+	},
+	// 是否禁用选择器
+	disabled: {
+		type: Boolean,
+		default: false
+	},
+	// 是否聚焦
+	focus: {
+		type: Boolean,
+		default: false
+	}
+});
+
+const emit = defineEmits(["open", "clear"]);
+
+// cl-form 上下文
+const { disabled } = useForm();
+
+// cl-form-item 上下文
+const { isError } = useFormItem();
+
+// 是否禁用
+const isDisabled = computed(() => {
+	return disabled.value || props.disabled;
+});
+
+// 透传样式类型定义
+type PassThrough = {
+	className?: string; // 根元素类名
+	icon?: ClIconProps; // 图标样式
+	placeholder?: PassThroughProps; // 占位符样式
+	text?: ClTextProps; // 文本样式
+};
+
+// 解析透传样式配置
+const pt = computed(() => parsePt<PassThrough>(props.pt));
+
+// 是否显示文本
+const showText = computed(() => props.text != "");
+
+// 清空文本
+function clear() {
+	emit("clear");
+}
+
+// 打开选择器
+function open() {
+	if (isDisabled.value) {
+		return;
+	}
+
+	emit("open");
+}
+</script>
+
+<style lang="scss" scoped>
+.cl-select-trigger {
+	@apply flex flex-row items-center w-full box-border;
+	@apply border border-solid border-gray-200/10 rounded-lg bg-white;
+	@apply duration-200;
+	transition-property: border-color;
+	height: 32px;
+	padding: 0 10px;
+
+	&__content {
+		flex: 1;
+	}
+
+	&__icon {
+		@apply flex flex-row items-center justify-center;
+		padding-left: 10px;
+	}
+
+	&--disabled {
+		@apply bg-gray-100/10 opacity-70;
+	}
+
+	&--focus {
+		@apply border-teal-500/10;
+
+		&.is-dark {
+			@apply border-teal-500/10;
+		}
+	}
+
+	&--error {
+		@apply border-red-500;
+	}
+
+	&.is-dark {
+		@apply border-zinc-700/10 bg-gray-800/10;
+
+		&.cl-select-trigger--disabled {
+			@apply bg-zinc-700/10;
+		}
+	}
+}
+</style>

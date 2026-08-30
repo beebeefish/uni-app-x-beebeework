@@ -1,0 +1,57 @@
+import { URL } from "Foundation";
+import { UIApplication } from "UIKit";
+
+/**
+ * 在iOS设备上打开指定的网页URL
+ * @param url 要打开的网页地址，支持http、https、tel、mailto等协议
+ * @returns 返回操作结果，true表示成功，false表示失败
+ */
+export function openWeb(url: string): boolean {
+	// 参数验证：检查URL是否为空或无效
+	if (url == null || url.trim() == "") {
+		console.error("openWeb: URL参数不能为空");
+		return false;
+	}
+
+	try {
+		// 创建URL对象，用于验证URL格式的有效性
+		let href = new URL((string = url.trim()));
+		
+		// 检查URL对象是否创建成功
+		if (href == null) {
+			console.error("openWeb: 无效的URL格式 -", url);
+			return false;
+		}
+
+		// 检查系统版本，iOS 16.0及以上版本使用新的API
+		if (UTSiOS.available("iOS 16.0, *")) {
+			// iOS 16.0+ 使用 open(_:options:completionHandler:) 方法
+			// 先检查系统是否支持打开该URL
+			if (UIApplication.shared.canOpenURL(href!)) {
+				// 使用新API打开URL，传入空的options和completionHandler
+				UIApplication.shared.open(href!, (options = new Map()), (completionHandler = nil));
+				console.log("openWeb: 成功使用新API打开URL -", url);
+				return true;
+			} else {
+				console.warn("openWeb: 系统不支持打开该URL协议 -", url);
+				return false;
+			}
+		} else {
+			// iOS 16.0以下版本使用已弃用但仍可用的 openURL 方法
+			// 先检查系统是否支持打开该URL
+			if (UIApplication.shared.canOpenURL(href!)) {
+				// 使用传统API打开URL
+				UIApplication.shared.openURL(href!);
+				console.log("openWeb: 成功使用传统API打开URL -", url);
+				return true;
+			} else {
+				console.warn("openWeb: 系统不支持打开该URL协议 -", url);
+				return false;
+			}
+		}
+	} catch (e) {
+		// 捕获可能的异常，如URL格式错误等
+		console.error("openWeb: 打开URL时发生错误 -", e);
+		return false;
+	}
+}

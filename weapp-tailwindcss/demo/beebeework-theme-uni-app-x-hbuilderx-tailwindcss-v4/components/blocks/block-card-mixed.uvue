@@ -1,0 +1,475 @@
+<template>
+  
+    <!-- ==========================================
+        1. 样式 A: 说说 / 动态类型控制逻辑
+        ========================================== -->
+   
+    <template v-if="normalizedItem.frame === 'feed-easy'">
+     <scale-card 
+    :id="'card-' + normalizedItem.id"
+    @click="!isSwiping && $emit('item-click', normalizedItem)"
+    class="dropdown-pop-base rounded-3xl active-click-base relative overflow-hidden"
+    :class="{ 'pointer-events-none': isSwiping }"
+    >
+      <view class="flex flex-col gap-4 p-4">
+        <view class="flex flex-row items-center justify-between">
+          <view class="flex flex-row items-center gap-x-2.5" @click.stop="$emit('avatar-click', normalizedItem)">
+            <image :src="normalizedItem.avatar" class="w-9 h-9 rounded-full bg-gray-200 dark:bg-neutral-800 object-cover" mode="aspectFill" />
+            <view class="flex flex-1 flex-col gap-y-0.5">
+              <text class="text-sm font-bold text-gray-800 dark:text-neutral-200">{{ normalizedItem.nickname }}</text>
+              <view class="w-full flex flex-row gap-1 min-h-4 items-center">
+                <text v-if="normalizedItem.role && normalizedItem.role !==''" class="rounded-sm h-4 px-1 flex justify-center items-center orange-btn text-[0.625rem] cursor-default">{{ normalizedItem.role }}</text>
+                
+                  <view class="rounded-sm flex flex-row justify-center items-center">
+                    <view class="rounded-sm text-[0.625rem] border border-gray-300/30 dark:border-neutral-700/50 h-4 flex flex-row justify-center items-center relative overflow-hidden">
+                      <text v-if="normalizedItem.niceid" class="h-[1.125rem] -mt-[0.0625rem] text-[#FFDFBA] bg-neutral-800 flex flex-row items-center px-1 relative z-[2]">靓</text>
+                      <text v-if="normalizedItem.niceid" class="absolute left-[0.75rem] w-2 h-[140%] bg-neutral-800 [transform:rotate(15deg)] z-[1]"></text>
+                      <text class="text-[0.625rem] text-neutral-500  cursor-default px-1">{{normalizedItem.level}}</text>
+                    </view>
+                  </view>
+                
+              </view>
+            </view>
+          </view>
+          <text class="text-[11px] text-gray-400 dark:text-neutral-500">{{ normalizedItem.time }}</text>
+        </view>
+        <text class="text-xs text-gray-600 dark:text-neutral-300 leading-relaxed">{{ normalizedItem.content || normalizedItem.summary }}</text>
+      </view>
+       </scale-card>
+    </template>
+   
+    <!-- ==========================================
+        2. 样式 B: App Store 风格专题卡片系列
+        ========================================== -->
+    <template v-else>
+
+      <scale-card 
+        :id="'card-' + normalizedItem.id"
+        :disabled="props.disabledScale"
+        :root-class="props.cardClass"
+        @click="!isSwiping && $emit('item-click', normalizedItem)"
+        :class="[
+          'dropdown-pop-deep active-click-base relative overflow-hidden',
+          props.cardClass,
+          { 'pointer-events-none': isSwiping }
+        ]"
+      >
+        <!-- 布局 2.1: move-addon (多内容图标双行错位无限循环滚动) -->
+        <template v-if="normalizedItem.frame === 'move-addon'">
+          <topic-cover :item="normalizedItem">
+          <view :class="['relative w-full min-h-[440px] flex flex-col justify-between overflow-hidden']">
+            <view class="relative flex-1 w-full flex flex-col items-center justify-center">
+              <image v-if="normalizedItem.cover" :src="normalizedItem.cover" class="absolute inset-0 w-full h-full object-cover" mode="aspectFill" />
+              <view
+              :class="[
+                'absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/80 backdrop-blur-deep overflow-hidden',
+                props.cardClass
+              ]"
+              ></view>
+              <view class="flex-1 flex flex-col justify-center overflow-hidden pointer-events-none">
+                <view class="flex flex-col overflow-hidden w-full" :style="{ gap: currentTheme.gap }">
+                  <!-- 第一行向左滚动 -->
+                    <view class="flex flex-row items-center animate-marquee-left" :style="{ gap: currentTheme.gap, animationPlayState: (isVisible && !isSwiping) ? 'running' : 'paused' }">
+                      <image v-for="(sub, sIdx) in row1Items" :key="'l1-'+sIdx" :src="sub.cover" :class="[currentTheme.imageClass, 'object-cover shrink-0 shadow-md bg-white/15']" mode="aspectFill" />
+                    </view>
+                    
+                    <!-- 第二行向右滚动（右侧紧贴，绝无空隙） -->
+                    <view class="flex flex-row items-center animate-marquee-left" :style="{ marginLeft: currentTheme.marginLeft, gap: currentTheme.gap, animationPlayState: (isVisible && !isSwiping) ? 'running' : 'paused' }">
+                      <image v-for="(sub, sIdx) in row2Items" :key="'l2-'+sIdx" :src="sub.cover" :class="[currentTheme.imageClass, 'object-cover shrink-0 shadow-md bg-white/15']" mode="aspectFill" />
+                    </view>
+                </view>
+              </view>
+              <view class="relative z-10 flex flex-col gap-0.5 px-5 pb-4 shrink-0 w-full" :style="{ color: normalizedItem.color || '#ffffff' }">
+                  <text class="text-xs font-semibold tracking-wider uppercase opacity-70">{{ normalizedItem.tagName }}</text>
+                  <text class="text-xl font-bold leading-snug line-clamp-2">{{ normalizedItem.title }}</text>
+                  <text class="text-xs tracking-wider opacity-70 leading-snug line-clamp-1">{{ normalizedItem.excerpt }}</text>
+                </view>
+            </view>
+          </view>
+          </topic-cover>
+        </template>
+
+        <!-- 布局 2.2: list-video (上方大图带播放按钮，下方横向滚动 addons) -->
+        <template v-else-if="normalizedItem.frame === 'list-video'">
+        <topic-cover :item="normalizedItem">
+          <view class="relative w-full min-h-[440px] flex flex-col justify-between overflow-hidden">
+            <view class="relative flex-1 w-full">
+                <image v-if="normalizedItem.cover" :src="normalizedItem.cover" class="absolute inset-0 w-full h-full object-cover" mode="aspectFill" />
+                <view class="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/80"></view>
+
+                <view class="absolute top-1/2 -translate-y-1/2 z-10 my-auto self-center w-14 h-14 rounded-full bg-black/30 flex flex-row items-center justify-center border border-black/20 backdrop-blur-base">
+                  <view class="w-0 h-0 border-t-[10px] border-t-transparent border-l-[18px] border-l-white border-b-[10px] border-b-transparent ml-1"></view>
+                </view>
+
+                <view class="my-auto"></view>
+
+                <view class="relative z-10 flex flex-col gap-0.5 px-5 pb-4 shrink-0" :style="{ color: normalizedItem.color || '#ffffff' }">
+                  <text class="text-xs font-semibold tracking-wider uppercase opacity-70">{{ normalizedItem.tagName }}</text>
+                  <text class="text-xl font-bold leading-snug line-clamp-2">{{ normalizedItem.title }}</text>
+                  <text class="text-xs tracking-wider opacity-70 leading-snug line-clamp-1">{{ normalizedItem.excerpt }}</text>
+                </view>
+            </view>
+            <view class="relative z-10 w-full whitespace-nowrap">
+              <view class="inline-flex flex-row gap-3 items-center justify-between p-5 py-3 bg-black/95">
+                
+                <view 
+                  v-for="(sub, sIdx) in (normalizedItem.addons.items || []).slice(0, 5)" 
+                  :key="sIdx" 
+                  class="flex flex-col items-center justify-between shrink-0"
+                  :style="{ width: 'calc((100% - 80px) / 5)' }"
+                >
+                <view class="w-full h-0 pt-[100%] relative">
+                  <image :src="sub.cover" class="absolute left-0 top-0 w-full h-full rounded-xl object-cover shadow-md bg-white/20" mode="aspectFill" />
+                  </view>
+                </view>
+
+              </view>
+            </view>
+          </view>
+          </topic-cover>
+        </template>
+
+        <!-- 布局 2.2: one-video (上方大图带播放按钮，下方单项介绍悬浮卡片) -->
+        <template v-else-if="normalizedItem.frame === 'one-video'">
+        <topic-cover :item="normalizedItem">
+          <view class="relative w-full min-h-[440px] flex flex-col justify-between overflow-hidden">
+            <view class="relative flex-1 w-full">
+                <image v-if="normalizedItem.cover" :src="normalizedItem.cover" class="absolute inset-0 w-full h-full object-cover" mode="aspectFill" />
+                <view class="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/80"></view>
+
+                <view class="absolute top-1/2 -translate-y-1/2 z-10 my-auto self-center w-14 h-14 rounded-full bg-white/30 flex flex-row items-center justify-center shadow-lg border border-white/20">
+                  <view class="w-0 h-0 border-t-[7px] border-t-transparent border-l-[12px] border-l-white border-b-[7px] border-b-transparent ml-1"></view>
+                </view>
+
+                <view class="my-auto"></view>
+
+                <view class="relative z-10 flex flex-col gap-0.5 px-5 pb-4 shrink-0" :style="{ color: normalizedItem.color || '#ffffff' }">
+                  <text class="text-xs font-semibold tracking-wider uppercase opacity-70">{{ normalizedItem.tagName }}</text>
+                  <text class="text-xl font-bold leading-snug line-clamp-2">{{ normalizedItem.title }}</text>
+                  <text class="text-xs tracking-wider opacity-70 leading-snug line-clamp-1">{{ normalizedItem.excerpt }}</text>
+                </view>
+            </view>
+            <view class="relative z-10 w-full whitespace-nowrap bg-gray-900/10">
+              <view v-if="normalizedItem.addons?.items?.[0]" class="flex flex-row items-center justify-between px-4 py-3" :style="{ color: normalizedItem.color || '#ffffff' }">
+                <view class="flex flex-row items-center gap-3 overflow-hidden">
+                  <image :src="normalizedItem.addons.items[0].cover" class="w-11 h-11 rounded-xl object-cover shrink-0 bg-white/20" mode="aspectFill" />
+                  <view class="flex flex-col min-w-0">
+                    <text class="text-xs font-bold truncate">{{ normalizedItem.addons.items[0].title }}</text>
+                    <text class="text-[11px] opacity-60 truncate">{{ normalizedItem.addons.items[0].excerpt }}</text>
+                  </view>
+                </view>
+                <button class="shrink-0 text-white text-xs font-bold px-4 py-1.5 rounded-full m-0 leading-normal" :style="{ backgroundColor: (normalizedItem.color ? normalizedItem.color + '10' : '#ffffff10') }">查看</button>
+              </view>
+            </view>
+          </view>
+          </topic-cover>
+        </template>
+      
+
+        <!-- 布局 2.3: list-image (上方大图，下方单项介绍悬浮卡片) -->
+        <template v-else-if="normalizedItem.frame === 'list-image'">
+        <topic-cover :item="normalizedItem">
+          <view class="relative w-full min-h-[440px] flex flex-col justify-between overflow-hidden">
+            <view class="relative flex-1">
+                <image v-if="normalizedItem.cover" :src="normalizedItem.cover" class="absolute inset-0 w-full h-full object-cover" mode="aspectFill" />
+                <view class="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/80"></view>
+
+                <view class="my-auto"></view>
+
+                <view class="relative z-10 flex flex-col gap-0.5 px-5 pb-4 shrink-0" :style="{ color: normalizedItem.color || '#ffffff' }">
+                  <text class="text-xs font-semibold tracking-wider uppercase opacity-70">{{ normalizedItem.tagName }}</text>
+                  <text class="text-xl font-bold leading-snug line-clamp-2">{{ normalizedItem.title }}</text>
+                  <text class="text-xs tracking-wider opacity-70 leading-snug line-clamp-1">{{ normalizedItem.excerpt }}</text>
+                </view>
+            </view>
+
+            <view class="relative z-10 w-full whitespace-nowrap">
+              <view class="inline-flex flex-row gap-3 items-center justify-between p-5 py-4 bg-black/95">
+                
+                <view 
+                  v-for="(sub, sIdx) in (normalizedItem.addons.items || []).slice(0, 5)" 
+                  :key="sIdx" 
+                  class="flex flex-col items-center justify-between shrink-0"
+                  :style="{ width: 'calc((100% - 80px) / 5)' }"
+                >
+                <view class="w-full h-0 pt-[100%] relative">
+                  <image :src="sub.cover" class="absolute left-0 top-0 w-full h-full rounded-xl object-cover shadow-md bg-white/20" mode="aspectFill" />
+                  </view>
+                </view>
+
+              </view>
+            </view>
+          </view>
+        </topic-cover>
+        </template>
+
+        <!-- 布局 2.3: only-image (上方大图，下方单项介绍悬浮卡片) -->
+        <template v-else-if="normalizedItem.frame === 'one-image'">
+        <topic-cover :item="normalizedItem">
+          <view class="relative w-full min-h-[440px] flex flex-col justify-between overflow-hidden">
+            <view class="relative flex-1">
+                <image v-if="normalizedItem.cover" :src="normalizedItem.cover" class="absolute inset-0 w-full h-full object-cover" mode="aspectFill" />
+                <view class="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/80"></view>
+
+                <view class="my-auto"></view>
+
+                <view class="relative z-10 flex flex-col gap-0.5 px-5 pb-4 shrink-0" :style="{ color: normalizedItem.color || '#ffffff' }">
+                  <text class="text-xs font-semibold tracking-wider uppercase opacity-70">{{ normalizedItem.tagName }}</text>
+                  <text class="text-xl font-bold leading-snug line-clamp-2">{{ normalizedItem.title }}</text>
+                  <text class="text-xs tracking-wider opacity-70 leading-snug line-clamp-1">{{ normalizedItem.excerpt }}</text>
+                </view>
+            </view>
+
+            <view v-if="normalizedItem.addons?.items?.[0]" class="relative z-10 w-full whitespace-nowrap bg-gray-900/10">
+              <view class="flex flex-row items-center justify-between px-4 py-3" :style="{ color: normalizedItem.color || '#ffffff' }">
+                <view class="flex flex-row items-center gap-3 overflow-hidden">
+                  <image :src="normalizedItem.addons.items[0].cover" class="w-11 h-11 rounded-xl object-cover shrink-0 bg-white/20" mode="aspectFill" />
+                  <view class="flex flex-col min-w-0">
+                    <text class="text-xs font-bold truncate">{{ normalizedItem.addons.items[0].title }}</text>
+                    <text class="text-[11px] opacity-60 truncate">{{ normalizedItem.addons.items[0].excerpt }}</text>
+                  </view>
+                </view>
+                <button class="shrink-0 text-white text-xs font-bold px-4 py-1.5 rounded-full m-0 leading-normal" :style="{ backgroundColor: (normalizedItem.color ? normalizedItem.color + '10' : '#ffffff10') }">查看</button>
+              </view>
+            </view>
+          </view>
+          </topic-cover>
+        </template>
+
+        <!-- 布局 2.4: none-addon (纯大图封面) -->
+        <template v-else>
+        <topic-cover :item="normalizedItem">
+          <view class="relative w-full min-h-[440px] flex flex-col justify-between overflow-hidden">
+            <view class="relative flex-1 w-full">
+                <image v-if="normalizedItem.cover" :src="normalizedItem.cover" class="absolute inset-0 w-full h-full object-cover" mode="aspectFill" />
+                <view class="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/80"></view>
+
+                <view class="my-auto"></view>
+
+                <view class="relative z-10 flex flex-col gap-0.5 px-5 pb-4 shrink-0" :style="{ color: normalizedItem.color || '#ffffff' }">
+                  <text class="text-xs font-semibold tracking-wider uppercase opacity-70">{{ normalizedItem.tagName }}</text>
+                  <text class="text-xl font-bold leading-snug line-clamp-2">{{ normalizedItem.title }}</text>
+                  <text class="text-xs tracking-wider opacity-70 leading-snug line-clamp-1">{{ normalizedItem.excerpt }}</text>
+                </view>
+            </view>
+          </view>
+          </topic-cover>
+        </template>
+      </scale-card>
+    </template>
+
+</template>
+
+<script setup>
+import { computed, ref, onMounted, onUnmounted, getCurrentInstance } from 'vue'
+
+const props = defineProps({
+  item: { type: Object, required: true },
+  isSwiping: { type: Boolean, default: false },
+  disabledScale: { type: Boolean, default: false },
+  cardClass: { type: String, default: 'rounded-3xl' }
+})
+
+defineEmits(['item-click', 'avatar-click'])
+
+const instance = getCurrentInstance()
+const isVisible = ref(true)
+let observer = null
+
+/* ==========================================================
+   💡 【形状控制字典】：对应你的 square / circle / horizontal / vertical
+   ========================================================== */
+const shapeThemes = {
+  square: {
+    imageClass: 'w-24 h-24 rounded-3xl object-cover dropdown-pop-deep',        // 正方形适中
+    marginLeft: '54px',
+    gap: '12px',
+    offsetClass: 'pl-8',
+    bgGradient: 'from-purple-950 via-indigo-950 to-slate-900',
+  },
+  circle: {
+    imageClass: 'w-22 h-22 rounded-full border border-white/20', // 圆形稍微调大一点
+    marginLeft: '50px',
+    gap: '12px',
+    offsetClass: 'pl-8',
+    bgGradient: 'from-blue-950 via-slate-900 to-indigo-950',
+  },
+  horizontal: {
+    imageClass: 'w-36 h-22 rounded-xl',        // 横向长条
+    marginLeft: '78px',
+    gap: '12px',
+    offsetClass: 'pl-10',
+    bgGradient: 'from-amber-950 via-neutral-900 to-stone-950',
+  },
+  vertical: {
+    imageClass: 'w-22 h-30 rounded-xl',        // 竖长方形稍微控制高度
+    marginLeft: '50px',
+    gap: '12px',
+    offsetClass: 'pl-6',
+    bgGradient: 'from-emerald-950 via-teal-950 to-slate-900',
+  }
+}
+
+/* ==========================================================
+   💡 【统一数据归一化适配器 (NormalizedItem)】支持双模解析
+   ========================================================== */
+const normalizedItem = computed(() => {
+  const raw = props.item
+  if (!raw) return {}
+
+  // 1. 对应模板: frame === 'feed-easy' (说说/动态)
+  if (raw.frame === 'feed-easy' || raw.nickname) {
+    return {
+      frame: 'feed-easy',
+      id: raw.id,
+      avatar: raw.avatar,
+      nickname: raw.nickname,
+      level: raw.level || '修仙者',
+      role: raw.role,
+      niceid: raw.niceid,
+      time: raw.time,
+      content: raw.content
+    }
+  }
+
+  // 2. 💡 双模兼容：判断是“原生嵌套结构”还是“已经扁平化过的数据”
+  // 如果 raw 里面直接有 title/cover 且没有 acf.choose_topic，说明它本身就是扁平数据
+  const isFlatData = (raw.title !== undefined || raw.cover !== undefined) && !raw.acf?.choose_topic
+
+  const topic = isFlatData ? raw : (raw.acf?.choose_topic?.[0] || raw)
+  
+  const frame = topic.acf?.frame || raw.acf?.frame || raw.frame || 'none-addon'
+  const sharp = topic.acf?.addons?.sharp || raw.sharp || 'square'
+
+  // 提取新增的 tag 名称 (兼容数组、字符串或扁平的 tagName)
+  let tagName = '精选推荐'
+  const targetTag = topic.tag || raw.tag || raw.tagName
+  if (Array.isArray(targetTag) && targetTag.length > 0) {
+    tagName = targetTag[0].name || targetTag[0] || '精选推荐'
+  } else if (typeof targetTag === 'string') {
+    tagName = targetTag
+  }
+
+  // 处理颜色与跟随暗黑模式逻辑
+  let textColor = topic.color || raw.color || '#ffffff'
+  const followDarkVal = topic.followdark ?? raw.followdark
+  if (followDarkVal) {
+    textColor = '' 
+  }
+
+  // 标题解析兼容
+  const targetTitle = topic.title || raw.title
+  let rawTitle = '无标题'
+  if (typeof targetTitle === 'object' && targetTitle?.rendered) {
+    rawTitle = targetTitle.rendered
+  } else if (typeof targetTitle === 'string') {
+    rawTitle = targetTitle
+  }
+
+  // 摘要解析兼容
+  const targetExcerpt = topic.excerpt || raw.excerpt
+  let rawExcerpt = ''
+  if (typeof targetExcerpt === 'object' && targetExcerpt?.rendered) {
+    rawExcerpt = targetExcerpt.rendered.replace(/<\/?[^>]+(>|$)/g, "")
+  } else if (typeof targetExcerpt === 'string') {
+    rawExcerpt = targetExcerpt.replace(/<\/?[^>]+(>|$)/g, "")
+  }
+
+  const addonsData = topic.acf?.addons || raw.addons || { items: [] }
+  const videoData = topic.acf?.video || raw.video || null
+
+  return {
+    id: topic.id || raw.id,
+    frame: frame,
+    sharp: sharp,
+    title: rawTitle,
+    excerpt: rawExcerpt,
+    cover: topic.cover || raw.cover || '',
+    tagName: tagName,
+    color: textColor,
+    followdark: followDarkVal,
+    addons: addonsData,
+    video: videoData,
+    type: topic.type || raw.type,
+    posttype: topic.posttype || raw.posttype,
+    // 💡 顺手把 acf 补全，确保万无一失
+    acf: {
+      frame: frame,
+      addons: addonsData,
+      video: videoData
+    }
+  }
+})
+
+// 💡 动态计算：根据归一化的 sharp 匹配对应的样式与背景渐变
+const currentTheme = computed(() => {
+  return shapeThemes[normalizedItem.value.sharp] || shapeThemes.square
+})
+
+const seededShuffle = (arr: any[], seed: number): any[] => {
+  const result = [...arr]
+  let s = seed
+  for (let i = result.length - 1; i > 0; i--) {
+    s = (s * 9301 + 49297) % 233280
+    const j = Math.floor((s / 233280) * (i + 1))
+    ;[result[i], result[j]] = [result[j], result[i]]
+  }
+  return result
+}
+
+const row1Items = computed(() => {
+  const items = normalizedItem.value.addons?.items || []
+  if (items.length === 0) return []
+  // 用 id 做种子，列表页和详情页顺序绝对一致
+  const seed = (normalizedItem.value.id || 1) as number
+  const shuffled = seededShuffle(items, seed)
+  return [...shuffled, ...shuffled, ...shuffled]
+})
+
+const row2Items = computed(() => {
+  const items = normalizedItem.value.addons?.items || []
+  if (items.length === 0) return []
+  const seed = ((normalizedItem.value.id || 1) as number) * 31
+  const shuffled = seededShuffle(items, seed)
+  return [...shuffled, ...shuffled, ...shuffled]
+})
+
+/* ==========================================================
+   💡 【性能观察器控制】
+   ========================================================== */
+onMounted(() => {
+  if (normalizedItem.value.frame === 'move-addon') {
+    try {
+      observer = uni.createIntersectionObserver(instance.proxy)
+      observer.relativeToViewport({ top: 100, bottom: 100 }).observe(`#card-${normalizedItem.value.id}`, (res) => {
+        isVisible.value = res.intersectionRatio > 0
+      })
+    } catch (e) {
+      isVisible.value = true
+    }
+  }
+})
+
+onUnmounted(() => {
+  if (observer) {
+    observer.disconnect()
+  }
+})
+</script>
+
+<style scoped>
+/* 第一行：从 0 滚到 -33.33%（因为复制了 3 份，滚动一份的距离刚好无缝循环） */
+@keyframes marqueeLeft {
+  0% { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(-33.33%, 0, 0); }
+}
+
+.animate-marquee-left {
+  display: flex;
+  width: max-content;
+  animation: marqueeLeft 35s linear infinite;
+  will-change: transform;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+}
+</style>

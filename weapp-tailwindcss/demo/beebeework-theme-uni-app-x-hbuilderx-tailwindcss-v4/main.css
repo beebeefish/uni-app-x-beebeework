@@ -1,0 +1,226 @@
+@import "tailwindcss";
+
+@plugin "@iconify/tailwind4";
+/* @config "./tailwind.config.ts"; */
+
+@source "./App.uvue";
+@source "./pages/**/*.{uts,uvue}";
+@source "./components/**/*.{uts,uvue}";
+@source "./stores/**/*.{uts,uvue}";
+@source "./views/**/*.{uts,uvue}";
+@source not "./unpackage/**/*";
+@source not "./uni_modules/**/*";
+
+
+
+@plugin "@iconify/tailwind4" {
+  /* 可选：自定义前缀（默认是 "icon"） */
+  prefix: "i";
+  scale: 1.1;
+}
+
+@custom-variant hero-show (&:where([class~="hero-show"], [class~="hero-show"] *));
+@custom-variant cookie-show (&:where([class~="cookie-show"], [class~="cookie-show"] *));
+
+
+:root {
+  --shadow-dropdown-base: 0 0 30px rgba(0,0,0,0.04);
+  --shadow-dropdown-deep: 0 0 20px rgba(0,0,0,0.08);
+  --shadow-dropdown: 0 8px 24px rgba(0, 0, 0, 0.18);
+}
+
+.dark {
+  --shadow-dropdown-base: 0 0 30px rgba(255,255,255,0.04);
+  --shadow-dropdown-deep: 0 0 20px rgba(255,255,255,0.08);
+  --shadow-dropdown: 0 8px 24px rgba(0, 0, 0, 0.18);
+}
+
+
+@theme { 
+}
+
+@utility beebeepage {
+  view,label,swiper,swiper-item,movable-area,movable-view,cover-view,list-item,navigator,radio-group,checkbox-group {
+    @apply !overflow-visible;
+  }
+
+  .overflow-hidden {
+    @apply !overflow-hidden;
+  }
+
+  .overflow-visible {
+     @apply !overflow-visible;
+  }
+}
+
+@utility active-click-base {
+  /* @apply transition-all duration-300 ease-in-out; */
+  @apply overflow-auto;
+}
+
+@utility backdrop-blur-base {
+  @apply backdrop-blur-xs;
+  backdrop-filter: blur(var(--blur-xs));
+}
+
+@utility backdrop-blur-deep {
+  @apply backdrop-blur-md;
+  backdrop-filter: blur(var(--blur-md));
+}
+
+@utility dropdown-pop-base {
+  @apply bg-white/80 dark:bg-neutral-900/80 shadow-[var(--shadow-dropdown-base)] border-[0.5px] border-black/5 dark:border-white/10;
+}
+
+@utility dropdown-pop-deep {
+  @apply bg-white/80 dark:bg-neutral-900/80 shadow-[var(--shadow-dropdown-deep)] border-[0.5px] border-black/5 dark:border-white/10;
+}
+
+@utility dropdown-pop {
+  @apply bg-white/80 dark:bg-neutral-900/80 shadow-[var(--shadow-dropdown)] border-[0.5px] border-white/20 dark:border-white/5;
+}
+
+@utility gold-area {
+  /* 按钮组件 */
+  @apply focus:outline-hidden bg-[#F6F0E4] dark:bg-[#3F392D];
+}
+
+@utility gold-btn {
+  /* 按钮组件 */
+  @apply focus:outline-hidden bg-[#F6F0E4] dark:bg-[#3F392D] text-[#937A5A] dark:text-[#D7C598] cursor-pointer transition-colors ease-out disabled:opacity-50 disabled:pointer-events-none aria-disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:cursor-not-allowed;
+}
+
+@utility primary-btn {
+  /* 按钮组件 */
+  @apply focus:outline-hidden bg-neutral-800 dark:bg-neutral-200 text-neutral-200 dark:text-neutral-800 hover:text-white dark:hover:text-black hover:bg-neutral-700 dark:hover:bg-neutral-300 cursor-pointer transition-colors ease-out disabled:opacity-50 disabled:pointer-events-none aria-disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:cursor-not-allowed;
+}
+
+@utility orange-btn {
+  @apply focus:outline-hidden bg-yellow-200 hover:bg-yellow-200 text-yellow-800 dark:text-yellow-500 dark:bg-yellow-800/30 dark:hover:bg-yellow-800/20 cursor-pointer transition-colors ease-out disabled:opacity-50 disabled:pointer-events-none aria-disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:cursor-not-allowed;
+}
+
+@utility orange-btn-active {
+  @apply focus:outline-hidden bg-yellow-500 text-white cursor-pointer transition-colors ease-out disabled:opacity-50 disabled:pointer-events-none aria-disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:cursor-not-allowed;
+}
+
+/* 通用激活/选中状态：适配深浅色模式，使用 neutral 或系统主题色复用 */
+@utility btn-active {
+  @apply focus:outline-hidden bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900 cursor-pointer transition-colors ease-out disabled:opacity-50 disabled:pointer-events-none;
+}
+
+/* 带有边框的通用激活/选中状态 */
+@utility border-btn-active {
+  @apply focus:outline-hidden border border-neutral-900 dark:border-neutral-100 bg-neutral-900 text-white dark:bg-neutral-100 dark:text-neutral-900 cursor-pointer transition-colors ease-out disabled:opacity-50 disabled:pointer-events-none;
+}
+
+@utility blue-btn {
+  @apply focus:outline-hidden bg-blue-50 hover:bg-blue-100 text-blue-600 dark:text-blue-600 cursor-pointer transition-colors ease-out disabled:opacity-50 disabled:pointer-events-none aria-disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:cursor-not-allowed;
+}
+
+@utility blue-btn-active {
+  @apply focus:outline-hidden bg-blue-500 text-white cursor-pointer transition-colors ease-out disabled:opacity-50 disabled:pointer-events-none aria-disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:cursor-not-allowed;
+}
+
+@utility secondary-btn {
+  @apply focus:outline-hidden bg-neutral-200 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-300 hover:bg-neutral-300 dark:hover:bg-neutral-700 cursor-pointer transition-colors ease-out disabled:opacity-50 disabled:pointer-events-none aria-disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:cursor-not-allowed;
+}
+
+
+@utility muted-btn {
+  @apply focus:outline-hidden bg-neutral-100  dark:bg-neutral-800 text-neutral-500 dark:text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700 cursor-pointer transition-colors ease-out disabled:opacity-50 disabled:pointer-events-none aria-disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:cursor-not-allowed;
+}
+
+@utility close-btn {
+  @apply focus:outline-hidden text-neutral-500 dark:text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer transition-colors ease-out disabled:opacity-50 disabled:pointer-events-none;
+}
+
+@utility low-muted-btn {
+  @apply focus:outline-hidden bg-neutral-50 dark:bg-neutral-800/60 text-neutral-500 dark:text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer transition-colors ease-out disabled:opacity-50 disabled:pointer-events-none aria-disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:cursor-not-allowed;
+}
+
+/* @utility accent-btn {
+  @apply focus:outline-hidden text-neutral-500 dark:text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-300 hover:bg-neutral-100 md:hero-show:hover:bg-neutral-100/10 dark:hover:bg-neutral-800/50 md:hero-show:dark:hover:bg-neutral-800/10 cursor-pointer transition-colors ease-out disabled:opacity-50 disabled:pointer-events-none aria-disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:cursor-not-allowed;
+} */ 
+
+@utility accent-btn {
+  @apply focus:outline-hidden text-neutral-500 dark:text-neutral-500 transition-colors ease-out;
+  @apply hover:text-neutral-900 dark:hover:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800/50;
+  
+  /* 当处于 hero-show 模式时的覆盖样式 */
+  @apply md:hero-show:hover:bg-white/10 md:hero-show:dark:hover:bg-white/10 md:hero-show:text-black/60 md:hero-show:dark:text-white/60 md:hero-show:hover:text-black md:hero-show:dark:hover:text-white;
+
+  @apply disabled:opacity-50 disabled:pointer-events-none aria-disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:cursor-not-allowed;
+}
+
+/* @utility border-accent-btn {
+  @apply focus:outline-hidden border text-neutral-500 dark:text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800/50 cursor-pointer transition-colors ease-out disabled:opacity-50 disabled:pointer-events-none;
+} */
+@utility border-accent-btn {
+  /* 1. 基础样式 */
+  @apply focus:outline-hidden border border-gray-300/50 dark:border-white/10 text-neutral-500 dark:text-neutral-500 transition-colors ease-out;
+  @apply disabled:opacity-50 disabled:pointer-events-none aria-disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:cursor-not-allowed;
+
+  /* 2. 普通模式下的 Hover */
+  @apply hover:text-neutral-900 dark:hover:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800/50;
+
+  /* 3. Hero-show 模式下的覆盖 (当父级有 .hero-show 时) */
+  /* 文字和边框变为白色半透明，Hover 时背景更淡 */
+  @apply md:hero-show:border-white/10 md:hero-show:dark:border-white/10;
+  @apply md:hero-show:hover:bg-white/10 md:hero-show:dark:hover:bg-white/10 ;
+}
+
+
+
+@utility accent-btn-active {
+  @apply focus:outline-hidden text-gray-900 dark:text-neutral-300 bg-gray-100/90 dark:bg-neutral-800/50 disabled:opacity-50 disabled:pointer-events-none;
+}
+
+@utility border-accent-btn-active {
+  @apply focus:outline-hidden border border-gray-300/50 dark:border-white/10 text-neutral-900 dark:text-neutral-300 bg-neutral-100 dark:bg-neutral-800/50 disabled:opacity-50 disabled:pointer-events-none;
+}
+
+@utility destructive-btn {
+  @apply focus:outline-hidden text-neutral-500 dark:text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-400 hover:bg-white dark:hover:bg-neutral-800 cursor-pointer transition-colors ease-out disabled:opacity-50 disabled:pointer-events-none;
+}
+
+@utility copy-btn {
+  @apply text-neutral-400 hover:text-neutral-900 dark:text-neutral-500 dark:hover:text-neutral-200 cursor-pointer transition-colors ease-out disabled:opacity-50 disabled:pointer-events-none;
+}
+
+
+
+@utility muted-input {
+  /* 1. 基础样式 */
+  @apply font-normal py-2 px-3 block w-full text-sm rounded-full transition-all duration-300;
+  @apply bg-neutral-100 border border-neutral-100 dark:bg-neutral-700/90 dark:border-neutral-700/90;
+  @apply focus:outline-hidden focus:ring-transparent disabled:opacity-50 disabled:pointer-events-none aria-disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:cursor-not-allowed;
+  @apply text-neutral-900 dark:text-white placeholder-gray-400 dark:placeholder-white/50;
+
+  /* 2. 普通聚焦状态 */
+  @apply focus:border-neutral-200 dark:focus:border-neutral-700/90;
+
+  /* 3. Hero-show 模式覆盖 */
+  /* 背景变淡，边框变细微白色透明，文字和占位符变白 */
+  @apply md:hero-show:!bg-white/10 md:hero-show:!border-white/10 md:hero-show:!text-black/80 md:hero-show:!placeholder-black/50 md:hero-show:dark:!bg-white/10 md:hero-show:dark:!border-white/10 md:hero-show:dark:!placeholder-white/50 md:hero-show:dark:!text-white/80;
+     
+  /* @apply md:hero-show:focus:!bg-neutral-100/40 md:hero-show:focus:!border-neutral-100/60 md:hero-show:dark:focus:!bg-white/40 md:hero-show:dark:focus:!border-white/60; */
+}
+
+@utility accent-input {
+  /* 输入框组件 */
+  @apply font-normal py-2 px-3 block w-full text-sm rounded-full bg-white border-2 border-neutral-100 dark:bg-neutral-950 dark:border-neutral-800 focus:outline-hidden focus:border-neutral-100 dark:focus:border-neutral-900 focus:ring-transparent disabled:opacity-50 disabled:pointer-events-none dark:text-neutral-400 placeholder-neutral-400 dark:placeholder-neutral-500;
+}
+
+@utility create-input {
+  /* 输入框组件 */
+  @apply font-normal py-2 px-3 block w-full text-sm rounded-lg bg-white dark:bg-neutral-950 border border-gray-300/50 dark:border-white/10 focus:outline-hidden focus:ring-2 focus:ring-gray-900 dark:focus:ring-neutral-100 disabled:opacity-50 disabled:pointer-events-none dark:text-neutral-400 placeholder-neutral-400 dark:placeholder-neutral-500;
+}
+
+
+@utility secondary-input {
+  @apply block text-center bg-neutral-100 dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 text-sm transition-all rounded-xl text-sm focus:border-2 focus:border-black dark:focus:border-white focus:outline-hidden focus:ring-0 ease-out disabled:opacity-50 disabled:pointer-events-none;
+}
+
+
+
+

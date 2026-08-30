@@ -1,0 +1,40 @@
+{
+  "name": "tailwindcss-core-plugins-extractor",
+  "type": "module",
+  "version": "0.2.0",
+  "description": "tailwindcss-core-plugins-extractor",
+  "author": "ice breaker <1324318532@qq.com>",
+  "license": "MIT",
+  "homepage": "https://tw.icebreaker.top",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sonofmagic/weapp-tailwindcss.git",
+    "directory": "packages/tailwindcss-core-plugins-extractor"
+  },
+  "bugs": {
+    "url": "https://github.com/sonofmagic/weapp-tailwindcss/issues"
+  },
+  "keywords": [
+    "tailwindcss",
+    "core-plugins",
+    "extractor"
+  ],
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": "^20.19.0 || >=22.12.0"
+  },
+  "scripts": {
+    "extract": "node scripts/main.js",
+    "build": "tsdown",
+    "sync": "cnpm sync tailwindcss-core-plugins-extractor"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org"
+  }
+}

@@ -1,0 +1,234 @@
+---
+id: best-practices
+title: 原子化 CSS 最佳实践
+description: 设计 token、variants、性能与代码评审清单
+sidebar_position: 4
+keywords:
+  - tailwindcss
+  - 教程
+  - 原子化
+  - CSS
+  - 最佳实践
+  - best practices
+  - weapp-tailwindcss
+  - 小程序
+  - 微信小程序
+  - uni-app
+  - taro
+  - rax
+  - mpx
+---
+
+import TailwindTopicHero from '@site/src/components/docs/TailwindTopicHero'
+
+<TailwindTopicHero topicId="tailwindcss/best-practices" title="原子化 CSS 最佳实践" />
+
+## 先给结论
+
+- 如果你只打算记住这一页的 3 件事，就记下面这 3 条：
+- 先建设计体系，再写类名。不要让每个组件自己发明颜色、间距和尺寸。
+- 先收敛组件变体，再谈复用。不要把 `className` 拼接当作唯一扩展方式。
+- 先验证产物，再相信感觉。包体、扫描范围、动态类都应该有检查手段。
+
+## 为什么很多团队会把 Tailwind 用乱
+
+- 因为它上手太快，容易直接跳过“设计约束”这一步。
+- 因为它试验成本低，组件在早期很顺手，但随着状态增多，类名会在业务代码里蔓延。
+- 因为很多问题不是马上爆炸，而是等到评审、迁移、换主题、接 AI 时才暴露。
+
+所以这一页不是教你“还能再写哪些类”，而是帮你建立一套不容易失控的使用方式。
+
+## 设计体系与 tokens
+
+- 先把色板、间距、圆角、阴影、字号这些核心值定成 tokens，并映射到 CSS 变量或 `@theme inline`。
+- 最好保留一份“设计稿值 -> token 名称”的对照表。它看起来像文档工作，实际上能显著降低新人理解成本。
+- 主题切换建议通过 `data-theme` 或 `.dark` 改 token，不要在 class 里直接写颜色值。
+- 如果有多品牌需求，优先把“品牌变量”和“暗色变量”拆开管理，不然很容易相互污染。
+
+除了视觉 token，布局也值得抽成一层稳定组合。这样团队记住的是模式，而不是每次从头拼字符串。
+
+### 反例对照：不要让值散落在组件里
+
+```tsx title="不推荐：裸值直接写进业务组件"
+export function PromoCard() {
+  return (
+    <section className="rounded-[18px] bg-[#3b82f6] px-[18px] py-[14px] text-[15px] text-white shadow-[0_8px_30px_rgba(59,130,246,0.22)]">
+      限时活动
+    </section>
+  )
+}
+```
+
+```tsx title="推荐：先对齐 token，再消费 token"
+export function PromoCard() {
+  return (
+    <section className="rounded-card bg-brand-500 px-4 py-3 text-sm text-white shadow-brand">
+      限时活动
+    </section>
+  )
+}
+```
+
+前一种写法短期看更快，长期的问题是换主题、统一视觉、做评审时都很难收敛。
+
+```ts
+// Stack（竖向间距统一）
+const stack = 'flex flex-col gap-4'
+// Cluster（行内 wrap 排布，适合标签/按钮组）
+const cluster = 'flex flex-wrap items-center gap-2'
+// Sidebar（主体 + 侧栏）
+const sidebar = 'grid gap-4 lg:grid-cols-[1fr,360px]'
+```
+
+## 组件与变体
+
+这部分的核心原则是：把变化集中，把默认值写死。
+
+- 用 `cva`/`tv` 描述 variants/defaultVariants/compoundVariants，示例：
+
+```ts
+const card = cva('rounded-2xl border bg-card/80 shadow-sm transition-all', {
+  variants: {
+    tone: { neutral: 'border-border', brand: 'border-primary/40 shadow-lg', subtle: 'border-muted bg-muted/60' },
+    interactive: { true: 'hover:-translate-y-0.5 hover:shadow-md' },
+  },
+  defaultVariants: { tone: 'neutral', interactive: true },
+})
+```
+
+常见组合方式：
+
+- `group`/`peer`：适合父子联动或兄弟联动，例如 hover 某一项时带动图标或描述文案变化。
+- `aria-*`：适合表单和交互状态，例如 `aria-invalid`、`aria-busy`，能减少很多额外 JS 判断。
+- `data-*`：适合主题和业务状态，例如 `data-theme`、`data-state`，语义通常比自造类名更清楚。
+- `tv` slots：适合卡片、弹窗、菜单这类多槽组件，可以把 header/body/footer 的类一起收敛。
+
+这里最常见的坏味道是：状态很多，但状态逻辑分散在不同组件里。只要出现这种情况，后续维护成本一定会上升。
+
+### 反例对照：不要在业务组件里反复拼大串 class
+
+```tsx title="不推荐：状态散落在业务组件里"
+export function Notice({ tone = 'info', dense = false }) {
+  return (
+    <div
+      className={[
+        'rounded-xl border text-sm',
+        tone === 'info' ? 'border-sky-200 bg-sky-50 text-sky-900' : '',
+        tone === 'danger' ? 'border-red-200 bg-red-50 text-red-900' : '',
+        dense ? 'px-2 py-1' : 'px-4 py-3',
+      ].join(' ')}
+    >
+      内容
+    </div>
+  )
+}
+```
+
+```tsx title="推荐：把变化集中到 builder"
+const notice = cva('rounded-xl border text-sm', {
+  variants: {
+    tone: {
+      info: 'border-sky-200 bg-sky-50 text-sky-900',
+      danger: 'border-red-200 bg-red-50 text-red-900',
+    },
+    dense: {
+      true: 'px-2 py-1',
+      false: 'px-4 py-3',
+    },
+  },
+  defaultVariants: {
+    tone: 'info',
+    dense: false,
+  },
+})
+```
+
+这里不是为了“必须上工具”，而是为了让状态和默认值集中在一个地方。
+
+### 业务场景范式
+
+- 表单：输入框用 `focus:ring` 加 `aria-invalid`，错误文案统一走 `text-destructive`，按钮禁用态走 `disabled:`，不要回到内联样式。
+- 数据表或列表：优先用 `grid`、`gap`、`minmax` 管列宽，选中态和 hover 态统一收敛到 `data-selected` 之类的状态属性。
+- 空状态：给它一套固定骨架，例如 `flex flex-col items-center gap-3 text-center text-muted-foreground`，避免每个页面都重新拼。
+
+## 布局与响应式
+
+- 优先先定容器，再定内容。像 `max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8` 这种基础容器，应该尽早统一。
+- `clamp()` 和 container queries 很适合做“更自然的响应式”，尤其是标题字号和面板栅格。
+- 尽量减少 flex/grid 的层层嵌套，能用 `gap` 解决的，不要再靠 margin 互推。
+- 对大多数内容区布局，栅格通常比一层层 `md:flex-row` 更直观、更容易审阅。
+
+示例（容器查询 + clamp）：
+
+```css
+/* 在容器上启用查询 */
+.dashboard { @apply container mx-auto px-4; container-type: inline-size; container-name: dash; }
+
+@container dash (min-width: 720px) {
+  .stat-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+.title-fluid { font-size: clamp(1.25rem, 1.8vw, 1.5rem); }
+```
+
+> 需要在微前端/组件库/第三方嵌入中避免样式污染？详见「[样式隔离方案与原理](./style-isolation)」。
+
+## 性能与体积
+
+- 先盯 `content`，再谈优化。很多 CSS 膨胀问题，根源其实是扫描范围太宽或者存在字符串拼类。
+- 构建后要看体积，不要只看页面“似乎能跑”。最好给关键页面留一个基线，比如首页 CSS 不超过多少 KB。
+- 必要的动态类，尽量回退到 `@apply`、`cva` 或受限枚举，而不是让运行时自由拼接任意值。
+- Tailwind v4 的 JIT 已经很快，真正拖慢冷启动的往往是 content 失控和插件堆太多。
+
+### 反例对照：避免运行时拼接任意类
+
+```ts title="不推荐：运行时拼接任意类"
+const cls = `bg-${color}-${level} px-${size}`
+```
+
+```ts title="推荐：把动态空间收敛成枚举"
+const badge = cva('inline-flex items-center rounded-full', {
+  variants: {
+    color: {
+      brand: 'bg-brand-500 text-white',
+      neutral: 'bg-muted text-foreground',
+    },
+    size: {
+      sm: 'px-2 py-1 text-xs',
+      md: 'px-3 py-1.5 text-sm',
+    },
+  },
+})
+```
+
+后一种写法不只是更稳，也更容易让构建工具、审查者和 AI 都读懂。
+
+## 代码评审清单（示例）
+
+下面这张清单更适合在评审时直接过一遍，而不是等到出问题再回头补规范。
+
+- 类名是否只使用预设 token？有无裸写色值/字号？
+- 是否使用了 `cn`/`tailwind-merge` 处理动态组合？有无同类冲突（`p-4` vs `p-2`）？
+- variants 是否集中在组件工厂（`cva`/`tv`），而不是散落在业务组件？默认值是否写死？
+- 有无 `group`/`peer`/`aria`/`data-*` 的滥用或缺乏语义？关系链是否超过 2 层？
+- content 匹配是否过宽，是否引入了动态类？是否有字符串拼接类名？
+- 文档/示例是否同步更新运行命令与截图占位？有没有给出「推荐类名组合」列表？
+
+快速展示（表格版）：
+
+| 维度 | 要求 | 检查方式 |
+| --- | --- | --- |
+| tokens | 不写裸色/裸间距 | 搜索 `#`/`px`/`rgb(`；查看配置映射 |
+| variants | 集中在 `cva`/`tv` | 查 `variants`/`compoundVariants` 是否在单点声明 |
+| merge | 动态类统一走 `cn` | 搜索 `clsx`/`classNames` 是否零散存在 |
+| 关系类 | `group/peer/aria/data` ≤ 2 层 | 抽查组件 class 字符串长度与层级 |
+| content | 精准扫描模板 | 检查 `tailwind.config` 的 content 路径 |
+| 产物 | CSS 体积可控 | 构建后查看 CSS 体积/coverage |
+
+## 常见坑与对策
+
+- 类顺序冲突：使用 `tailwind-merge`；在组件入口统一使用 `cn`，不要散落 `clsx`。
+- 自定义色未注册：用 tokens 或在 `@theme`/配置中声明；避免 `text-[#123]` 这类零散值，必要时创建 `brand-50/100/...`。
+- 断点误用：确认 mobile-first；自测关键断点（sm/md/lg/xl），尤其是 `gap`/`grid` 在小屏的表现。
+- preflight 冲突：在可发布组件库或微前端中谨慎启用，可局部关闭。
+- 插件过度：typography/forms 很方便，但要检查是否影响宿主样式；可以按需导入或局部关闭。

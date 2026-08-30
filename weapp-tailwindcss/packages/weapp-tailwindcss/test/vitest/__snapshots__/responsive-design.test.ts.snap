@@ -1,0 +1,69 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`responsive-design > 2xl:text-sm 1`] = `
+"@media (min-width: 1536px) {
+    .\\32xl\\:text-sm {
+        font-size: 0.875rem;
+        line-height: 1.25rem
+    }
+}"
+`;
+
+exports[`responsive-design > 2xl:text-sm 2`] = `
+"@media (min-width: 1536px) {
+    ._2xl_ctext-sm {
+        font-size: 0.875rem;
+        line-height: 1.25rem
+    }
+}"
+`;
+
+exports[`responsive-design > space-y-4 cssChildCombinatorReplaceValue string array type 1`] = `
+".space-y-4 > :not([hidden]) ~ :not([hidden]) {
+    --tw-space-y-reverse: 0;
+    margin-top: calc(1rem * calc(1 - var(--tw-space-y-reverse)));
+    margin-bottom: calc(1rem * var(--tw-space-y-reverse))
+}"
+`;
+
+exports[`responsive-design > space-y-4 cssChildCombinatorReplaceValue string array type 2`] = `
+".space-y-4>view+view,.space-y-4>view+text,.space-y-4>text+view,.space-y-4>text+text {
+    --tw-space-y-reverse: 0;
+    margin-top: calc(1rem * (1 - var(--tw-space-y-reverse)));
+    margin-bottom: calc(1rem * var(--tw-space-y-reverse))
+}"
+`;
+
+exports[`responsive-design > space-y-4 cssChildCombinatorReplaceValue string type 1`] = `
+".space-y-4 > :not([hidden]) ~ :not([hidden]) {
+    --tw-space-y-reverse: 0;
+    margin-top: calc(1rem * calc(1 - var(--tw-space-y-reverse)));
+    margin-bottom: calc(1rem * var(--tw-space-y-reverse))
+}"
+`;
+
+exports[`responsive-design > space-y-4 cssChildCombinatorReplaceValue string type 2`] = `
+".space-y-4>view,text,button,input~view,text,button,input+view,text,button,input~view,text,button,input {
+    --tw-space-y-reverse: 0;
+    margin-top: calc(1rem * (1 - var(--tw-space-y-reverse)));
+    margin-bottom: calc(1rem * var(--tw-space-y-reverse))
+}"
+`;
+
+exports[`responsive-design > xl:text-sm 1`] = `
+"@media (min-width: 1280px) {
+    .xl\\:text-sm {
+        font-size: 0.875rem;
+        line-height: 1.25rem
+    }
+}"
+`;
+
+exports[`responsive-design > xl:text-sm 2`] = `
+"@media (min-width: 1280px) {
+    .xl_ctext-sm {
+        font-size: 0.875rem;
+        line-height: 1.25rem
+    }
+}"
+`;

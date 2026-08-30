@@ -1,0 +1,169 @@
+---
+id: cva-and-variants
+title: cva 与 tailwind-variants 支持
+description: 使用 weapp-tailwindcss runtime 系列（@weapp-tailwindcss/cva 与 @weapp-tailwindcss/variants）内置的 cva()、tv() 等工具，快速封装跨端组件。
+keywords:
+  - 社区
+  - 模板
+  - 案例
+  - cva
+  - tailwind-variants
+  - 支持
+  - community
+  - merge
+  - cva and variants
+  - weapp-tailwindcss
+  - tailwindcss
+  - 小程序
+  - 微信小程序
+  - uni-app
+  - taro
+  - rax
+---
+
+`@weapp-tailwindcss/cva` 与 `@weapp-tailwindcss/variants` 对 `class-variance-authority`（cva）和 `tailwind-variants` 进行了运行时封装，保证输出类名与小程序编译期一致。
+
+:::tip 已迁移到 packages-runtime 体系
+详细用法与多端 Demo 请参考：  
+- [@weapp-tailwindcss/cva](/docs/community/packages-runtime/cva)  
+- [@weapp-tailwindcss/variants](/docs/community/packages-runtime/variants)  
+- [@weapp-tailwindcss/variants-v3](/docs/community/packages-runtime/variants-v3)
+:::
+
+## 安装
+
+```bash npm2yarn
+pnpm add @weapp-tailwindcss/cva
+pnpm add @weapp-tailwindcss/variants
+```
+
+> 运行时已经内置 `class-variance-authority` / `tailwind-variants`，无需再安装上游依赖。
+
+## cva()
+
+`@weapp-tailwindcss/cva` 直接封装上游 `cva`，并对输出做 escape；返回类型与 `VariantProps` 与原库保持一致。内部带有 256 条短缓存。
+
+```ts
+import { cva } from '@weapp-tailwindcss/cva'
+
+const button = cva(
+  'inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors',
+  {
+    variants: {
+      tone: {
+        primary: 'bg-[#2563EB] text-white hover:bg-[#1D4ED8]',
+        outline: 'border border-border/60 bg-transparent',
+      },
+      size: {
+        sm: 'h-8 px-3',
+        md: 'h-9 px-4',
+        lg: 'h-10 px-6',
+      },
+    },
+    defaultVariants: {
+      tone: 'primary',
+      size: 'md',
+    },
+  },
+)
+
+button({ tone: 'outline', size: 'sm' })
+// => 已转义类名
+```
+
+如需在 Web/H5 端关闭转义，可用 `create`：
+
+```ts
+import { create } from '@weapp-tailwindcss/cva'
+
+// 跨平台框架请自行判断是否为 H5 构建，通常可从环境变量读取。
+const isH5 = true
+const { cva: cvaForWeb } = create({ escape: !isH5, unescape: !isH5 })
+```
+
+### Live Demo
+
+```jsx live
+function () {
+  return <CvaDemo/>
+}
+```
+
+## tailwind-variants
+
+`@weapp-tailwindcss/variants` 基于 `tailwind-variants`，并默认集成 `@weapp-tailwindcss/merge` 的合并逻辑：
+
+- `tv`：变体工厂（支持 `slots`、`compoundVariants`），返回的类名已转义。
+- `cn`：类名聚合器，**返回一个函数**，可选择是否启用 `twMerge`。
+- `cnBase`：只拼接并转义，不做合并。
+- `createTV`：创建带预设配置的 `tv` 工厂。
+- `create`：为多端项目控制 escape/unescape。
+
+### 组合变体
+
+```ts
+import { tv } from '@weapp-tailwindcss/variants'
+
+const badge = tv({
+  base: 'inline-flex items-center rounded-full px-2 text-xs font-semibold',
+  variants: {
+    tone: {
+      neutral: 'bg-[#F4F4F5] text-[#18181B]',
+      success: 'bg-[#DCFCE7] text-[#166534]',
+      danger: 'bg-[#FEE2E2] text-[#B91C1C]',
+    },
+    soft: {
+      true: 'bg-opacity-75',
+    },
+  },
+  compoundVariants: [
+    {
+      tone: 'danger',
+      soft: true,
+      class: 'bg-[#F87171] text-white',
+    },
+  ],
+  defaultVariants: {
+    tone: 'neutral',
+  },
+})
+
+badge({ tone: 'success' })
+// => 已转义类名
+```
+
+### cn / cnBase
+
+```ts
+import { cn, cnBase } from '@weapp-tailwindcss/variants'
+
+const mergeLater = cn('text-[#ececec]', 'text-[#ECECEC]')
+mergeLater() // => 合并 + escape
+
+mergeLater({ twMerge: false }) // => 仅 escape，不合并
+
+cnBase('text-[#ececec]', 'text-[#ECECEC]') // => 仅 escape
+```
+
+### 多端项目
+
+```ts
+import { create } from '@weapp-tailwindcss/variants'
+
+// 跨平台框架请自行判断是否为 H5 构建，通常可从环境变量读取。
+const isH5 = true
+const { tv, cn } = create({ escape: !isH5, unescape: !isH5 })
+```
+
+### Live Demo
+
+```jsx live
+function () {
+  return <VariantsDemo/>
+}
+```
+
+## Tailwind v3 项目
+
+- `tailwindcss@3` ➜ 请使用 `@weapp-tailwindcss/variants-v3`
+- Web-only 项目也可直接使用 `tailwind-variant-v3`

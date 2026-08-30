@@ -1,0 +1,106 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "resolveJsonModule": true,
+    "types": ["node", "vitest/globals"],
+    "allowJs": true,
+    "strict": true,
+    "exactOptionalPropertyTypes": true,
+    "noImplicitOverride": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "noUncheckedIndexedAccess": true,
+    "noEmit": true,
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true
+  },
+  "references": [
+    {
+      "path": "./packages-runtime/cva"
+    },
+    {
+      "path": "./packages-runtime/merge"
+    },
+    {
+      "path": "./packages-runtime/merge-v3"
+    },
+    {
+      "path": "./packages-runtime/runtime"
+    },
+    {
+      "path": "./packages-runtime/tailwind-variant-v3"
+    },
+    {
+      "path": "./packages-runtime/theme-transition"
+    },
+    {
+      "path": "./packages-runtime/typography"
+    },
+    {
+      "path": "./packages-runtime/ui"
+    },
+    {
+      "path": "./packages-runtime/variants"
+    },
+    {
+      "path": "./packages-runtime/variants-v3"
+    },
+    {
+      "path": "./packages/babel"
+    },
+    {
+      "path": "./packages/debug-uni-app-x"
+    },
+    {
+      "path": "./packages/experimental"
+    },
+    {
+      "path": "./packages/init"
+    },
+    {
+      "path": "./packages/logger"
+    },
+    {
+      "path": "./packages/postcss"
+    },
+    {
+      "path": "./packages/reset"
+    },
+    {
+      "path": "./packages/shared"
+    },
+    {
+      "path": "./packages/tailwindcss-config"
+    },
+    {
+      "path": "./packages/tailwindcss-core-plugins-extractor"
+    },
+    {
+      "path": "./packages/tailwindcss-injector"
+    },
+    {
+      "path": "./packages/test-helper"
+    },
+    {
+      "path": "./packages/weapp-style-injector"
+    },
+    {
+      "path": "./packages/weapp-tailwindcss"
+    },
+    {
+      "path": "./packages/weapp-tw"
+    },
+    {
+      "path": "./packages/weapptw"
+    },
+    {
+      "path": "./packages/wetw"
+    },
+    {
+      "path": "./tools/weapp-tailwindcss-scripts"
+    }
+  ],
+  "files": []
+}

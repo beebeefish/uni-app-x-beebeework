@@ -1,0 +1,181 @@
+<template>
+	<cl-popup
+		v-model="visible"
+		:show-close="false"
+		:swipe-close-threshold="50"
+		:pt="{
+			inner: {
+				className: parseClass([[isDark, '!bg-zinc-700', '!bg-zinc-100']])
+			}
+		}"
+		:mask-closable="config.maskClosable"
+		:title="config.title"
+	>
+		<view class="cl-action-sheet" :class="[pt.className]">
+			<slot name="prepend"></slot>
+
+			<view class="cl-action-sheet__description" v-if="config.description != ''">
+				<cl-text
+					:pt="{
+						className: 'text-zinc-400 text-center'
+					}"
+					>{{ config.description }}</cl-text
+				>
+			</view>
+
+			<view class="cl-action-sheet__list" :class="[pt.list?.className]">
+				<view
+					class="cl-action-sheet__item"
+					:class="[`${isDark ? '!bg-zinc-800' : 'bg-white'}`, pt.item?.className]"
+					v-for="(item, index) in config.list"
+					:key="index"
+					:hover-class="`${isDark ? '!bg-zinc-900' : '!bg-zinc-50'}`"
+					:hover-stay-time="250"
+					@tap="onItemTap(item)"
+				>
+					<slot name="item" :item="item">
+						<cl-icon
+							:name="item.icon"
+							:pt="{
+								className: parseClass(['mr-1', pt.icon?.className])
+							}"
+							:size="pt.icon?.size"
+							:color="item.color"
+							v-if="item.icon != null"
+						></cl-icon>
+						<cl-text :color="item.color">{{ item.label }}</cl-text>
+					</slot>
+				</view>
+			</view>
+
+			<slot name="append"></slot>
+		</view>
+	</cl-popup>
+</template>
+
+<script setup lang="ts">
+import { ref, reactive, computed } from "vue";
+import type { ClActionSheetItem, ClActionSheetOptions, PassThroughProps } from "../../types";
+import { isDark, parseClass, parsePt, t } from "@/.cool";
+import type { ClIconProps } from "../cl-icon/props";
+
+defineOptions({
+	name: "cl-action-sheet"
+});
+
+defineSlots<{
+	prepend(): any;
+	append(): any;
+	item(props: { item: ClActionSheetItem }): any;
+}>();
+
+// 组件属性定义
+const props = defineProps({
+	// 透传样式配置
+	pt: {
+		type: Object,
+		default: () => ({})
+	}
+});
+
+// 透传样式类型定义
+type PassThrough = {
+	className?: string; // 根元素类名
+	item?: PassThroughProps; // 列表项样式
+	list?: PassThroughProps; // 列表样式
+	icon?: ClIconProps; // 图标样式
+};
+
+// 解析透传样式配置
+const pt = computed(() => parsePt<PassThrough>(props.pt));
+
+// 控制弹窗显示状态
+const visible = ref(false);
+
+// 操作表配置数据
+const config = reactive<ClActionSheetOptions>({
+	title: "", // 标题
+	list: [] // 操作列表
+});
+
+/**
+ * 关闭操作表
+ * 设置visible为false隐藏弹窗
+ */
+function close() {
+	visible.value = false;
+}
+
+/**
+ * 打开操作表
+ * @param options 操作表配置选项
+ */
+function open(options: ClActionSheetOptions) {
+	// 显示弹窗
+	visible.value = true;
+
+	// 更新标题
+	config.title = options.title;
+
+	// 更新描述
+	config.description = options.description ?? "";
+
+	// 更新操作列表
+	config.list = [...options.list] as ClActionSheetItem[];
+
+	// 取消按钮文本
+	config.cancelText = options.cancelText ?? t("取消");
+
+	// 是否显示取消按钮
+	config.showCancel = options.showCancel ?? true;
+
+	// 是否可以点击遮罩关闭
+	config.maskClosable = options.maskClosable ?? true;
+
+	// 如果需要显示取消按钮，添加到列表末尾
+	if (config.showCancel!) {
+		config.list.push({
+			label: config.cancelText!,
+			callback() {
+				close();
+			}
+		} as ClActionSheetItem);
+	}
+}
+
+/**
+ * 点击列表项事件处理
+ * @param item 被点击的操作项
+ */
+function onItemTap(item: ClActionSheetItem) {
+	// 如果存在回调函数则执行
+	if (item.callback != null) {
+		item.callback!();
+	}
+}
+
+// 暴露组件方法供外部调用
+defineExpose({
+	open,
+	close
+});
+</script>
+
+<style scoped lang="scss">
+.cl-action-sheet {
+	&__description {
+		@apply flex flex-row items-center justify-center;
+		margin-bottom: 15px;
+	}
+
+	&__list {
+		padding: 0 10px;
+	}
+
+	&__item {
+		@apply flex flex-row items-center justify-center rounded-lg;
+		padding: 10px;
+		margin-bottom: 10px;
+	}
+}
+</style>

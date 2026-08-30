@@ -1,0 +1,1161 @@
+{
+  "generatedAt": "2026-02-23T18:35:34.337Z",
+  "options": {
+    "buildRuns": 3,
+    "hmrRuns": 5,
+    "hmrWatchRetries": 0,
+    "hmrTimeoutMs": 120000,
+    "runtimeRuns": 3,
+    "refBatchScales": [
+      10,
+      100,
+      1000,
+      10000,
+      1000000
+    ],
+    "refOpsPerRound": 160,
+    "refMaxElementsPerRound": 5000000,
+    "timeoutMs": 240000,
+    "runtimeTimeoutMs": 45000,
+    "pollMs": 180,
+    "skipHmr": false,
+    "skipRuntime": false,
+    "skipPrepare": false,
+    "outFile": "benchmark/framework-compare/data/framework-matrix-raw.json"
+  },
+  "cases": [
+    {
+      "key": "uni-app-vue3",
+      "label": "uni-app vue3",
+      "project": "benchmark/framework-compare/projects/uni-app-vue3",
+      "sourceProject": "demo/uni-app-vue3-vite",
+      "buildScript": "build",
+      "devScript": "dev:mp-weixin",
+      "hmrSourceFile": "src/pages/index/index.vue",
+      "hmrOutputFile": "dist/dev/mp-weixin/pages/index/index.wxml",
+      "buildOutputFile": "dist/build/mp-weixin/pages/index/index.wxml",
+      "runtimeRefPackage": "vue"
+    },
+    {
+      "key": "taro-vue3",
+      "label": "taro vue3",
+      "project": "benchmark/framework-compare/projects/taro-vue3",
+      "sourceProject": "demo/taro-vue3-app",
+      "buildScript": "build",
+      "devScript": "dev:weapp",
+      "hmrSourceFile": "src/pages/index/index.vue",
+      "hmrOutputFile": "dist/pages/index/index.js",
+      "buildOutputFile": "dist/pages/index/index.js",
+      "runtimeRefPackage": "vue"
+    },
+    {
+      "key": "weapp-vite-wevu",
+      "label": "weapp-vite wevu",
+      "project": "benchmark/framework-compare/projects/weapp-vite-wevu",
+      "sourceProject": "apps/vite-native-ts-skyline",
+      "buildScript": "build",
+      "devScript": "dev",
+      "hmrSourceFile": "miniprogram/pages/cart/index.vue",
+      "hmrOutputFile": "dist/pages/cart/index.wxml",
+      "buildOutputFile": "dist/pages/cart/index.wxml",
+      "runtimeRefPackage": "wevu"
+    }
+  ],
+  "rows": [
+    {
+      "key": "uni-app-vue3",
+      "label": "uni-app vue3",
+      "project": "benchmark/framework-compare/projects/uni-app-vue3",
+      "buildScript": "build",
+      "devScript": "dev:mp-weixin",
+      "buildMs": [
+        2272.908875,
+        1871.0146670000004,
+        1844.6461669999999
+      ],
+      "hmrMs": [
+        2056.088082999995,
+        1830.3869579999882,
+        1850.605459000013,
+        1826.9672919999866,
+        1859.5616670000018
+      ],
+      "hmrMode": "fallback-build",
+      "runtimeRounds": [
+        {
+          "batchSize": 10,
+          "opsPerRound": 160,
+          "rounds": [
+            {
+              "round": 1,
+              "checksum": 27200,
+              "roundTotalMs": 0.9186669999999992,
+              "opAvgMs": 0.0045937249999997935,
+              "opMedianMs": 0.0008954999999986057,
+              "opMinMs": 0.0007079999999959341,
+              "opMaxMs": 0.2664580000000001
+            },
+            {
+              "round": 2,
+              "checksum": 78400,
+              "roundTotalMs": 0.24704100000000295,
+              "opAvgMs": 0.000987218750000274,
+              "opMedianMs": 0.0008750000000006253,
+              "opMinMs": 0.0007909999999995421,
+              "opMaxMs": 0.00970800000000338
+            },
+            {
+              "round": 3,
+              "checksum": 129600,
+              "roundTotalMs": 0.22512499999999847,
+              "opAvgMs": 0.0009140875000002158,
+              "opMedianMs": 0.0008750000000006253,
+              "opMinMs": 0.0008330000000000837,
+              "opMaxMs": 0.0062910000000044874
+            }
+          ]
+        },
+        {
+          "batchSize": 100,
+          "opsPerRound": 160,
+          "rounds": [
+            {
+              "round": 1,
+              "checksum": 41600,
+              "roundTotalMs": 1.261416999999998,
+              "opAvgMs": 0.004199706250000057,
+              "opMedianMs": 0.0009999999999976694,
+              "opMinMs": 0.0008750000000006253,
+              "opMaxMs": 0.24866700000000108
+            },
+            {
+              "round": 2,
+              "checksum": 92800,
+              "roundTotalMs": 0.5206249999999955,
+              "opAvgMs": 0.0011028562499998174,
+              "opMedianMs": 0.0007920000000041227,
+              "opMinMs": 0.0007499999999964757,
+              "opMaxMs": 0.033707999999997185
+            },
+            {
+              "round": 3,
+              "checksum": 144000,
+              "roundTotalMs": 0.45212500000000233,
+              "opAvgMs": 0.0008406124999999154,
+              "opMedianMs": 0.0007919999999970173,
+              "opMinMs": 0.0007499999999964757,
+              "opMaxMs": 0.004584000000001254
+            }
+          ]
+        },
+        {
+          "batchSize": 1000,
+          "opsPerRound": 160,
+          "rounds": [
+            {
+              "round": 1,
+              "checksum": 185600,
+              "roundTotalMs": 4.071249999999999,
+              "opAvgMs": 0.002664056249999902,
+              "opMedianMs": 0.0009580000000006805,
+              "opMinMs": 0.0007909999999995421,
+              "opMaxMs": 0.12320900000000279
+            },
+            {
+              "round": 2,
+              "checksum": 236800,
+              "roundTotalMs": 3.974916999999998,
+              "opAvgMs": 0.0010333562499995174,
+              "opMedianMs": 0.0009159999999965862,
+              "opMinMs": 0.0007500000000035811,
+              "opMaxMs": 0.008707999999998606
+            },
+            {
+              "round": 3,
+              "checksum": 288000,
+              "roundTotalMs": 3.168875,
+              "opAvgMs": 0.0010494625000003754,
+              "opMedianMs": 0.0009374999999991473,
+              "opMinMs": 0.0007919999999970173,
+              "opMaxMs": 0.016166000000005454
+            }
+          ]
+        },
+        {
+          "batchSize": 10000,
+          "opsPerRound": 160,
+          "rounds": [
+            {
+              "round": 1,
+              "checksum": 1625600,
+              "roundTotalMs": 32.839,
+              "opAvgMs": 0.003686437499999995,
+              "opMedianMs": 0.00137499999999946,
+              "opMinMs": 0.0009170000000011669,
+              "opMaxMs": 0.1454999999999984
+            },
+            {
+              "round": 2,
+              "checksum": 1676800,
+              "roundTotalMs": 32.73320799999999,
+              "opAvgMs": 0.001987043749999806,
+              "opMedianMs": 0.0012089999999957968,
+              "opMinMs": 0.0009579999999971278,
+              "opMaxMs": 0.018167000000005373
+            },
+            {
+              "round": 3,
+              "checksum": 1728000,
+              "roundTotalMs": 38.95941599999999,
+              "opAvgMs": 0.0048900937500011565,
+              "opMedianMs": 0.0017295000000103755,
+              "opMinMs": 0.0010000000000047748,
+              "opMaxMs": 0.09375
+            }
+          ]
+        },
+        {
+          "batchSize": 1000000,
+          "opsPerRound": 5,
+          "rounds": [
+            {
+              "round": 1,
+              "checksum": 5000025,
+              "roundTotalMs": 96.205209,
+              "opAvgMs": 0.09180020000000297,
+              "opMedianMs": 0.05500000000000682,
+              "opMinMs": 0.03958399999999074,
+              "opMaxMs": 0.22570900000000904
+            },
+            {
+              "round": 2,
+              "checksum": 5000075,
+              "roundTotalMs": 100.00654200000002,
+              "opAvgMs": 0.04959199999999555,
+              "opMedianMs": 0.04029199999999378,
+              "opMinMs": 0.019583999999980506,
+              "opMaxMs": 0.10829200000000583
+            },
+            {
+              "round": 3,
+              "checksum": 5000125,
+              "roundTotalMs": 96.67962499999999,
+              "opAvgMs": 0.022433200000011765,
+              "opMedianMs": 0.025666000000001077,
+              "opMinMs": 0.01429200000001174,
+              "opMaxMs": 0.031125000000031378
+            }
+          ]
+        }
+      ],
+      "runtimeMode": "ref-bulk-value-update",
+      "summary": {
+        "build": {
+          "count": 3,
+          "mean": 1996.1899030000002,
+          "median": 1871.0146670000004,
+          "min": 1844.6461669999999,
+          "max": 2272.908875,
+          "stddev": 195.965756441638
+        },
+        "hmr": {
+          "count": 5,
+          "mean": 1884.721891799997,
+          "median": 1850.605459000013,
+          "min": 1826.9672919999866,
+          "max": 2056.088082999995,
+          "stddev": 86.54619369387324
+        },
+        "runtime": {
+          "scaleOrder": [
+            10,
+            100,
+            1000,
+            10000,
+            1000000
+          ],
+          "scales": {
+            "10": {
+              "batchSize": 10,
+              "opsPerRound": 160,
+              "count": 3,
+              "opAvgMs": {
+                "count": 3,
+                "mean": 0.0021650104166667608,
+                "median": 0.000987218750000274,
+                "min": 0.0009140875000002158,
+                "max": 0.0045937249999997935,
+                "stddev": 0.0017176200473140253
+              },
+              "opMedianMs": {
+                "count": 3,
+                "mean": 0.0008818333333332854,
+                "median": 0.0008750000000006253,
+                "min": 0.0008750000000006253,
+                "max": 0.0008954999999986057,
+                "stddev": 0.000009663792675264132
+              },
+              "roundTotalMs": {
+                "count": 3,
+                "mean": 0.4636110000000002,
+                "median": 0.24704100000000295,
+                "min": 0.22512499999999847,
+                "max": 0.9186669999999992,
+                "stddev": 0.3218975511100795
+              }
+            },
+            "100": {
+              "batchSize": 100,
+              "opsPerRound": 160,
+              "count": 3,
+              "opAvgMs": {
+                "count": 3,
+                "mean": 0.00204772499999993,
+                "median": 0.0011028562499998174,
+                "min": 0.0008406124999999154,
+                "max": 0.004199706250000057,
+                "stddev": 0.0015254421045208686
+              },
+              "opMedianMs": {
+                "count": 3,
+                "mean": 0.0008613333333329365,
+                "median": 0.0007920000000041227,
+                "min": 0.0007919999999970173,
+                "max": 0.0009999999999976694,
+                "stddev": 0.00009805214032316723
+              },
+              "roundTotalMs": {
+                "count": 3,
+                "mean": 0.7447223333333319,
+                "median": 0.5206249999999955,
+                "min": 0.45212500000000233,
+                "max": 1.261416999999998,
+                "stddev": 0.366426979011583
+              }
+            },
+            "1000": {
+              "batchSize": 1000,
+              "opsPerRound": 160,
+              "count": 3,
+              "opAvgMs": {
+                "count": 3,
+                "mean": 0.0015822916666665982,
+                "median": 0.0010494625000003754,
+                "min": 0.0010333562499995174,
+                "max": 0.002664056249999902,
+                "stddev": 0.0007649513331526303
+              },
+              "opMedianMs": {
+                "count": 3,
+                "mean": 0.0009371666666654713,
+                "median": 0.0009374999999991473,
+                "min": 0.0009159999999965862,
+                "max": 0.0009580000000006805,
+                "stddev": 0.000017148048157530646
+              },
+              "roundTotalMs": {
+                "count": 3,
+                "mean": 3.738347333333332,
+                "median": 3.974916999999998,
+                "min": 3.168875,
+                "max": 4.071249999999999,
+                "stddev": 0.40459367728321594
+              }
+            },
+            "10000": {
+              "batchSize": 10000,
+              "opsPerRound": 160,
+              "count": 3,
+              "opAvgMs": {
+                "count": 3,
+                "mean": 0.003521191666666986,
+                "median": 0.003686437499999995,
+                "min": 0.001987043749999806,
+                "max": 0.0048900937500011565,
+                "stddev": 0.0011909112658527224
+              },
+              "opMedianMs": {
+                "count": 3,
+                "mean": 0.0014378333333352107,
+                "median": 0.00137499999999946,
+                "min": 0.0012089999999957968,
+                "max": 0.0017295000000103755,
+                "stddev": 0.00021708843564678933
+              },
+              "roundTotalMs": {
+                "count": 3,
+                "mean": 34.84387466666666,
+                "median": 32.839,
+                "min": 32.73320799999999,
+                "max": 38.95941599999999,
+                "stddev": 2.9104476558996115
+              }
+            },
+            "1000000": {
+              "batchSize": 1000000,
+              "opsPerRound": 5,
+              "count": 3,
+              "opAvgMs": {
+                "count": 3,
+                "mean": 0.054608466666670095,
+                "median": 0.04959199999999555,
+                "min": 0.022433200000011765,
+                "max": 0.09180020000000297,
+                "stddev": 0.028540250823624373
+              },
+              "opMedianMs": {
+                "count": 3,
+                "mean": 0.040319333333333894,
+                "median": 0.04029199999999378,
+                "min": 0.025666000000001077,
+                "max": 0.05500000000000682,
+                "stddev": 0.011975570949045056
+              },
+              "roundTotalMs": {
+                "count": 3,
+                "mean": 97.63045866666668,
+                "median": 96.67962499999999,
+                "min": 96.205209,
+                "max": 100.00654200000002,
+                "stddev": 1.6912710487426135
+              }
+            }
+          }
+        }
+      },
+      "errors": {
+        "hmrWatch": "attempt 1: [uni-app-vue3] hmr failed: [uni-app-vue3] hmr timeout marker=tw-framework-bench-32505801\n> benchmark-framework-compare-uni-app-vue3@0.0.0 dev:mp-weixin <REPO_ROOT>/benchmark/framework-compare/projects/uni-app-vue3\n> uni -p mp-weixin\nPlease note that in running mode, due to log output, sourcemap, and uncompressed source code, the performance and package size are not as good as release mode.To officially release, please click the release menu or use the cli release command to release\nCompiling...\nDONE  Build complete. Watching for changes...\nRun method: open Weixin Mini Program Devtools, import dist/dev/mp-weixin run.\nready in 1725ms."
+      }
+    },
+    {
+      "key": "taro-vue3",
+      "label": "taro vue3",
+      "project": "benchmark/framework-compare/projects/taro-vue3",
+      "buildScript": "build",
+      "devScript": "dev:weapp",
+      "buildMs": [
+        3224.4702920000127,
+        2583.7727089999826,
+        2585.008165999985
+      ],
+      "hmrMs": [
+        3713.4395420000073,
+        2756.8064580000355,
+        2576.4510840000003,
+        2667.558250000002,
+        2712.7335840000305
+      ],
+      "hmrMode": "fallback-build",
+      "runtimeRounds": [
+        {
+          "batchSize": 10,
+          "opsPerRound": 160,
+          "rounds": [
+            {
+              "round": 1,
+              "checksum": 27200,
+              "roundTotalMs": 0.9487919999999974,
+              "opAvgMs": 0.004661962499999639,
+              "opMedianMs": 0.0009170000000011669,
+              "opMinMs": 0.0008329999999929782,
+              "opMaxMs": 0.29066599999999454
+            },
+            {
+              "round": 2,
+              "checksum": 78400,
+              "roundTotalMs": 0.23383400000000165,
+              "opAvgMs": 0.000918481249999914,
+              "opMedianMs": 0.0008750000000006253,
+              "opMinMs": 0.0008329999999929782,
+              "opMaxMs": 0.0045000000000001705
+            },
+            {
+              "round": 3,
+              "checksum": 129600,
+              "roundTotalMs": 0.22425000000000495,
+              "opAvgMs": 0.000903918749999999,
+              "opMedianMs": 0.0008750000000006253,
+              "opMinMs": 0.0008330000000000837,
+              "opMaxMs": 0.005167000000000144
+            }
+          ]
+        },
+        {
+          "batchSize": 100,
+          "opsPerRound": 160,
+          "rounds": [
+            {
+              "round": 1,
+              "checksum": 41600,
+              "roundTotalMs": 1.216542000000004,
+              "opAvgMs": 0.0027140624999997696,
+              "opMedianMs": 0.0009590000000017085,
+              "opMinMs": 0.0007919999999970173,
+              "opMaxMs": 0.1333750000000009
+            },
+            {
+              "round": 2,
+              "checksum": 92800,
+              "roundTotalMs": 0.5192920000000001,
+              "opAvgMs": 0.0009348750000000905,
+              "opMedianMs": 0.0009170000000011669,
+              "opMinMs": 0.0007909999999995421,
+              "opMaxMs": 0.0030409999999960746
+            },
+            {
+              "round": 3,
+              "checksum": 144000,
+              "roundTotalMs": 0.49679199999999923,
+              "opAvgMs": 0.0009484562500003957,
+              "opMedianMs": 0.0009170000000011669,
+              "opMinMs": 0.0007909999999995421,
+              "opMaxMs": 0.0045000000000001705
+            }
+          ]
+        },
+        {
+          "batchSize": 1000,
+          "opsPerRound": 160,
+          "rounds": [
+            {
+              "round": 1,
+              "checksum": 185600,
+              "roundTotalMs": 4.1093749999999964,
+              "opAvgMs": 0.002738749999999812,
+              "opMedianMs": 0.001041999999998211,
+              "opMinMs": 0.0008749999999935199,
+              "opMaxMs": 0.11812499999999915
+            },
+            {
+              "round": 2,
+              "checksum": 236800,
+              "roundTotalMs": 4.125624999999999,
+              "opAvgMs": 0.0010531500000002137,
+              "opMedianMs": 0.0009999999999976694,
+              "opMinMs": 0.0008330000000000837,
+              "opMaxMs": 0.003540999999998462
+            },
+            {
+              "round": 3,
+              "checksum": 288000,
+              "roundTotalMs": 3.237916999999996,
+              "opAvgMs": 0.0013406749999998358,
+              "opMedianMs": 0.0009580000000042332,
+              "opMinMs": 0.0008330000000000837,
+              "opMaxMs": 0.04200000000000159
+            }
+          ]
+        },
+        {
+          "batchSize": 10000,
+          "opsPerRound": 160,
+          "rounds": [
+            {
+              "round": 1,
+              "checksum": 1625600,
+              "roundTotalMs": 33.223665999999994,
+              "opAvgMs": 0.0037361625000001284,
+              "opMedianMs": 0.0014375000000015348,
+              "opMinMs": 0.0009590000000017085,
+              "opMaxMs": 0.13941699999999813
+            },
+            {
+              "round": 2,
+              "checksum": 1676800,
+              "roundTotalMs": 33.801958,
+              "opAvgMs": 0.001972843749999509,
+              "opMedianMs": 0.001167000000009466,
+              "opMinMs": 0.0009589999999946031,
+              "opMaxMs": 0.02245800000000031
+            },
+            {
+              "round": 3,
+              "checksum": 1728000,
+              "roundTotalMs": 36.325292000000005,
+              "opAvgMs": 0.0028460562500001174,
+              "opMedianMs": 0.0013749999999959073,
+              "opMinMs": 0.001040999999986525,
+              "opMaxMs": 0.017582999999987692
+            }
+          ]
+        },
+        {
+          "batchSize": 1000000,
+          "opsPerRound": 5,
+          "rounds": [
+            {
+              "round": 1,
+              "checksum": 5000025,
+              "roundTotalMs": 102.99041600000001,
+              "opAvgMs": 0.1005583999999999,
+              "opMedianMs": 0.050540999999995506,
+              "opMinMs": 0.044749999999993406,
+              "opMaxMs": 0.2395840000000078
+            },
+            {
+              "round": 2,
+              "checksum": 5000075,
+              "roundTotalMs": 104.84229199999999,
+              "opAvgMs": 0.05149160000000279,
+              "opMedianMs": 0.038458000000019865,
+              "opMinMs": 0.03433300000000372,
+              "opMaxMs": 0.10816699999998036
+            },
+            {
+              "round": 3,
+              "checksum": 5000125,
+              "roundTotalMs": 99.58495799999997,
+              "opAvgMs": 0.02816640000000916,
+              "opMedianMs": 0.025208000000020547,
+              "opMinMs": 0.020291999999983545,
+              "opMaxMs": 0.03808300000002873
+            }
+          ]
+        }
+      ],
+      "runtimeMode": "ref-bulk-value-update",
+      "summary": {
+        "build": {
+          "count": 3,
+          "mean": 2797.7503889999934,
+          "median": 2585.008165999985,
+          "min": 2583.7727089999826,
+          "max": 3224.4702920000127,
+          "stddev": 301.7369586253995
+        },
+        "hmr": {
+          "count": 5,
+          "mean": 2885.397783600015,
+          "median": 2712.7335840000305,
+          "min": 2576.4510840000003,
+          "max": 3713.4395420000073,
+          "stddev": 418.3070484919009
+        },
+        "runtime": {
+          "scaleOrder": [
+            10,
+            100,
+            1000,
+            10000,
+            1000000
+          ],
+          "scales": {
+            "10": {
+              "batchSize": 10,
+              "opsPerRound": 160,
+              "count": 3,
+              "opAvgMs": {
+                "count": 3,
+                "mean": 0.0021614541666665175,
+                "median": 0.000918481249999914,
+                "min": 0.000903918749999999,
+                "max": 0.004661962499999639,
+                "stddev": 0.0017681363937590434
+              },
+              "opMedianMs": {
+                "count": 3,
+                "mean": 0.0008890000000008058,
+                "median": 0.0008750000000006253,
+                "min": 0.0008750000000006253,
+                "max": 0.0009170000000011669,
+                "stddev": 0.000019798989873478645
+              },
+              "roundTotalMs": {
+                "count": 3,
+                "mean": 0.468958666666668,
+                "median": 0.23383400000000165,
+                "min": 0.22425000000000495,
+                "max": 0.9487919999999974,
+                "stddev": 0.3393159629778028
+              }
+            },
+            "100": {
+              "batchSize": 100,
+              "opsPerRound": 160,
+              "count": 3,
+              "opAvgMs": {
+                "count": 3,
+                "mean": 0.0015324645833334188,
+                "median": 0.0009484562500003957,
+                "min": 0.0009348750000000905,
+                "max": 0.0027140624999997696,
+                "stddev": 0.0008355342961604822
+              },
+              "opMedianMs": {
+                "count": 3,
+                "mean": 0.0009310000000013474,
+                "median": 0.0009170000000011669,
+                "min": 0.0009170000000011669,
+                "max": 0.0009590000000017085,
+                "stddev": 0.000019798989873478645
+              },
+              "roundTotalMs": {
+                "count": 3,
+                "mean": 0.7442086666666677,
+                "median": 0.5192920000000001,
+                "min": 0.49679199999999923,
+                "max": 1.216542000000004,
+                "stddev": 0.3341163927269811
+              }
+            },
+            "1000": {
+              "batchSize": 1000,
+              "opsPerRound": 160,
+              "count": 3,
+              "opAvgMs": {
+                "count": 3,
+                "mean": 0.0017108583333332872,
+                "median": 0.0013406749999998358,
+                "min": 0.0010531500000002137,
+                "max": 0.002738749999999812,
+                "stddev": 0.0007362466141215005
+              },
+              "opMedianMs": {
+                "count": 3,
+                "mean": 0.001000000000000038,
+                "median": 0.0009999999999976694,
+                "min": 0.0009580000000042332,
+                "max": 0.001041999999998211,
+                "stddev": 0.00003429285639650593
+              },
+              "roundTotalMs": {
+                "count": 3,
+                "mean": 3.824305666666664,
+                "median": 4.1093749999999964,
+                "min": 3.237916999999996,
+                "max": 4.125624999999999,
+                "stddev": 0.4146924699270811
+              }
+            },
+            "10000": {
+              "batchSize": 10000,
+              "opsPerRound": 160,
+              "count": 3,
+              "opAvgMs": {
+                "count": 3,
+                "mean": 0.0028516874999999185,
+                "median": 0.0028460562500001174,
+                "min": 0.001972843749999509,
+                "max": 0.0037361625000001284,
+                "stddev": 0.0007198828778620205
+              },
+              "opMedianMs": {
+                "count": 3,
+                "mean": 0.0013265000000023026,
+                "median": 0.0013749999999959073,
+                "min": 0.001167000000009466,
+                "max": 0.0014375000000015348,
+                "stddev": 0.00011563376092491913
+              },
+              "roundTotalMs": {
+                "count": 3,
+                "mean": 34.45030533333333,
+                "median": 33.801958,
+                "min": 33.223665999999994,
+                "max": 36.325292000000005,
+                "stddev": 1.3466716153661589
+              }
+            },
+            "1000000": {
+              "batchSize": 1000000,
+              "opsPerRound": 5,
+              "count": 3,
+              "opAvgMs": {
+                "count": 3,
+                "mean": 0.060072133333337274,
+                "median": 0.05149160000000279,
+                "min": 0.02816640000000916,
+                "max": 0.1005583999999999,
+                "stddev": 0.030170289803193393
+              },
+              "opMedianMs": {
+                "count": 3,
+                "mean": 0.038069000000011975,
+                "median": 0.038458000000019865,
+                "min": 0.025208000000020547,
+                "max": 0.050540999999995506,
+                "stddev": 0.01034581116522326
+              },
+              "roundTotalMs": {
+                "count": 3,
+                "mean": 102.47255533333332,
+                "median": 102.99041600000001,
+                "min": 99.58495799999997,
+                "max": 104.84229199999999,
+                "stddev": 2.1773110250106495
+              }
+            }
+          }
+        }
+      },
+      "errors": {
+        "hmrWatch": "attempt 1: [taro-vue3] hmr failed: [taro-vue3] hmr timeout marker=tw-framework-bench-46755002\nWatchpack Error (watcher): Error: EMFILE: too many open files, watch\nWatchpack Error (watcher): Error: EMFILE: too many open files, watch\nWatchpack Error (watcher): Error: EMFILE: too many open files, watch\nWatchpack Error (watcher): Error: EMFILE: too many open files, watch\nWatchpack Error (watcher): Error: EMFILE: too many open files, watch\nWatchpack Error (watcher): Error: EMFILE: too many open files, watch\nWatchpack Error (watcher): Error: EMFILE: too many open files, watch\nWatchpack Error (watcher): Error: EMFILE: too many open files, watch\nWatchpack Error (watcher): Error: EMFILE: too many open files, watch\nWatchpack Error (watcher): Error: EMFILE: too many open files, watch\nWatchpack Error (watcher): Error: EMFILE: too many open files, watch\nWatchpack Error (watcher): Error: EMFILE: too many open files, watch\nWatchpack Error (watcher): Error: EMFILE: too many open files, watch\nWatchpack Error (watcher): Error: EMFILE: too many open files, watch\nWatchpack Error (watcher): Error: EMFILE: too many open files, watch\nWatchpack Error (watcher): Error: EMFILE: too many open files, watch\nWatchpack Error (watcher): Error: EMFILE: too many open files, watch\nWatchpack Error (watcher): Error: EMFILE: too many open files, watch\nWatchpack Error (watcher): Error: EMFILE: too many open files, watch\nWatchpack Error (watcher): Error: EMFILE: too many open files, watch\nWatchpack Error (watcher): Error: EMFILE: too many open files, watch\nWatchpack Error (watcher): Error: EMFILE: too many open files, watch\nWatchpack Error (watcher): Error: EMFILE: too many open files, watch\nWatchpack Error (watcher): Error: EMFILE: too many open files, watch\nWatchpack Error (watcher): Error: EMFILE: too many open files, watch\nWatchpack Error (watcher): Error: EMFILE: too many open files, watch\nWatchpack Error (watcher): Error: EMFILE: too many open files, watch\nWatchpack Error (watcher): Error: EMFILE: too many open files, watch\nWatchpack Error (watcher): Error: EMFILE: too many open files, watch\nWatchpack Error (watcher): Error: EMFILE: too many open files, watch\nWatchpack Error (watcher): Error: EMFILE: too many open files, watch\nWatchpack Error (watcher): Error: EMFILE: too many open files, watch\nWatchpack Error (watcher): Error: EMFILE: too many open files, watch\nWatchpack Error (watcher): Error: EMFILE: too many open files, watch\nWatchpack Error (watcher): Error: EMFILE: too many open files, watch\nWatchpack Error (watcher): Error: EMFILE: too many open files, watch\nWatchpack Error (watcher): Error: EMFILE: too many open files, watch\nWatchpack Error (watcher): Error: EMFILE: too many open files, watch\nWatchpack Error (watcher): Error: EMFILE: too many open files, watch\nWatchpack Error (watcher): Error: EMFILE: too many open files, watch\nWatchpack Error (watcher): Error: EMFILE: too many open files, watch\nWatchpack Error (watcher): Error: EMFILE: too many open files, watch\nWatchpack Error (watcher): Error: EMFILE: too many open files, watch\nWatchpack Error (watcher): Error: EMFILE: too many open files, watch\n● Webpack █████████████████████████ setup (7%) compile \n ExternalsPlugin\n\u001b[2K\u001b[1A\u001b[2K\u001b[1A\u001b[2K\u001b[1A\u001b[2K\u001b[1A\u001b[2K\u001b[G\n● Webpack █████████████████████████ building (13%) 1/5 entries 24/36 dependenc\nies 2/18 modules 14 active \n ...s-loader › vue-loader › postcss-loader › vue-loader › src/pages/index/inde\nx.vue\n\u001b[2K\u001b[1A\u001b[2K\u001b[1A\u001b[2K\u001b[1A\u001b[2K\u001b[1A\u001b[2K\u001b[1A\u001b[2K\u001b[1A\u001b[2K\u001b[G\n● Webpack █████████████████████████ building (21%) 1/5 entries 164/261 depende\nncies 11/69 modules 43 active \n ...tarojs+runtime@4.1.11/node_modules/@tarojs/runtime/dist/dom-external/eleme\nnt.js\n\u001b[2K\u001b[1A\u001b[2K\u001b[1A\u001b[2K\u001b[1A\u001b[2K\u001b[1A\u001b[2K\u001b[1A\u001b[2K\u001b[1A\u001b[2K\u001b[G\n● Webpack █████████████████████████ building (21%) 1/5 entries 281/304 depende\nncies 19/88 modules 64 active \n ...abel+runtime@7.28.6/node_modules/@babel/runtime/helpers/esm/arrayLikeToArr\nay.js\n\u001b[2K\u001b[1A\u001b[2K\u001b[1A\u001b[2K\u001b[1A\u001b[2K\u001b[1A\u001b[2K\u001b[1A\u001b[2K\u001b[1A\u001b[2K\u001b[G\n● Webpack █████████████████████████ building (29%) 1/5 entries 344/363 depende\nncies 47/105 modules 56 active \n .../@babel+runtime@7.28.6/node_modules/@babel/runtime/helpers/esm/superPropBa\nse.js\n\u001b[2K\u001b[1A\u001b[2K\u001b[1A\u001b[2K\u001b[1A\u001b[2K\u001b[1A\u001b[2K\u001b[1A\u001b[2K\u001b[1A\u001b[2K\u001b[G\n● Webpack █████████████████████████ building (49%) 1/5 entries 387/389 depende\nncies 95/118 modules 20 active \n ...iler-dom@3.5.28/node_modules/@vue/compiler-dom/dist/compiler-dom.esm-bundl\ner.js\n\u001b[2K\u001b[1A\u001b[2K\u001b[1A\u001b[2K\u001b[1A\u001b[2K\u001b[1A\u001b[2K\u001b[1A\u001b[2K\u001b[1A\u001b[2K\u001b[G\n● Webpack █████████████████████████ building (57%) 3/5 entries 413/416 depende\nncies 112/129 modules 14 active \n ...5a47e05d1864bd51d69b6af3688d/node_modules/css-loader/dist/runtime/sourceMa\nps.js\n\u001b[2K\u001b[1A\u001b[2K\u001b[1A\u001b[2K\u001b[1A\u001b[2K\u001b[1A\u001b[2K\u001b[1A\u001b[2K\u001b[1A\u001b[2K\u001b[G\n✔ Webpack\n  Compiled successfully in 574.05ms\n→ Watching... [2/24/2026, 2:31:08 AM]"
+      }
+    },
+    {
+      "key": "weapp-vite-wevu",
+      "label": "weapp-vite wevu",
+      "project": "benchmark/framework-compare/projects/weapp-vite-wevu",
+      "buildScript": "build",
+      "devScript": "dev",
+      "buildMs": [
+        1001.4157500000438,
+        961.5500839999877,
+        916.8955839999835
+      ],
+      "hmrMs": [
+        1172.7530839999672,
+        903.9957500000019,
+        913.8740419999813,
+        950.7254579999717,
+        922.9104170000064
+      ],
+      "hmrMode": "fallback-build",
+      "runtimeRounds": [
+        {
+          "batchSize": 10,
+          "opsPerRound": 160,
+          "rounds": [
+            {
+              "round": 1,
+              "checksum": 27200,
+              "roundTotalMs": 0.45566699999999827,
+              "opAvgMs": 0.0015754812499999104,
+              "opMedianMs": 0.0005839999999999179,
+              "opMinMs": 0.0004999999999988347,
+              "opMaxMs": 0.054207999999999146
+            },
+            {
+              "round": 2,
+              "checksum": 78400,
+              "roundTotalMs": 0.20641599999999727,
+              "opAvgMs": 0.0007018187499998829,
+              "opMedianMs": 0.0005419999999993763,
+              "opMinMs": 0.0004999999999988347,
+              "opMaxMs": 0.00975000000000037
+            },
+            {
+              "round": 3,
+              "checksum": 129600,
+              "roundTotalMs": 0.19708300000000278,
+              "opAvgMs": 0.0006989312500000455,
+              "opMedianMs": 0.0005419999999993763,
+              "opMinMs": 0.0004999999999988347,
+              "opMaxMs": 0.019541000000000253
+            }
+          ]
+        },
+        {
+          "batchSize": 100,
+          "opsPerRound": 160,
+          "rounds": [
+            {
+              "round": 1,
+              "checksum": 41600,
+              "roundTotalMs": 1.5964580000000002,
+              "opAvgMs": 0.003628937499999996,
+              "opMedianMs": 0.0006665000000012355,
+              "opMinMs": 0.00045899999999932106,
+              "opMaxMs": 0.28800000000000026
+            },
+            {
+              "round": 2,
+              "checksum": 92800,
+              "roundTotalMs": 0.6440420000000024,
+              "opAvgMs": 0.0010687812500001393,
+              "opMedianMs": 0.0005419999999993763,
+              "opMinMs": 0.0004580000000018458,
+              "opMaxMs": 0.033083000000001306
+            },
+            {
+              "round": 3,
+              "checksum": 144000,
+              "roundTotalMs": 0.7149590000000003,
+              "opAvgMs": 0.0025127750000000894,
+              "opMedianMs": 0.0005419999999993763,
+              "opMinMs": 0.0004999999999988347,
+              "opMaxMs": 0.3111670000000011
+            }
+          ]
+        },
+        {
+          "batchSize": 1000,
+          "opsPerRound": 160,
+          "rounds": [
+            {
+              "round": 1,
+              "checksum": 185600,
+              "roundTotalMs": 5.059042000000002,
+              "opAvgMs": 0.0017229437500001943,
+              "opMedianMs": 0.0007500000000000284,
+              "opMinMs": 0.0004999999999988347,
+              "opMaxMs": 0.04962499999999892
+            },
+            {
+              "round": 2,
+              "checksum": 236800,
+              "roundTotalMs": 3.7477079999999994,
+              "opAvgMs": 0.0008283375000001092,
+              "opMedianMs": 0.0006250000000029843,
+              "opMinMs": 0.0005409999999983484,
+              "opMaxMs": 0.01054200000000094
+            },
+            {
+              "round": 3,
+              "checksum": 288000,
+              "roundTotalMs": 3.772000000000002,
+              "opAvgMs": 0.000767956250000057,
+              "opMedianMs": 0.0006249999999994316,
+              "opMinMs": 0.0004999999999988347,
+              "opMaxMs": 0.015499999999999403
+            }
+          ]
+        },
+        {
+          "batchSize": 10000,
+          "opsPerRound": 160,
+          "rounds": [
+            {
+              "round": 1,
+              "checksum": 1625600,
+              "roundTotalMs": 35.7145,
+              "opAvgMs": 0.0034338687500001575,
+              "opMedianMs": 0.0010625000000015206,
+              "opMinMs": 0.0006249999999994316,
+              "opMaxMs": 0.11716699999999847
+            },
+            {
+              "round": 2,
+              "checksum": 1676800,
+              "roundTotalMs": 35.158625,
+              "opAvgMs": 0.0018531437500006742,
+              "opMedianMs": 0.0011874999999967883,
+              "opMinMs": 0.0007500000000035811,
+              "opMaxMs": 0.040957999999996275
+            },
+            {
+              "round": 3,
+              "checksum": 1728000,
+              "roundTotalMs": 36.98962499999999,
+              "opAvgMs": 0.0030906124999995122,
+              "opMedianMs": 0.001333000000002471,
+              "opMinMs": 0.0009170000000011669,
+              "opMaxMs": 0.12941599999999198
+            }
+          ]
+        },
+        {
+          "batchSize": 1000000,
+          "opsPerRound": 5,
+          "rounds": [
+            {
+              "round": 1,
+              "checksum": 5000025,
+              "roundTotalMs": 102.397709,
+              "opAvgMs": 0.058799999999997965,
+              "opMedianMs": 0.03516700000000128,
+              "opMinMs": 0.023249999999990223,
+              "opMaxMs": 0.13962500000000233
+            },
+            {
+              "round": 2,
+              "checksum": 5000075,
+              "roundTotalMs": 105.50070900000003,
+              "opAvgMs": 0.040608199999996944,
+              "opMedianMs": 0.028999999999996362,
+              "opMinMs": 0.018915999999990163,
+              "opMaxMs": 0.09779199999999832
+            },
+            {
+              "round": 3,
+              "checksum": 5000125,
+              "roundTotalMs": 105.84070799999995,
+              "opAvgMs": 0.0237084000000209,
+              "opMedianMs": 0.02529200000003584,
+              "opMinMs": 0.012667000000021744,
+              "opMaxMs": 0.03433300000000372
+            }
+          ]
+        }
+      ],
+      "runtimeMode": "ref-bulk-value-update",
+      "summary": {
+        "build": {
+          "count": 3,
+          "mean": 959.953806000005,
+          "median": 961.5500839999877,
+          "min": 916.8955839999835,
+          "max": 1001.4157500000438,
+          "stddev": 34.52367007102381
+        },
+        "hmr": {
+          "count": 5,
+          "mean": 972.8517501999856,
+          "median": 922.9104170000064,
+          "min": 903.9957500000019,
+          "max": 1172.7530839999672,
+          "stddev": 101.15707750957263
+        },
+        "runtime": {
+          "scaleOrder": [
+            10,
+            100,
+            1000,
+            10000,
+            1000000
+          ],
+          "scales": {
+            "10": {
+              "batchSize": 10,
+              "opsPerRound": 160,
+              "count": 3,
+              "opAvgMs": {
+                "count": 3,
+                "mean": 0.0009920770833332796,
+                "median": 0.0007018187499998829,
+                "min": 0.0006989312500000455,
+                "max": 0.0015754812499999104,
+                "stddev": 0.0004125307266754415
+              },
+              "opMedianMs": {
+                "count": 3,
+                "mean": 0.0005559999999995568,
+                "median": 0.0005419999999993763,
+                "min": 0.0005419999999993763,
+                "max": 0.0005839999999999179,
+                "stddev": 0.000019798989873478645
+              },
+              "roundTotalMs": {
+                "count": 3,
+                "mean": 0.2863886666666661,
+                "median": 0.20641599999999727,
+                "min": 0.19708300000000278,
+                "max": 0.45566699999999827,
+                "stddev": 0.11975848424873847
+              }
+            },
+            "100": {
+              "batchSize": 100,
+              "opsPerRound": 160,
+              "count": 3,
+              "opAvgMs": {
+                "count": 3,
+                "mean": 0.0024034979166667413,
+                "median": 0.0025127750000000894,
+                "min": 0.0010687812500001393,
+                "max": 0.003628937499999996,
+                "stddev": 0.001048031843285217
+              },
+              "opMedianMs": {
+                "count": 3,
+                "mean": 0.000583499999999996,
+                "median": 0.0005419999999993763,
+                "min": 0.0005419999999993763,
+                "max": 0.0006665000000012355,
+                "stddev": 0.0000586898628393599
+              },
+              "roundTotalMs": {
+                "count": 3,
+                "mean": 0.985153000000001,
+                "median": 0.7149590000000003,
+                "min": 0.6440420000000024,
+                "max": 1.5964580000000002,
+                "stddev": 0.43322639000180896
+              }
+            },
+            "1000": {
+              "batchSize": 1000,
+              "opsPerRound": 160,
+              "count": 3,
+              "opAvgMs": {
+                "count": 3,
+                "mean": 0.0011064125000001203,
+                "median": 0.0008283375000001092,
+                "min": 0.000767956250000057,
+                "max": 0.0017229437500001943,
+                "stddev": 0.00043664979141021975
+              },
+              "opMedianMs": {
+                "count": 3,
+                "mean": 0.0006666666666674814,
+                "median": 0.0006250000000029843,
+                "min": 0.0006249999999994316,
+                "max": 0.0007500000000000284,
+                "stddev": 0.000058925565098322935
+              },
+              "roundTotalMs": {
+                "count": 3,
+                "mean": 4.192916666666668,
+                "median": 3.772000000000002,
+                "min": 3.7477079999999994,
+                "max": 5.059042000000002,
+                "stddev": 0.6125233846405834
+              }
+            },
+            "10000": {
+              "batchSize": 10000,
+              "opsPerRound": 160,
+              "count": 3,
+              "opAvgMs": {
+                "count": 3,
+                "mean": 0.002792541666666781,
+                "median": 0.0030906124999995122,
+                "min": 0.0018531437500006742,
+                "max": 0.0034338687500001575,
+                "stddev": 0.0006788753187778509
+              },
+              "opMedianMs": {
+                "count": 3,
+                "mean": 0.0011943333333335933,
+                "median": 0.0011874999999967883,
+                "min": 0.0010625000000015206,
+                "max": 0.001333000000002471,
+                "stddev": 0.00011053682141711113
+              },
+              "roundTotalMs": {
+                "count": 3,
+                "mean": 35.954249999999995,
+                "median": 35.7145,
+                "min": 35.158625,
+                "max": 36.98962499999999,
+                "stddev": 0.7664856149443764
+              }
+            },
+            "1000000": {
+              "batchSize": 1000000,
+              "opsPerRound": 5,
+              "count": 3,
+              "opAvgMs": {
+                "count": 3,
+                "mean": 0.04103886666667194,
+                "median": 0.040608199999996944,
+                "min": 0.0237084000000209,
+                "max": 0.058799999999997965,
+                "stddev": 0.01432932198844817
+              },
+              "opMedianMs": {
+                "count": 3,
+                "mean": 0.02981966666667783,
+                "median": 0.028999999999996362,
+                "min": 0.02529200000003584,
+                "max": 0.03516700000000128,
+                "stddev": 0.004072902022979102
+              },
+              "roundTotalMs": {
+                "count": 3,
+                "mean": 104.57970866666666,
+                "median": 105.50070900000003,
+                "min": 102.397709,
+                "max": 105.84070799999995,
+                "stddev": 1.5491377685668208
+              }
+            }
+          }
+        }
+      },
+      "errors": {
+        "hmrWatch": "attempt 1: [weapp-vite-wevu] hmr failed: [weapp-vite-wevu] hmr timeout marker=tw-framework-bench-60722201\n> benchmark-framework-compare-weapp-vite-wevu@0.0.0 dev <REPO_ROOT>/benchmark/framework-compare/projects/weapp-vite-wevu\n> weapp-vite dev\nℹ 目标平台：weapp\n✔ 已清空 dist/ 目录\n[npm] ℹ [npm] 依赖 wevu 未发生变化，跳过处理!\n WARN  [监听] miniprogram 监听数量达到上限 (EMFILE)，侧车文件监听已停用\nBuild failed with 1 error:\n\u001b[31m[UNHANDLEABLE_ERROR] Error:\u001b[0m Something went wrong inside rolldown, please report this problem at https://github.com/rolldown/rolldown/issues.\nunable to start FSEvent stream\n ERROR  [监听] 文件监听数量达到上限 (EMFILE)，可先执行 ulimit -n 65536 后重试。\n✔ 构建完成，耗时 260.83 ms"
+      }
+    }
+  ]
+}

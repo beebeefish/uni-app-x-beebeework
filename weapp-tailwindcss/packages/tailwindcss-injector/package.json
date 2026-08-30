@@ -1,0 +1,67 @@
+{
+  "name": "tailwindcss-injector",
+  "type": "module",
+  "version": "1.0.12-next.4",
+  "description": "tsdown build package template",
+  "author": "ice breaker <1324318532@qq.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sonofmagic/weapp-tailwindcss.git",
+    "directory": "packages/tailwindcss-injector"
+  },
+  "bugs": {
+    "url": "https://github.com/sonofmagic/weapp-tailwindcss/issues"
+  },
+  "keywords": [],
+  "sideEffects": false,
+  "exports": {
+    ".": "./src/index.ts",
+    "./postcss": {
+      "types": "./dist/postcss.d.ts",
+      "import": "./dist/postcss.js",
+      "require": "./dist/postcss.cjs"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": "^20.19.0 || >=22.12.0"
+  },
+  "scripts": {
+    "dev": "tsdown --watch --sourcemap",
+    "build": "tsdown",
+    "test": "vitest run",
+    "test:dev": "vitest",
+    "release": "pnpm publish",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
+  },
+  "publishConfig": {
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "import": "./dist/index.js",
+        "require": "./dist/index.cjs"
+      },
+      "./postcss": {
+        "types": "./dist/postcss.d.ts",
+        "import": "./dist/postcss.js",
+        "require": "./dist/postcss.cjs"
+      }
+    },
+    "main": "./dist/index.cjs",
+    "module": "./dist/index.js",
+    "types": "./dist/index.d.ts"
+  },
+  "dependencies": {
+    "@weapp-tailwindcss/shared": "workspace:*",
+    "fs-extra": "^11.3.5",
+    "htmlparser2": "^12.0.0",
+    "magic-string": "^0.30.21",
+    "postcss": "catalog:postcss85",
+    "tailwindcss": "catalog:tailwindcss3",
+    "tailwindcss-config": "workspace:*"
+  }
+}

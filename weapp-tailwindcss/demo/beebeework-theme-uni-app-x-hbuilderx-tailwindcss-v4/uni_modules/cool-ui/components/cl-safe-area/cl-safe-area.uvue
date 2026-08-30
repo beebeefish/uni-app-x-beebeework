@@ -1,0 +1,46 @@
+<template>
+	<view
+		class="cl-safe-area"
+		:class="[pt.className]"
+		:style="{
+			height
+		}"
+	>
+		<slot></slot>
+	</view>
+</template>
+
+<script setup lang="ts">
+import { getSafeAreaHeight, parsePt } from "@/.cool";
+import { computed, type PropType } from "vue";
+
+defineOptions({
+	name: "cl-safe-area"
+});
+
+const props = defineProps({
+	pt: {
+		type: Object,
+		default: () => ({})
+	},
+	type: {
+		type: String as PropType<"top" | "bottom">,
+		default: "top"
+	},
+	transparent: {
+		type: Boolean,
+		default: false
+	}
+});
+
+type PassThrough = {
+	className?: string;
+};
+
+const pt = computed(() => parsePt<PassThrough>(props.pt));
+
+// 高度
+const height = computed(() => {
+	return getSafeAreaHeight(props.type) + "px";
+});
+</script>

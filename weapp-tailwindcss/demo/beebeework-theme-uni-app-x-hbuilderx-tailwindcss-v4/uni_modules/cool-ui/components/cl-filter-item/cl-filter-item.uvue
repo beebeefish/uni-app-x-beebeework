@@ -1,0 +1,169 @@
+<template>
+	<view class="cl-filter-item" :class="[pt.className]" @tap="onTap">
+		<slot>
+			<cl-text
+				:pt="{
+					className: parseClass([
+						[isActive, 'text-teal-500/10'],
+						'text-center',
+						pt.label?.className
+					])
+				}"
+				>{{ text }}</cl-text
+			>
+
+			<!-- 排序 -->
+			<cl-icon
+				v-if="type == 'sort' && sort != 'none'"
+				:name="`sort-${sort}`"
+				:pt="{
+					className: 'ml-1'
+				}"
+			></cl-icon>
+
+			<!-- 下拉框 -->
+			<cl-icon
+				v-if="type == 'select'"
+				name="arrow-down-s-line"
+				:pt="{
+					className: 'ml-1'
+				}"
+			></cl-icon>
+		</slot>
+	</view>
+
+	<cl-select
+		v-model="selectValue"
+		ref="selectRef"
+		:show-trigger="false"
+		:options="options"
+	></cl-select>
+</template>
+
+<script lang="ts" setup>
+import { parsePt, parseClass } from "@/.cool";
+import { computed, onMounted, ref, watch, type PropType } from "vue";
+import type { PassThroughProps, ClFilterItemType, ClSelectOption } from "../../types";
+
+defineOptions({
+	name: "cl-filter-item"
+});
+
+const props = defineProps({
+	pt: {
+		type: Object,
+		default: () => ({})
+	},
+	label: {
+		type: String,
+		default: ""
+	},
+	value: {
+		type: [String, Number, Boolean, Array] as PropType<any>,
+		required: true
+	},
+	type: {
+		type: String as PropType<ClFilterItemType>,
+		default: "switch"
+	},
+	options: {
+		type: Array as PropType<ClSelectOption[]>,
+		default: () => []
+	}
+});
+
+const emit = defineEmits(["change"]);
+
+// 透传样式类型
+type PassThrough = {
+	className?: string;
+	label?: PassThroughProps;
+};
+
+// 解析透传样式
+const pt = computed(() => parsePt<PassThrough>(props.pt));
+
+// select组件的ref引用，用于调用select的方法
+const selectRef = ref<ClSelectComponentPublicInstance | null>(null);
+
+// switch类型的激活状态
+const isActive = ref(false);
+
+// sort类型的排序状态，可为"asc"、"desc"、"none"
+const sort = ref("none");
+
+// select类型的当前选中值
+const selectValue = ref<any | null>(null);
+
+// 根据类型动态计算显示文本
+const text = computed(() => {
+	// 如果是select类型，显示选中项的label
+	if (props.type == "select") {
+		return props.options.find((e) => e.value == selectValue.value)?.label ?? "";
+	} else {
+		// 其他类型直接显示label
+		return props.label;
+	}
+});
+
+// 点击事件，根据不同类型处理
+function onTap() {
+	// 排序类型，切换排序状态
+	if (props.type == "sort") {
+		if (sort.value == "asc") {
+			sort.value = "desc";
+		} else if (sort.value == "desc") {
+			sort.value = "none";
+		} else {
+			sort.value = "asc";
+		}
+		emit("change", sort.value);
+	}
+
+	// 开关类型，切换激活状态
+	if (props.type == "switch") {
+		isActive.value = !isActive.value;
+		emit("change", isActive.value);
+	}
+
+	// 选择类型，打开select组件
+	if (props.type == "select") {
+		// 打开select弹窗，选择后回调
+		selectRef.value!.open((val) => {
+			emit("change", val);
+		});
+	}
+}
+
+// 组件挂载时，监听props.value变化并同步到本地状态
+onMounted(() => {
+	watch(
+		computed(() => props.value!),
+		(val: any) => {
+			switch (props.type) {
+				case "select":
+					// select类型，同步选中值
+					selectValue.value = val as any;
+					break;
+				case "switch":
+					// switch类型，同步激活状态
+					isActive.value = val as boolean;
+					break;
+				case "sort":
+					// sort类型，同步排序状态
+					sort.value = val as string;
+					break;
+			}
+		},
+		{
+			immediate: true
+		}
+	);
+});
+</script>
+
+<style lang="scss" scoped>
+.cl-filter-item {
+	@apply flex flex-row flex-1 justify-center items-center h-[36px];
+}
+</style>

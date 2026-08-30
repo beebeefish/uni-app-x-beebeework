@@ -1,0 +1,42 @@
+import * as AudioToolbox from "AudioToolbox";
+import * as UIKit from "UIKit";
+import { Thread } from "Foundation";
+
+/**
+ * 触发设备震动
+ * @param duration 震动持续时间，单位：毫秒(ms)，仅在iOS 13.0+有效
+ */
+export function vibrate(duration: number) {
+	// 参数验证：确保duration为正数
+	if (duration < 0) {
+		duration = 0;
+	}
+
+	// 检查iOS版本，决定使用哪种震动方式
+	if (UTSiOS.available("iOS 13.0, *")) {
+		// 创建中等强度的触觉反馈生成器
+		const generator = new UIKit.UIImpactFeedbackGenerator(
+			(style = UIKit.UIImpactFeedbackGenerator.FeedbackStyle.medium)
+		);
+
+		// 准备生成器，提高首次触发的响应速度
+		generator.prepare();
+
+		// 记录开始时间
+		const startTime = new Date().getTime();
+		const endTime = startTime + duration;
+
+		// 循环产生震动效果，直到达到指定时长
+		while (new Date().getTime() < endTime) {
+			// 触发触觉反馈，强度为0.5（中等强度）
+			generator.impactOccurred((intensity = 0.5));
+
+			// 暂停100毫秒，避免过于频繁的震动
+			Thread.sleep((forTimeInterval = 0.1));
+		}
+	} else {
+		// iOS 13.0以下版本：使用AudioToolbox播放系统震动音效
+		// 注意：此方式无法控制震动时长，duration参数将被忽略
+		AudioToolbox.AudioServicesPlayAlertSound(AudioToolbox.kSystemSoundID_Vibrate);
+	}
+}

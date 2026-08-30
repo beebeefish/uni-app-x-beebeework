@@ -1,0 +1,58 @@
+1. 首页（Tab 页 / 根页面）
+特点：不需要返回按钮、利用 <common-header> 渲染复杂的左侧抽屉、搜索/设置按钮以及 Tab 切换。
+
+传参与写法（完美契合你目前的代码结构）：
+
+<page-wrap
+  ref="pageWrapRef"
+  :show-back-top="currentTabScrollState" 
+  :show-fabs="currentFabbar"
+  @back-to-top="handleGlobalBackTop"
+  @open-action="handleOpenAction"
+>
+  <!-- 顶部导航自定义插槽：直接放入你强大的 common-header -->
+  <template #navbar>
+    <common-header 
+      v-model:currentTab="activeTabValue" 
+      :tabList="tabList" 
+      :title="pageTitle"
+      :leftBtns="currentLeftBtns"
+      @drawer="openDrawer"
+      @search="onSearchClick"
+    ></common-header>
+  </template>
+
+  <!-- 页面主体（Swiper 或 单 Tab 内容） -->
+  <view class="w-full h-full">
+    <!-- 你的业务主体组件 -->
+  </view>
+</page-wrap>
+
+2. 常规二级 / 三级页面（例如：文章详情页、设置页）
+特点：无需编写复杂的头部组件。直接通过 :show-back="true" 和 title 属性，组件会自动在顶部渲染标准的左侧返回按钮和居中标题。
+
+传参与写法：
+
+<page-wrap title="文章详情" :show-back="true">
+  <!-- 页面主体内容 -->
+  <view class="p-4">
+    <text>这里是文章详情的具体内容...</text>
+  </view>
+</page-wrap>
+
+3. 外部直接访问的单页面（例如：分享出去的落地页、海报直达页）
+特点：用户通过外部链接/分享卡片直达，页面栈只有 1 层。
+
+传参与写法：用法和二级页完全一致，同样开启 :show-back="true"。page-wrap 内部的智能拦截机制会自动检测页面栈：如果有历史记录就正常返回上一页，如果是“孤儿页”（栈深度为 1）则自动降级回首页，绝不卡死。
+
+<page-wrap title="活动专区" :show-back="true" home-path="/pages/index/index">
+  <!-- 页面主体内容 -->
+  <view class="p-4">
+    <text>这是从外部直接点进来的活动单页</text>
+  </view>
+</page-wrap>
+
+4. 需要定制右侧按钮的普通子页面（例如：个人中心或带有分享按钮的页面）
+特点：既需要标准的返回键和标题，又想在右上角加个自定义的文字或按钮。
+
+传参与写法：因为默认的 #navbar 兜底里没有预留右侧插槽，如果你想要极度定制，可以在子页面里也去覆写 #navbar，或者在组件里按需扩展。但对于绝大多数常规子页面，上面第 2、3 点的配置已经完全够用了！

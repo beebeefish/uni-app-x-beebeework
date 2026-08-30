@@ -1,0 +1,37 @@
+<template>
+  <view class="flex flex-col w-full h-full bg-white dark:bg-neutral-900 text-gray-900 dark:text-white">
+    <view class="w-full flex flex-row items-center pointer-events-none" :style="{ height: (layout.navBarTop + layout.navBarHeight + layout.navBarTop) + 'px' }">
+      <view class="relative w-full z-20 flex flex-row items-center gap-x-2 shrink-0 pointer-events-none" :style="{ height: (layout.navBarTop + layout.navBarHeight + layout.navBarTop) + 'px' }">
+          <view class="w-full px-4 flex flex-row items-center justify-between pointer-events-none" :style="{ height: (layout.navBarHeight) + 'px' }">
+            <view class="text-sm font-bold flex flex-row items-center gap-x-1">
+              <svg-icon :size="20"><text class="i-[mingcute--scan-line] size-[20px]"></text></svg-icon>
+              <text>扫一扫</text>
+            </view>
+            <view @click="$emit('close')" class="text-sm text-gray-400 active:opacity-60 pointer-events-auto h-full flex flex-row items-center justify-center">
+             <svg-icon :size="20"><text class="i-[mingcute--close-line] text-gray-400 dark:text-neutral-500 size-[20px] block"></text></svg-icon>
+            </view>
+          </view>
+      </view>
+    </view>
+    
+    <!-- 中间菜单列表 -->
+    <scroll-view scroll-y="true" class="flex-1">
+      <view class="flex flex-col gap-y-3  p-6">
+        
+      </view>
+    </scroll-view>
+    
+  </view>
+</template>
+
+<script setup>
+import { ref, computed } from 'vue'
+import { themeState } from '@/stores/theme.uts'
+const layout = computed(() => themeState.layout)
+const emit = defineEmits(['close'])
+const onMenuClick = (title) => {
+  uni.showToast({ title: `点击了: ${title}`, icon: 'none' })
+  emit('close')
+}
+
+</script>

@@ -1,0 +1,239 @@
+---
+title: "4.2.0 \U0001F680"
+date: 2025-08-01T00:00:00.000Z
+authors: sonofmagic
+description: weapp-tailwindcss@4.2.x 现已适配 uni-app x 的多端构建能力，让 Tailwind CSS 原子类能够无缝跨端使用。本文梳理了从项目初始化到插件配置的完整流程，帮助你快速完成集成与发布。
+keywords:
+  - v4.2 release
+  - weapp-tailwindcss
+  - tailwindcss
+  - 小程序
+  - 微信小程序
+  - uni-app
+  - taro
+  - rax
+  - mpx
+---
+
+weapp-tailwindcss@4.2.x 现已适配 `uni-app x` 的多端构建能力，让 Tailwind CSS 原子类能够无缝跨端使用。本文梳理了从项目初始化到插件配置的完整流程，帮助你快速完成集成与发布。
+
+<!-- truncate -->
+
+# weapp-tailwindcss 已支持 uni-app x 多端构建
+
+## 前言
+
+[`uni-app x`](https://doc.dcloud.net.cn/uni-app-x/) 是 `DCloud` 团队开发的跨平台编译方案，可将同一份代码编译到 Web、小程序、Android、iOS、鸿蒙等多端。
+
+最近，我很荣幸在 `weapp-tailwindcss@4.2.x` 版本中，适配了 `uni-app x` 的多端构建，使 `Tailwind CSS` 的原子化样式能够无缝应用于多端项目。
+
+所以就有了这篇文章，给大家介绍(**秀**)一下怎么在 `uni-app x` 项目中，集成 `weapp-tailwindcss` 这个样式解决方案。
+
+## 快速集成
+
+### 0. 创建项目
+
+使用最新版本 `Hbuilderx` 创建一个 `uni-app x` 项目，然后在项目根目录执行
+
+```bash
+npm init -y
+```
+
+初始化一个 `package.json` 文件 (当然你也可以手动创建)
+
+### 1. 安装并引入 tailwindcss@3
+
+```bash
+# 安装 tailwindcss@3 版本的依赖
+npm i -D tailwindcss@3 postcss autoprefixer
+# 初始化一个 tailwind.config.js 文件
+npx tailwindcss init
+```
+
+然后，在你的根目录中的 `App.uvue` 中引入 `tailwindcss` 使它在应用全局生效
+
+```html title="App.uvue"
+<style>
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+</style>
+```
+
+### 2. 安装 weapp-tailwindcss
+
+在项目目录下，执行:
+
+```bash
+npm i -D weapp-tailwindcss
+```
+
+然后把下列脚本，添加进你的 `package.json` 的 `scripts` 字段里:
+
+```json title="package.json"
+ "scripts": {
+    // highlight-next-line
+   "postinstall": "weapp-tw patch"
+ }
+```
+
+当前接入方式已经合并到 [快速使用](https://tw.icebreaker.top/docs/quick-start/install)。
+
+### 3. uni-app x 中注册 weapp-tailwindcss
+
+#### 3.0. 创建辅助函数
+
+在项目中创建 `shared.js` 文件，用于存放一些工具函数：
+
+```js title="shared.js"
+const path = require('node:path')
+// 绝对路径处理
+function r(...args) {
+  return path.resolve(__dirname, ...args)
+}
+
+module.exports = {
+  r,
+}
+```
+
+#### 3.1. 配置 `Vite`
+
+创建 `vite.config.ts` 文件，注册插件：
+
+> 这里特别注意 `uniAppX` 是从 `weapp-tailwindcss/presets` 这个预设中导出的
+
+```js title="vite.config.ts"
+import { defineConfig } from 'vite';
+import uni from '@dcloudio/vite-plugin-uni';
+import { WeappTailwindcss } from 'weapp-tailwindcss/vite'
+import { r } from './shared'
+import { uniAppX } from 'weapp-tailwindcss/presets'
+import tailwindcss from 'tailwindcss'
+
+export default defineConfig({
+    plugins: [
+        uni(),
+        WeappTailwindcss(
+            uniAppX({
+                base: __dirname,
+                rem2rpx: true,
+            }),
+        ),
+    ],
+    css: {
+        postcss: {
+            plugins: [
+                tailwindcss({
+                    config: r('./tailwind.config.js'),
+                }),
+            ]
+        }
+    }
+});
+```
+
+#### 3.2. 更改 `tailwindcss` 配置
+
+你需要在 `tailwind.config.js` 的 `content` 配置中，使用绝对路径去包括所有的提取文件
+
+```js title="tailwind.config.js"
+const { r } = require('./shared')
+
+/** @type {import('tailwindcss').Config} */
+module.exports = {
+  content: [
+    r('./pages/**/*.{uts,uvue}'),
+    r('./components/**/*.{uts,uvue}') 
+  ],
+  corePlugins: {
+    preflight: false,
+  },
+}
+
+```
+
+> 如需从更多目录提取样式 `token`，可按需扩展 `content`。
+
+---
+
+在完成这些步骤之后， `uni-app x` 就集成 `tailwindcss` 原子化样式解决方案。
+
+## 如何运行
+
+目前 `uni-app x` 并没有提供任何 `cli` 的方式去使用它，所以目前我们使用 `Hbuilderx` 去进行开发和构建的。
+
+这里可以使用 `Hbuilderx` 的运行，来运行到各个平台。
+
+### 优先使用安卓进行开发
+
+一般来说，`CSS` 平台的兼容程度，是 `Web` > `小程序` > `App`(安卓/IOS/鸿蒙)
+
+所以，假如你有跨多端的需求，建议你一开始使用 `安卓模拟器` 来进行开发和调试，这是综合考虑下来 **成本最低** 的方案。
+
+#### 🧐为什么?
+
+因为 `uni-app x` 开发原生 `app` 是有一些限制的，
+
+1. 比如文字必须包括在 `<text>` 标签中，文字的样式(比如 `text-2xl text-center text-red-400`) 也必须设置在这个元素上，设置在 `<view>` 上是没有效果的。而 `Web` 和 `小程序` 都是兼容的。
+
+2. 还有很多 `css` 的样式，目前 `uni-app x` 暂时是不兼容的，强行使用 `Hbuilderx` 的控制台会爆出警告，要求你进行更改。
+
+这就相当于，你写的代码，能够满足了 `安卓` 这一端，那就大概率能满足 `小程序` 端，甚至 `Web` 端了(当然实战中还需要很多条件编译处理)
+
+#### 🧐为什么不是 IOS 或者鸿蒙? 
+
+IOS 模拟器，需要你有 Mac 才能运行，IOS 调试需要你有苹果手机，考虑到大部分开发应该都是用的 Windows 机器，所以选择 Android 模拟器开发，相对成本低一些，你都有的话当我没说
+
+至于鸿蒙，uni-app x 官方文档上都写着:
+
+> 鸿蒙整体处于发展初期，能用，有坑，大部分坑有规避方案。但开发者应建议其领导、客户、质量部门降低期望，不能严格比照Android和iOS的验收标准要求鸿蒙。
+
+不如安卓/IOS 稳定的话，自然优先选择安卓平台
+
+## 常见问题
+
+### Vscode uvue/uts 代码染色
+
+安装 `DCloud` 自己推出的 `uni-app x语言服务`, 插件市场一搜 `uni-app x` 就搜到了
+- ID: dcloud-ide.hbuilderx-language-services
+- 说明: 支持uni-app x项目的代码提示、悬浮、转到定义、查找引用、大纲、校验等
+- 发布者: DCloud
+- VS Marketplace 链接: https://marketplace.visualstudio.com/items?itemName=dcloud-ide.hbuilderx-language-services
+
+### Tailwindcss 智能提示
+
+目前 `Tailwindcss` 智能提示最好的还是 `vscode`，但是 `vscode Tailwindcss` 肯定是不认识 `uvue/uts` 文件的，
+
+要让插件认识，只需要在你的项目中添加 `.vscode/settings.json` 文件
+
+```json
+{
+    "tailwindCSS.includeLanguages": {
+        "uvue": "html",
+        "uts": "javascript"
+    }
+}
+```
+
+当然，你直接全局修改你的 `vscode Tailwindcss` 插件配置肯定也是可以的。
+
+## 尾言
+
+`uni-app x` 是一个 **庞大的工程**, `DCloud` 团队能做出这样的技术解决方案，令人倾佩。
+
+假如你遇到什么问题，可以在 [weapp-tailwindcss](https://github.com/sonofmagic/weapp-tailwindcss) 的 `issue/disscussions` 中提出。
+
+## 配置好的模板
+
+https://github.com/icebreaker-template/uni-app-x-hbuilderx
+
+使用方式见这个项目中的 `README.md`
+
+## 参考文档
+
+[uni-app x 官方文档](https://doc.dcloud.net.cn/uni-app-x/)
+
+[weapp-tailwindcss 官网](https://tw.icebreaker.top/)
+
+[weapp-tailwindcss 的 uni-app x 专题](https://tw.icebreaker.top/docs/uni-app-x)

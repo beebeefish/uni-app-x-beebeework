@@ -1,0 +1,456 @@
+<template>
+	<view
+		class="cl-input"
+		:class="[
+			pt.className,
+			{
+				'is-dark': isDark,
+				'cl-input--border': border,
+				'cl-input--focus': isFocus,
+				'cl-input--disabled': isDisabled,
+				'cl-input--error': isError
+			}
+		]"
+		@tap="onTap"
+	>
+		<slot name="prepend"> </slot>
+
+		<view class="cl-input__icon !pl-0 pr-[6px]" v-if="prefixIcon">
+			<cl-icon
+				:name="prefixIcon"
+				:size="pt.prefixIcon?.size ?? 16"
+				:pt="{ className: parseClass([pt.prefixIcon?.className]) }"
+			></cl-icon>
+		</view>
+
+		<!-- @vue-ignore -->
+		<input
+			class="cl-input__inner"
+			:class="[
+				{
+					'is-disabled': isDisabled,
+					'is-dark': isDark,
+					'is-exceed': isExceed
+				},
+				ptClassName
+			]"
+			:style="inputStyle"
+			:value="value"
+			:disabled="readonly ?? isDisabled"
+			:type="type"
+			:password="isPassword"
+			:focus="isFocusing"
+			:placeholder="placeholder"
+			:placeholder-class="placeholderClass"
+			:placeholder-style="placeholderStyle"
+			:maxlength="maxlength"
+			:cursor-spacing="cursorSpacing"
+			:confirm-type="confirmType"
+			:confirm-hold="confirmHold"
+			:adjust-position="adjustPosition"
+			:hold-keyboard="holdKeyboard"
+			@input="onInput"
+			@focus="onFocus"
+			@blur="onBlur"
+			@confirm="onConfirm"
+			@keyboardheightchange="onKeyboardheightchange"
+		/>
+
+		<view class="cl-input__icon" v-if="suffixIcon">
+			<cl-icon
+				:name="suffixIcon"
+				:size="pt.suffixIcon?.size ?? 16"
+				:pt="{ className: parseClass([pt.prefixIcon?.className]) }"
+			></cl-icon>
+		</view>
+
+		<view class="cl-input__icon" @tap="clear" v-if="showClear">
+			<cl-icon
+				name="close-circle-fill"
+				:size="16"
+				:pt="{ className: '!text-gray-400/10' }"
+			></cl-icon>
+		</view>
+
+		<view class="cl-input__icon" @tap="showPassword" v-if="password">
+			<cl-icon
+				:name="isPassword ? 'eye-line' : 'eye-off-line'"
+				:size="16"
+				:pt="{ className: '!text-gray-300/10' }"
+			></cl-icon>
+		</view>
+
+		<slot name="append"></slot>
+	</view>
+</template>
+
+<script setup lang="ts">
+import { computed, nextTick, ref, watch, type PropType } from "vue";
+import type { ClInputType, PassThroughProps } from "../../types";
+import type { ClIconProps } from "../cl-icon/props";
+import { useForm, useFormItem, useSize } from "../../hooks";
+import { getColor, isDark, parseClass, parsePt, t } from "@/.cool";
+
+defineOptions({
+	name: "cl-input"
+});
+
+// 组件属性定义
+const props = defineProps({
+	// 透传样式
+	pt: {
+		type: Object,
+		default: () => ({})
+	},
+	// 绑定值
+	modelValue: {
+		type: String,
+		default: ""
+	},
+	// 输入框类型
+	type: {
+		type: String as PropType<ClInputType>,
+		default: "text"
+	},
+	// 前缀图标
+	prefixIcon: {
+		type: String,
+		default: ""
+	},
+	// 后缀图标
+	suffixIcon: {
+		type: String,
+		default: ""
+	},
+	// 是否密码框
+	password: {
+		type: Boolean,
+		default: false
+	},
+	// 是否自动聚焦
+	autofocus: {
+		type: Boolean,
+		default: false
+	},
+	// 是否禁用
+	disabled: {
+		type: Boolean,
+		default: false
+	},
+	// 是否只读
+	readonly: {
+		type: Boolean,
+		default: null
+	},
+	// 占位符
+	placeholder: {
+		type: String,
+		default: () => t("请输入")
+	},
+	// 占位符样式类
+	placeholderClass: {
+		type: String,
+		default: ""
+	},
+	// 占位符样式
+	placeholderStyle: {
+		type: String,
+		default: ""
+	},
+	// 是否显示边框
+	border: {
+		type: Boolean,
+		default: true
+	},
+	// 是否可清除
+	clearable: {
+		type: Boolean,
+		default: false
+	},
+	// 光标与键盘的距离
+	cursorSpacing: {
+		type: Number,
+		default: 5
+	},
+	// 点击键盘确认按钮时是否保持键盘不收起
+	confirmHold: {
+		type: Boolean,
+		default: false
+	},
+	// 设置键盘右下角按钮的文字
+	confirmType: {
+		type: String as PropType<"done" | "go" | "next" | "search" | "send">,
+		default: "done"
+	},
+	// 键盘弹起时，是否自动上推页面
+	adjustPosition: {
+		type: Boolean,
+		default: true
+	},
+	// 最大输入长度
+	maxlength: {
+		type: Number,
+		default: 140
+	},
+	// 是否保持键盘不收起
+	holdKeyboard: {
+		type: Boolean,
+		default: false
+	},
+	// 保留精度
+	precision: {
+		type: Number,
+		default: 0
+	}
+});
+
+// 事件定义
+const emit = defineEmits([
+	"update:modelValue",
+	"input",
+	"change",
+	"focus",
+	"blur",
+	"confirm",
+	"clear",
+	"keyboardheightchange"
+]);
+
+// cl-form 上下文
+const { disabled } = useForm();
+
+// cl-form-item 上下文
+const { isError } = useFormItem();
+
+// 是否禁用
+const isDisabled = computed(() => {
+	return disabled.value || props.disabled;
+});
+
+// 透传样式类型定义
+type PassThrough = {
+	className?: string;
+	inner?: PassThroughProps;
+	prefixIcon?: ClIconProps;
+	suffixIcon?: ClIconProps;
+};
+
+// 解析透传样式
+const pt = computed(() => parsePt<PassThrough>(props.pt));
+
+// 字号
+const { ptClassName, toScale } = useSize(() => pt.value.inner?.className ?? "");
+
+// 字号
+const fontSize = computed(() => toScale(14) + "px");
+
+// 输入框样式
+const inputStyle = computed(() => {
+	const style = {};
+
+	// 字号
+	style["fontSize"] = fontSize.value;
+
+	return style;
+});
+
+// 占位符样式
+const placeholderStyle = computed(() => {
+	return `font-size: ${fontSize.value}; color: ${getColor("gray-400/10")}; ${props.placeholderStyle}`;
+});
+
+// 绑定值
+const value = ref<string>("");
+
+// 是否聚焦（样式作用）
+const isFocus = ref<boolean>(props.autofocus);
+
+// 是否聚焦（输入框作用）
+const isFocusing = ref<boolean>(props.autofocus);
+
+// 是否显示清除按钮
+const showClear = computed(() => {
+	return props.clearable && value.value != "";
+});
+
+// 是否显示密码
+const isPassword = ref(props.password);
+
+// 是否超出限制
+const isExceed = computed(() => {
+	// 检查数字精度是否超出限制
+	if (props.type == "digit" && props.precision >= 0 && value.value != "") {
+		const parts = value.value.split(".");
+		return parts.length > 1 && parts[1].length > props.precision;
+	} else {
+		return false;
+	}
+});
+
+// 切换密码显示状态
+function showPassword() {
+	isPassword.value = !isPassword.value;
+}
+
+// 点击事件
+function onTap() {
+	isFocus.value = true;
+}
+
+// 获取焦点事件
+function onFocus(e: UniInputFocusEvent) {
+	isFocus.value = true;
+	emit("focus", e);
+}
+
+// 失去焦点事件
+function onBlur(e: UniInputBlurEvent) {
+	emit("blur", e);
+
+	// 处理数字精度
+	if (props.type == "digit" && props.precision > 0 && value.value != "") {
+		const numValue = parseFloat(value.value);
+		if (!isNaN(numValue)) {
+			const formattedValue = numValue.toFixed(props.precision);
+			value.value = formattedValue;
+			emit("update:modelValue", formattedValue);
+			emit("change", formattedValue);
+		}
+	}
+
+	setTimeout(() => {
+		isFocus.value = false;
+	}, 0);
+}
+
+// 输入事件
+function onInput(e: UniInputEvent) {
+	const v1 = e.detail.value;
+	const v2 = value.value;
+
+	value.value = v1;
+
+	emit("update:modelValue", v1);
+	emit("input", e);
+
+	if (v1 != v2) {
+		emit("change", v1);
+	}
+}
+
+// 点击确认按钮事件
+function onConfirm(e: UniInputConfirmEvent) {
+	emit("confirm", e);
+}
+
+// 键盘高度变化事件
+function onKeyboardheightchange(e: UniInputKeyboardHeightChangeEvent) {
+	emit("keyboardheightchange", e);
+}
+
+// 聚焦方法
+function focus() {
+	setTimeout(() => {
+		isFocusing.value = false;
+
+		nextTick(() => {
+			isFocusing.value = true;
+		});
+	}, 0);
+}
+
+// 清除方法
+function clear() {
+	value.value = "";
+
+	emit("update:modelValue", "");
+	emit("change", "");
+	emit("clear");
+
+	// #ifdef H5
+	focus();
+	// #endif
+}
+
+watch(
+	computed(() => props.modelValue),
+	(val: string) => {
+		value.value = val;
+	},
+	{
+		immediate: true
+	}
+);
+
+defineExpose({
+	isFocus,
+	focus,
+	clear
+});
+</script>
+
+<style lang="scss">
+.cl-input {
+	@apply flex flex-row items-center bg-white duration-200;
+	@apply rounded-lg;
+	height: 32px;
+	padding: 0 10px;
+	transition-property: background-color, border-color;
+
+	&__inner {
+		@apply h-full text-zinc-700/10;
+		flex: 1;
+
+		&.is-dark {
+			@apply text-white;
+		}
+
+		&.is-exceed {
+			@apply text-red-500;
+		}
+
+		&.is-exceed.is-dark {
+			@apply text-red-400;
+		}
+	}
+
+	&__icon {
+		@apply flex items-center justify-center h-full;
+		padding-left: 10px;
+	}
+
+	&--border {
+		@apply border border-solid border-gray-200/10;
+	}
+
+	&--disabled {
+		@apply bg-gray-100/10 opacity-70;
+	}
+
+	&--focus {
+		&.cl-input--border {
+			@apply border-teal-500/10;
+		}
+	}
+
+	&--error {
+		@apply border-red-500;
+	}
+
+	&.is-dark {
+		@apply bg-gray-800/10;
+
+		&.cl-input--border {
+			@apply border-gray-600/10;
+
+			&.cl-input--focus {
+				@apply border-teal-500/10;
+			}
+		}
+
+		&.cl-input--disabled {
+			@apply bg-zinc-700/10;
+		}
+	}
+}
+</style>

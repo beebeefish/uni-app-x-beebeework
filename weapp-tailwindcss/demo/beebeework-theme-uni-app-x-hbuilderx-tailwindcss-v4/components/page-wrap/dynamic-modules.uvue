@@ -1,0 +1,57 @@
+<template>
+  <view class="flex flex-col w-full !overflow-visible">
+    <!-- 智能化分发队列 -->
+    <template v-if="modules && modules.length > 0">
+      <block v-for="(module, index) in modules" :key="index">
+        
+        <!-- 1. 网格菜单分发 -->
+        <block-grid-menu 
+          v-if="module.type === 'grid-menu'" 
+          :data="module.data" 
+          :gridColsClass="module.gridColsClass || 'grid-cols-3'"
+          @item-click="$emit('item-click', $event)" 
+        />
+
+       
+
+        <!-- 3. 卡片列表分发 -->
+        <block-card-list 
+          v-else-if="module.type === 'card-list'" 
+          :title="module.title" 
+          :data="module.data" 
+          @item-click="$emit('item-click', $event)" 
+        />
+
+        <!-- 4. 💡 新增：分类横向滚动组件分发 -->
+        <block-category-scroll
+          v-else-if="module.type === 'category-scroll'"
+          :title="module.title"
+          :data="module.data"
+          @item-click="$emit('item-click', $event)"
+        />
+
+        <!-- 5. 💡 新增：标签云组件分发 -->
+        <block-tag-cloud
+          v-else-if="module.type === 'tag-cloud'"
+          :title="module.title"
+          :data="module.data"
+          @item-click="$emit('item-click', $event)"
+        />
+
+  
+
+      </block>
+    </template>
+  </view>
+</template>
+
+<script setup>
+defineProps({
+  modules: {
+    type: Array,
+    default: () => []
+  }
+})
+
+defineEmits(['item-click', 'avatar-click'])
+</script>

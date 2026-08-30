@@ -1,0 +1,13 @@
+<template>
+<view class="w-full h-full relative py-50">
+	
+ 请先登录
+</view>
+</template>
+
+<script setup lang="ts">
+</script>
+
+<style lang="scss" scoped>
+
+</style>

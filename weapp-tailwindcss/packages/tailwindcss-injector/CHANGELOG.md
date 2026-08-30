@@ -1,0 +1,319 @@
+# tailwindcss-injector
+
+## 1.0.12-next.4
+
+### Patch Changes
+
+- 📦 **Dependencies** [`aaba811`](https://github.com/sonofmagic/weapp-tailwindcss/commit/aaba811cfc2ad003d3daf2cf290c9d8b770c6dfb)
+  → `@weapp-tailwindcss/shared@2.0.0-next.1`, `tailwindcss-config@2.0.0-next.3`
+
+## 1.0.12-next.3
+
+### Patch Changes
+
+- 📦 **Dependencies** [`2d2acf2`](https://github.com/sonofmagic/weapp-tailwindcss/commit/2d2acf29cfee02ffb32783c8bd3c5de8d9aab9df)
+  → `@weapp-tailwindcss/shared@2.0.0-next.0`, `tailwindcss-config@2.0.0-next.2`
+
+## 1.0.12-next.2
+
+### Patch Changes
+
+- 🐛 **升级 ESM 化依赖后，将公开包的 Node.js 安装版本约束统一到 `^20.19.0 || >=22.12.0`，避免不支持稳定 ESM/CJS 混合加载的 Node.js 版本安装使用。** [#879](https://github.com/sonofmagic/weapp-tailwindcss/pull/879) by @github-actions
+
+## 1.0.12-next.1
+
+### Patch Changes
+
+- 📦 **Dependencies** [`42906cb`](https://github.com/sonofmagic/weapp-tailwindcss/commit/42906cb2daec75c30fe6cf60c0f005cd462de888)
+  → `tailwindcss-config@1.1.6-next.1`
+
+## 1.0.12-next.0
+
+### Patch Changes
+
+- 📦 **Dependencies** [`f38313a`](https://github.com/sonofmagic/weapp-tailwindcss/commit/f38313a61c673cf3658eba0e29cf3c8c844f6798)
+  → `tailwindcss-config@1.1.6-next.0`
+
+## 1.0.11
+
+### Patch Changes
+
+- 🐛 **修复 Vite 集成在 dts 构建阶段替换 postcss 插件时触发的类型递归比较问题，避免 TS2321 与 TS2345 导致构建失败。** [`c8860fa`](https://github.com/sonofmagic/weapp-tailwindcss/commit/c8860fa202e202833f2c503fd7ea53af824a76fe) by @sonofmagic
+  - 同时升级部分依赖与工作区 catalog 版本（包括 postcss、fs-extra、storybook 等），并同步更新锁文件以保持依赖解析一致性。
+
+- 🐛 **升级 `tailwindcss-patch` 到 `9` 系列最新版本，并同步更新相关依赖。** [`38c11e7`](https://github.com/sonofmagic/weapp-tailwindcss/commit/38c11e78a0c1f31d7635a98c95fbfe624723c4c3) by @sonofmagic
+- 📦 **Dependencies** [`49e50d8`](https://github.com/sonofmagic/weapp-tailwindcss/commit/49e50d8bde7327d47e9ba649537092ea57bcdf16)
+  → `@weapp-tailwindcss/shared@1.1.3`, `tailwindcss-config@1.1.5`
+
+## 1.0.11-alpha.1
+
+### Patch Changes
+
+- 🐛 **升级 `tailwindcss-patch` 到 `8.7.4-alpha.0`，同步消费最新的 alpha 版本依赖。** [#819](https://github.com/sonofmagic/weapp-tailwindcss/pull/819) by @sonofmagic
+- 📦 **Dependencies** [`cbead4c`](https://github.com/sonofmagic/weapp-tailwindcss/commit/cbead4ced4b7cba116488d745d47bf826bc83859)
+  → `@weapp-tailwindcss/shared@1.1.3-alpha.1`, `tailwindcss-config@1.1.5-alpha.1`
+
+## 1.0.11-alpha.0
+
+### Patch Changes
+
+- 🐛 **修复 Vite 集成在 dts 构建阶段替换 postcss 插件时触发的类型递归比较问题，避免 TS2321 与 TS2345 导致构建失败。** [`c8860fa`](https://github.com/sonofmagic/weapp-tailwindcss/commit/c8860fa202e202833f2c503fd7ea53af824a76fe) by @sonofmagic
+  - 同时升级部分依赖与工作区 catalog 版本（包括 postcss、fs-extra、storybook 等），并同步更新锁文件以保持依赖解析一致性。
+- 📦 **Dependencies** [`49e50d8`](https://github.com/sonofmagic/weapp-tailwindcss/commit/49e50d8bde7327d47e9ba649537092ea57bcdf16)
+  → `@weapp-tailwindcss/shared@1.1.3-alpha.0`, `tailwindcss-config@1.1.5-alpha.0`
+
+## 1.0.10
+
+### Patch Changes
+
+- 📦 **Dependencies** [`ccc0a33`](https://github.com/sonofmagic/weapp-tailwindcss/commit/ccc0a330b5cd455665a0f2f2c3e8895b27a04b52)
+  → `@weapp-tailwindcss/shared@1.1.2`, `tailwindcss-config@1.1.4`
+
+## 1.0.9
+
+### Patch Changes
+
+- Updated dependencies [[`1788e26`](https://github.com/sonofmagic/weapp-tailwindcss/commit/1788e26153bafc865776d5a761c2e28dafff6918)]:
+  - @weapp-tailwindcss/shared@1.1.1
+  - tailwindcss-config@1.1.3
+
+## 1.0.8
+
+### Patch Changes
+
+- [`9291bad`](https://github.com/sonofmagic/weapp-tailwindcss/commit/9291bad1821c72f05e64b010ea3da94293a34d42) Thanks [@sonofmagic](https://github.com/sonofmagic)! - 暴露用于 md5 哈希与拓展名裁剪的 Node 侧工具函数，并重构依赖这些能力的包以统一复用共享实现。
+
+- Updated dependencies [[`1be5402`](https://github.com/sonofmagic/weapp-tailwindcss/commit/1be5402e56f68cf024d0a3eee1a6fdfa827767c6), [`9291bad`](https://github.com/sonofmagic/weapp-tailwindcss/commit/9291bad1821c72f05e64b010ea3da94293a34d42)]:
+  - tailwindcss-config@1.1.2
+  - @weapp-tailwindcss/shared@1.1.0
+
+## 1.0.8-alpha.0
+
+### Patch Changes
+
+- [`9291bad`](https://github.com/sonofmagic/weapp-tailwindcss/commit/9291bad1821c72f05e64b010ea3da94293a34d42) Thanks [@sonofmagic](https://github.com/sonofmagic)! - 暴露用于 md5 哈希与拓展名裁剪的 Node 侧工具函数，并重构依赖这些能力的包以统一复用共享实现。
+
+- Updated dependencies [[`1be5402`](https://github.com/sonofmagic/weapp-tailwindcss/commit/1be5402e56f68cf024d0a3eee1a6fdfa827767c6), [`9291bad`](https://github.com/sonofmagic/weapp-tailwindcss/commit/9291bad1821c72f05e64b010ea3da94293a34d42)]:
+  - tailwindcss-config@1.1.2-alpha.0
+  - @weapp-tailwindcss/shared@1.1.0-alpha.0
+
+## 1.0.7
+
+### Patch Changes
+
+- [`125d067`](https://github.com/sonofmagic/weapp-tailwindcss/commit/125d0678f701d5279cb1c86236420be9544ac53a) Thanks [@sonofmagic](https://github.com/sonofmagic)! - feat: 优化 webpack 插件缓存 key 的计算方式
+
+## 1.0.6
+
+### Patch Changes
+
+- [`4ffb90b`](https://github.com/sonofmagic/weapp-tailwindcss/commit/4ffb90bc754459d93929d2de3a843d46edc48f53) Thanks [@sonofmagic](https://github.com/sonofmagic)! - <br/>
+
+  ## Features
+
+  feat(postcss): 添加 `postcss-value-parser` 作为依赖，添加新的 `postcss` 插件 `postcss-remove-include-custom-properties`
+
+  feat(weapp-tailwindcss): 计算模式增强，允许只限定某些特殊的 `custom-properties` 被计算，这样只在遇到不兼容的情况下，才需要开启这个配置
+
+  比如 cssCalc: 设置为 `['--spacing']`, 那么就会把 `tailwindcss` 中的 `--spacing` 值进行计算，其他值则不进行计算
+
+  ## Chore
+
+  chore(deps): upgrade
+
+## 1.0.5
+
+### Patch Changes
+
+- [`a8857e6`](https://github.com/sonofmagic/weapp-tailwindcss/commit/a8857e6e8cf196c273e5e56e5745e2de97cd308a) Thanks [@sonofmagic](https://github.com/sonofmagic)! - chore: 依赖更新
+
+- [`7419618`](https://github.com/sonofmagic/weapp-tailwindcss/commit/741961839510edafc39f2cebf91b8e8dc1cd8bd3) Thanks [@sonofmagic](https://github.com/sonofmagic)! - feat: 对 postcss-html-transform 进行二次封装
+
+## 1.0.5-alpha.1
+
+### Patch Changes
+
+- [`a8857e6`](https://github.com/sonofmagic/weapp-tailwindcss/commit/a8857e6e8cf196c273e5e56e5745e2de97cd308a) Thanks [@sonofmagic](https://github.com/sonofmagic)! - chore: 依赖更新
+
+## 1.0.5-alpha.0
+
+### Patch Changes
+
+- [`7419618`](https://github.com/sonofmagic/weapp-tailwindcss/commit/741961839510edafc39f2cebf91b8e8dc1cd8bd3) Thanks [@sonofmagic](https://github.com/sonofmagic)! - feat: 对 postcss-html-transform 进行二次封装
+
+## 1.0.4
+
+### Patch Changes
+
+- [`c7892d6`](https://github.com/sonofmagic/weapp-tailwindcss/commit/c7892d699d798abe27c63d1345423a5ac147cc76) Thanks [@sonofmagic](https://github.com/sonofmagic)! - chore: 优化 css 生成
+
+- Updated dependencies [[`c7892d6`](https://github.com/sonofmagic/weapp-tailwindcss/commit/c7892d699d798abe27c63d1345423a5ac147cc76)]:
+  - tailwindcss-config@1.1.1
+
+## 1.0.3
+
+### Patch Changes
+
+- Updated dependencies [[`3248d34`](https://github.com/sonofmagic/weapp-tailwindcss/commit/3248d342d07372e0627e21dcdd528ad44d2b52be), [`47f4813`](https://github.com/sonofmagic/weapp-tailwindcss/commit/47f4813c7f901e35d844f1935e14de89eeeb32a1)]:
+  - tailwindcss-config@1.0.1
+  - @weapp-tailwindcss/shared@1.0.3
+
+## 1.0.3-alpha.1
+
+### Patch Changes
+
+- Updated dependencies [[`3248d34`](https://github.com/sonofmagic/weapp-tailwindcss/commit/3248d342d07372e0627e21dcdd528ad44d2b52be)]:
+  - tailwindcss-config@1.0.1-alpha.0
+
+## 1.0.3-alpha.0
+
+### Patch Changes
+
+- Updated dependencies [[`47f4813`](https://github.com/sonofmagic/weapp-tailwindcss/commit/47f4813c7f901e35d844f1935e14de89eeeb32a1)]:
+  - @weapp-tailwindcss/shared@1.0.3-alpha.0
+
+## 1.0.2
+
+### Patch Changes
+
+- Updated dependencies [[`e0c37f5`](https://github.com/sonofmagic/weapp-tailwindcss/commit/e0c37f5f546b143341a75701a1907f876df38fa9)]:
+  - @weapp-tailwindcss/shared@1.0.2
+
+## 1.0.2-alpha.0
+
+### Patch Changes
+
+- Updated dependencies [[`e0c37f5`](https://github.com/sonofmagic/weapp-tailwindcss/commit/e0c37f5f546b143341a75701a1907f876df38fa9)]:
+  - @weapp-tailwindcss/shared@1.0.2-alpha.0
+
+## 1.0.1
+
+### Patch Changes
+
+- Updated dependencies [[`bdbca26`](https://github.com/sonofmagic/weapp-tailwindcss/commit/bdbca268738ef033a5789e8a6713608c4d599b61)]:
+  - @weapp-tailwindcss/shared@1.0.1
+
+## 1.0.1-alpha.0
+
+### Patch Changes
+
+- Updated dependencies [[`bdbca26`](https://github.com/sonofmagic/weapp-tailwindcss/commit/bdbca268738ef033a5789e8a6713608c4d599b61)]:
+  - @weapp-tailwindcss/shared@1.0.1-alpha.0
+
+## 1.0.0
+
+### Major Changes
+
+- [`88a84db`](https://github.com/sonofmagic/weapp-tailwindcss/commit/88a84dba8211a1facfb7e5f58133286b3d64ea16) Thanks [@sonofmagic](https://github.com/sonofmagic)! - chore(deps)!: upgrade tailwindcss-config to 1.x
+
+### Patch Changes
+
+- [`d7fa028`](https://github.com/sonofmagic/weapp-tailwindcss/commit/d7fa02877ce74792687765766ff94ae3e30edf3b) Thanks [@sonofmagic](https://github.com/sonofmagic)! - chore: rename export function
+
+- [`1d689ef`](https://github.com/sonofmagic/weapp-tailwindcss/commit/1d689efca6cf0de7e476b03b2be8d09284beae68) Thanks [@sonofmagic](https://github.com/sonofmagic)! - chore: change postcssPresetEnv default value
+
+- Updated dependencies [[`bafd149`](https://github.com/sonofmagic/weapp-tailwindcss/commit/bafd149f0510b30cbf95711223583055023e7875), [`2c51531`](https://github.com/sonofmagic/weapp-tailwindcss/commit/2c515310f1fdfd15d11e2e35213c7e6bfcb55c3d), [`d7fa028`](https://github.com/sonofmagic/weapp-tailwindcss/commit/d7fa02877ce74792687765766ff94ae3e30edf3b), [`d50d95d`](https://github.com/sonofmagic/weapp-tailwindcss/commit/d50d95d04e1c6b7c3ff32acc0d9894d3c0f06d22), [`e745ba5`](https://github.com/sonofmagic/weapp-tailwindcss/commit/e745ba5cd9e232c0b5b7053538beb0772240eab8), [`406a9a6`](https://github.com/sonofmagic/weapp-tailwindcss/commit/406a9a646051d497ae7ee5d50334a0a22bf8bbfe)]:
+  - @weapp-tailwindcss/shared@1.0.0
+  - tailwindcss-config@1.0.0
+
+## 1.0.0-alpha.6
+
+### Major Changes
+
+- [`88a84db`](https://github.com/sonofmagic/weapp-tailwindcss/commit/88a84dba8211a1facfb7e5f58133286b3d64ea16) Thanks [@sonofmagic](https://github.com/sonofmagic)! - chore(deps)!: upgrade tailwindcss-config to 1.x
+
+### Patch Changes
+
+- Updated dependencies [[`406a9a6`](https://github.com/sonofmagic/weapp-tailwindcss/commit/406a9a646051d497ae7ee5d50334a0a22bf8bbfe)]:
+  - tailwindcss-config@1.0.0-alpha.0
+
+## 0.1.6-alpha.5
+
+### Patch Changes
+
+- [`1d689ef`](https://github.com/sonofmagic/weapp-tailwindcss/commit/1d689efca6cf0de7e476b03b2be8d09284beae68) Thanks [@sonofmagic](https://github.com/sonofmagic)! - chore: change postcssPresetEnv default value
+
+## 0.1.6-alpha.4
+
+### Patch Changes
+
+- Updated dependencies [[`e745ba5`](https://github.com/sonofmagic/weapp-tailwindcss/commit/e745ba5cd9e232c0b5b7053538beb0772240eab8)]:
+  - @weapp-tailwindcss/shared@1.0.0-alpha.4
+
+## 0.1.6-alpha.3
+
+### Patch Changes
+
+- [`d7fa028`](https://github.com/sonofmagic/weapp-tailwindcss/commit/d7fa02877ce74792687765766ff94ae3e30edf3b) Thanks [@sonofmagic](https://github.com/sonofmagic)! - chore: rename export function
+
+- Updated dependencies [[`d7fa028`](https://github.com/sonofmagic/weapp-tailwindcss/commit/d7fa02877ce74792687765766ff94ae3e30edf3b)]:
+  - @weapp-tailwindcss/shared@1.0.0-alpha.3
+
+## 0.1.6-alpha.2
+
+### Patch Changes
+
+- Updated dependencies [[`2c51531`](https://github.com/sonofmagic/weapp-tailwindcss/commit/2c515310f1fdfd15d11e2e35213c7e6bfcb55c3d)]:
+  - @weapp-tailwindcss/shared@1.0.0-alpha.2
+
+## 0.1.6-alpha.1
+
+### Patch Changes
+
+- Updated dependencies [[`bafd149`](https://github.com/sonofmagic/weapp-tailwindcss/commit/bafd149f0510b30cbf95711223583055023e7875)]:
+  - @weapp-tailwindcss/shared@1.0.0-alpha.1
+
+## 0.1.6-alpha.0
+
+### Patch Changes
+
+- Updated dependencies [[`d50d95d`](https://github.com/sonofmagic/weapp-tailwindcss/commit/d50d95d04e1c6b7c3ff32acc0d9894d3c0f06d22)]:
+  - @weapp-tailwindcss/shared@0.0.1-alpha.0
+
+## 0.1.5
+
+### Patch Changes
+
+- [`294a69e`](https://github.com/sonofmagic/weapp-tailwindcss/commit/294a69e6a0654a6067dfbe5f1c7708091bf7f7e6) Thanks [@sonofmagic](https://github.com/sonofmagic)! - feat: add `insertAfterComments` for insertAfter tailwind atRule
+
+## 0.1.4
+
+### Patch Changes
+
+- [`5f321b8`](https://github.com/sonofmagic/weapp-tailwindcss/commit/5f321b84d997ff10eed77c0754544851622ed750) Thanks [@sonofmagic](https://github.com/sonofmagic)! - feat: add `insertAfterAtRulesNames` option for insert node after `@import` and `@use`
+
+## 0.1.3
+
+### Patch Changes
+
+- [`af32436`](https://github.com/sonofmagic/weapp-tailwindcss/commit/af32436c6235933aea7ec151d479385c56d69041) Thanks [@sonofmagic](https://github.com/sonofmagic)! - fix: root.source.input.file
+
+## 0.1.2
+
+### Patch Changes
+
+- [`080bf64`](https://github.com/sonofmagic/weapp-tailwindcss/commit/080bf6422c13361871fdb811b4def6f63605c5c4) Thanks [@sonofmagic](https://github.com/sonofmagic)! - fix: root replace with error and pass from
+
+## 0.1.1
+
+### Patch Changes
+
+- [`f005551`](https://github.com/sonofmagic/weapp-tailwindcss/commit/f0055512e8f205a48078eb59b56b01f121621e51) Thanks [@sonofmagic](https://github.com/sonofmagic)! - chore: 优化分析依赖的缓存设计
+
+## 0.1.0
+
+### Minor Changes
+
+- [`1580ba7`](https://github.com/sonofmagic/weapp-tailwindcss/commit/1580ba7def3eac6aad4076a824ca8356693f26b2) Thanks [@sonofmagic](https://github.com/sonofmagic)! - feat: support analyze wxml deps
+
+## 0.0.2
+
+### Patch Changes
+
+- [`1ea1fdc`](https://github.com/sonofmagic/weapp-tailwindcss/commit/1ea1fdca3f42a5935cde51d8af790357ec4a23eb) Thanks [@sonofmagic](https://github.com/sonofmagic)! - feat: change directiveParams default and allow override
+
+## 0.0.1
+
+### Patch Changes
+
+- [`1042088`](https://github.com/sonofmagic/weapp-tailwindcss/commit/1042088ae3eb4a6c60b8f72377408e2b0c4199d9) Thanks [@sonofmagic](https://github.com/sonofmagic)! - chore: release tailwindcss-injector postcss plugin

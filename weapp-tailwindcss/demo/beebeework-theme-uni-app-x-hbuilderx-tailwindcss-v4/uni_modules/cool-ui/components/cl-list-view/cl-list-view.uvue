@@ -1,0 +1,758 @@
+<template>
+	<view class="cl-list-view" :class="[pt.className]">
+		<!-- 滚动容器 -->
+		<scroll-view
+			class="cl-list-view__scroller"
+			:class="[pt.scroller?.className]"
+			:scroll-top="targetScrollTop"
+			:scroll-into-view="scrollIntoView"
+			:scroll-with-animation="scrollWithAnimation"
+			:show-scrollbar="showScrollbar"
+			:refresher-triggered="refreshTriggered"
+			:refresher-enabled="refresherEnabled"
+			:refresher-threshold="refresherThreshold"
+			:refresher-background="refresherBackground"
+			refresher-default-style="none"
+			direction="vertical"
+			@scrolltoupper="onScrollToUpper"
+			@scrolltolower="onScrollToLower"
+			@scroll="onScroll"
+			@scrollend="onScrollEnd"
+			@refresherpulling="onRefresherPulling"
+			@refresherrefresh="onRefresherRefresh"
+			@refresherrestore="onRefresherRestore"
+			@refresherabort="onRefresherAbort"
+		>
+			<!-- 下拉刷新 -->
+			<!-- #ifndef APP-HARMONY -->
+			<view
+				slot="refresher"
+				class="cl-list-view__refresher"
+				:class="[
+					{
+						'is-pulling': refresherStatus === 'pulling',
+						'is-refreshing': refresherStatus === 'refreshing'
+					},
+					pt.refresher?.className
+				]"
+				:style="{
+					height: refresherThreshold + 'px'
+				}"
+			>
+				<slot name="refresher" :status="refresherStatus" :text="refresherText">
+					<cl-loading
+						v-if="refresherStatus === 'refreshing'"
+						:pt="{
+							className: 'mr-2'
+						}"
+					></cl-loading>
+					<cl-text> {{ refresherText }} </cl-text>
+				</slot>
+			</view>
+			<!-- #endif -->
+
+			<!-- 列表 -->
+			<view
+				class="cl-list-view__virtual-list"
+				:class="[pt.list?.className]"
+				:style="listStyle"
+			>
+				<!-- 顶部占位 -->
+				<view class="cl-list-view__spacer-top" :style="spacerTopStyle">
+					<slot name="top"></slot>
+				</view>
+
+				<!-- 列表项 -->
+				<view
+					v-for="(item, index) in visibleItems"
+					:key="item.key"
+					class="cl-list-view__virtual-item"
+				>
+					<view
+						class="cl-list-view__header"
+						:class="[
+							{
+								'is-dark': isDark
+							}
+						]"
+						:style="{
+							height: headerHeight + 'px'
+						}"
+						v-if="item.type == 'header'"
+					>
+						<slot name="header" :index="item.data.index!">
+							<cl-text> {{ item.data.label }} </cl-text>
+						</slot>
+					</view>
+
+					<view
+						v-else
+						class="cl-list-view__item"
+						:class="[
+							{
+								'is-dark': isDark
+							},
+							pt.item?.className
+						]"
+						:hover-class="pt.itemHover?.className"
+						:style="{
+							height: virtual ? itemHeight + 'px' : 'auto'
+						}"
+						@tap="onItemTap(item)"
+					>
+						<slot
+							name="item"
+							:item="item"
+							:data="item.data"
+							:value="item.data.value"
+							:index="index"
+						>
+							<view class="cl-list-view__item-inner">
+								<cl-text> {{ item.data.label }} </cl-text>
+							</view>
+						</slot>
+					</view>
+				</view>
+
+				<!-- 底部占位 -->
+				<view class="cl-list-view__spacer-bottom" :style="spacerBottomStyle">
+					<slot name="bottom"></slot>
+				</view>
+			</view>
+
+			<!-- 空状态 -->
+			<cl-empty v-if="noData" :fixed="false"></cl-empty>
+		</scroll-view>
+
+		<!-- 右侧索引栏 -->
+		<cl-index-bar
+			v-if="hasIndex"
+			v-model="activeIndex"
+			:list="indexList"
+			:pt="{
+				className: parseClass([pt.indexBar?.className])
+			}"
+			@change="onIndexChange"
+		>
+		</cl-index-bar>
+
+		<!-- 索引提示 -->
+		<view
+			class="cl-list-view__index"
+			:class="[
+				{
+					'is-dark': isDark
+				}
+			]"
+			:style="{ height: headerHeight + 'px' }"
+			v-if="hasIndex"
+		>
+			<slot name="index" :index="indexList[activeIndex]">
+				<cl-text> {{ indexList[activeIndex] }} </cl-text>
+			</slot>
+		</view>
+
+		<!-- 回到顶部 -->
+		<cl-back-top :top="scrollTop" v-if="showBackTop" @back-top="scrollToTop"></cl-back-top>
+	</view>
+</template>
+
+<script setup lang="ts">
+import { computed, getCurrentInstance, nextTick, onMounted, ref, watch, type PropType } from "vue";
+import type {
+	ClListViewItem,
+	ClListViewGroup,
+	ClListViewVirtualItem,
+	PassThroughProps,
+	ClListViewRefresherStatus
+} from "../../types";
+import { isApp, isDark, isEmpty, parseClass, parsePt, t } from "@/.cool";
+
+defineOptions({
+	name: "cl-list-view"
+});
+
+defineSlots<{
+	// 顶部插槽
+	top(): any;
+	// 分组头部插槽
+	header(props: { index: string }): any;
+	// 列表项插槽
+	item(props: {
+		data: ClListViewItem;
+		item: ClListViewVirtualItem;
+		value: any | null;
+		index: number;
+	}): any;
+	// 底部插槽
+	bottom(): any;
+	// 索引插槽
+	index(props: { index: string }): any;
+	// 下拉刷新插槽
+	refresher(props: { status: ClListViewRefresherStatus; text: string }): any;
+}>();
+
+const props = defineProps({
+	// 透传样式配置
+	pt: {
+		type: Object,
+		default: () => ({})
+	},
+	// 列表数据源
+	data: {
+		type: Array as PropType<ClListViewItem[]>,
+		default: () => []
+	},
+	// 列表项高度
+	itemHeight: {
+		type: Number,
+		default: 50
+	},
+	// 分组头部高度
+	headerHeight: {
+		type: Number,
+		default: 32
+	},
+	// 列表顶部预留空间高度
+	topHeight: {
+		type: Number,
+		default: 0
+	},
+	// 列表底部预留空间高度
+	bottomHeight: {
+		type: Number,
+		default: 0
+	},
+	// 缓冲区大小,即可视区域外预渲染的项目数量
+	bufferSize: {
+		type: Number,
+		default: isApp() ? 5 : 15
+	},
+	// 是否启用虚拟列表渲染,当数据量大时建议开启以提升性能
+	virtual: {
+		type: Boolean,
+		default: true
+	},
+	// 滚动到指定位置
+	scrollIntoView: {
+		type: String,
+		default: ""
+	},
+	// 是否启用滚动动画
+	scrollWithAnimation: {
+		type: Boolean,
+		default: false
+	},
+	// 是否显示滚动条
+	showScrollbar: {
+		type: Boolean,
+		default: false
+	},
+	// 是否启用下拉刷新
+	refresherEnabled: {
+		type: Boolean,
+		default: false
+	},
+	// 下拉刷新触发距离，相当于下拉内容高度
+	refresherThreshold: {
+		type: Number,
+		default: 50
+	},
+	// 下拉刷新区域背景色
+	refresherBackground: {
+		type: String,
+		default: "transparent"
+	},
+	// 下拉刷新默认文案
+	refresherDefaultText: {
+		type: String,
+		default: () => t("下拉刷新")
+	},
+	// 释放刷新文案
+	refresherPullingText: {
+		type: String,
+		default: () => t("释放立即刷新")
+	},
+	// 正在刷新文案
+	refresherRefreshingText: {
+		type: String,
+		default: () => t("加载中")
+	},
+	// 是否显示回到顶部按钮
+	showBackTop: {
+		type: Boolean,
+		default: true
+	}
+});
+
+const emit = defineEmits([
+	"item-tap",
+	"refresher-pulling",
+	"refresher-refresh",
+	"refresher-restore",
+	"refresher-abort",
+	"scrolltoupper",
+	"scrolltolower",
+	"scroll",
+	"scrollend",
+	"pull",
+	"top",
+	"bottom"
+]);
+
+// 获取当前组件实例,用于后续DOM操作
+const { proxy } = getCurrentInstance()!;
+
+// 透传样式配置类型
+type PassThrough = {
+	className?: string;
+	item?: PassThroughProps;
+	itemHover?: PassThroughProps;
+	list?: PassThroughProps;
+	indexBar?: PassThroughProps;
+	scroller?: PassThroughProps;
+	refresher?: PassThroughProps;
+};
+
+// 解析透传样式配置
+const pt = computed(() => parsePt<PassThrough>(props.pt));
+
+// 当前激活的索引位置,用于控制索引栏的高亮状态
+const activeIndex = ref(0);
+
+// 是否没有数据
+const noData = computed(() => {
+	return isEmpty(props.data);
+});
+
+// 是否包含索引
+const hasIndex = computed(() => {
+	return props.data.every((e) => e.index != null) && !noData.value;
+});
+
+// 计算属性:将原始数据按索引分组
+const data = computed<ClListViewGroup[]>(() => {
+	// 初始化分组数组
+	const group: ClListViewGroup[] = [];
+
+	// 遍历原始数据,按index字段进行分组
+	props.data.forEach((item) => {
+		// 查找是否已存在相同index的分组
+		const index = group.findIndex((group) => group.index == item.index);
+
+		if (index != -1) {
+			// 如果分组已存在,将当前项添加到该分组的列表中
+			group[index].children.push(item);
+		} else {
+			// 如果分组不存在,创建新的分组
+			group.push({
+				index: item.index ?? "",
+				children: [item]
+			} as ClListViewGroup);
+		}
+	});
+
+	return group;
+});
+
+// 计算属性:提取所有分组的索引列表,用于索引栏显示
+const indexList = computed<string[]>(() => {
+	return data.value.map((item) => item.index);
+});
+
+// 计算属性:将分组数据扁平化为虚拟列表项数组
+const virtualItems = computed<ClListViewVirtualItem[]>(() => {
+	// 初始化虚拟列表数组
+	const items: ClListViewVirtualItem[] = [];
+
+	// 初始化顶部位置,考虑预留空间
+	let top = props.topHeight;
+	// 初始化索引计数器
+	let index = 0;
+
+	// 遍历每个分组,生成虚拟列表项
+	data.value.forEach((group, groupIndex) => {
+		if (group.index != "") {
+			// 添加分组头部项
+			items.push({
+				key: `header-${groupIndex}`,
+				type: "header",
+				index: index++,
+				top,
+				height: props.headerHeight,
+				data: {
+					label: group.index!,
+					index: group.index
+				}
+			});
+			// 更新top位置
+			top += props.headerHeight;
+		}
+
+		// 添加分组内的所有列表项
+		group.children.forEach((item, itemIndex) => {
+			items.push({
+				key: `item-${groupIndex}-${itemIndex}`,
+				type: "item",
+				index: index++,
+				top,
+				height: props.itemHeight,
+				data: item
+			});
+			// 更新top位置
+			top += props.itemHeight;
+		});
+	});
+
+	return items;
+});
+
+// 计算属性:计算整个列表的总高度
+const listHeight = computed<number>(() => {
+	return (
+		// 所有项目高度之和
+		virtualItems.value.reduce((total, item) => total + item.height, 0) +
+		// 加上顶部预留空间高度
+		props.topHeight +
+		// 加上底部预留空间高度
+		props.bottomHeight
+	);
+});
+
+// 当前滚动位置
+const scrollTop = ref(0);
+
+// 目标滚动位置,用于控制滚动到指定位置
+const targetScrollTop = ref(0);
+
+// 滚动容器的高度
+const scrollerHeight = ref(0);
+
+// 计算属性:获取当前可见区域的列表项
+const visibleItems = computed<ClListViewVirtualItem[]>(() => {
+	// 如果虚拟列表为空,返回空数组
+	if (isEmpty(virtualItems.value)) {
+		return [];
+	}
+
+	// 如果未启用虚拟列表,直接返回所有项目
+	if (!props.virtual) {
+		return virtualItems.value;
+	}
+
+	// 计算缓冲区高度
+	const bufferHeight = props.bufferSize * props.itemHeight;
+	// 计算可视区域的顶部位置(包含缓冲区)
+	const viewportTop = scrollTop.value - bufferHeight;
+	// 计算可视区域的底部位置(包含缓冲区)
+	const viewportBottom = scrollTop.value + scrollerHeight.value + bufferHeight;
+
+	// 初始化可见项目数组
+	const visible: ClListViewVirtualItem[] = [];
+
+	// 使用二分查找优化查找起始位置
+	let startIndex = 0;
+	let endIndex = virtualItems.value.length - 1;
+
+	// 二分查找第一个可见项目的索引
+	while (startIndex < endIndex) {
+		const mid = Math.floor((startIndex + endIndex) / 2);
+		const item = virtualItems.value[mid];
+
+		if (item.top + item.height <= viewportTop) {
+			startIndex = mid + 1;
+		} else {
+			endIndex = mid;
+		}
+	}
+
+	// 从找到的起始位置开始,收集所有可见项目
+	for (let i = startIndex; i < virtualItems.value.length; i++) {
+		const item = virtualItems.value[i];
+
+		// 如果项目完全超出视口下方,停止收集
+		if (item.top >= viewportBottom) {
+			break;
+		}
+
+		// 如果项目与视口有交集,添加到可见列表
+		if (item.top + item.height > viewportTop) {
+			visible.push(item);
+		}
+	}
+
+	return visible;
+});
+
+// 计算属性:计算上方占位容器的高度
+const spacerTopHeight = computed<number>(() => {
+	// 如果没有可见项目,返回0
+	if (isEmpty(visibleItems.value)) {
+		return 0;
+	}
+	// 返回第一个可见项目的顶部位置
+	return visibleItems.value[0].top;
+});
+
+// 计算属性:计算下方占位容器的高度
+const spacerBottomHeight = computed<number>(() => {
+	// 如果没有可见项目,返回0
+	if (isEmpty(visibleItems.value)) {
+		return 0;
+	}
+	// 获取最后一个可见项目
+	const lastItem = visibleItems.value[visibleItems.value.length - 1];
+	// 计算下方占位高度
+	return listHeight.value - (lastItem.top + lastItem.height);
+});
+
+// 列表样式
+const listStyle = computed(() => {
+	return {
+		height: props.virtual ? `${listHeight.value}px` : "auto"
+	};
+});
+
+// 上方占位容器样式
+const spacerTopStyle = computed(() => {
+	return {
+		height: props.virtual ? `${spacerTopHeight.value}px` : "auto"
+	};
+});
+
+// 下方占位容器样式
+const spacerBottomStyle = computed(() => {
+	return {
+		height: props.virtual ? `${spacerBottomHeight.value}px` : "auto"
+	};
+});
+
+// 存储每个分组头部距离顶部的位置数组
+const tops = ref<number[]>([]);
+
+// 计算并更新所有分组头部的位置
+function getTops() {
+	// 初始化一个空数组
+	const arr = [] as number[];
+
+	// 初始化顶部位置
+	let top = 0;
+
+	// 计算每个分组的顶部位置
+	data.value.forEach((group) => {
+		// 将当前分组头部的位置添加到数组中
+		arr.push(top);
+
+		// 累加当前分组的总高度(头部高度+所有项目高度)
+		top += props.headerHeight + group.children.length * props.itemHeight;
+	});
+
+	tops.value = arr;
+}
+
+// 下拉刷新触发标志
+const refreshTriggered = ref(false);
+
+// 下拉刷新相关状态
+const refresherStatus = ref<"default" | "pulling" | "refreshing">("default");
+
+// 下拉刷新文案
+const refresherText = computed(() => {
+	switch (refresherStatus.value) {
+		case "pulling":
+			return props.refresherPullingText;
+		case "refreshing":
+			return props.refresherRefreshingText;
+		default:
+			return props.refresherDefaultText;
+	}
+});
+
+// 停止下拉刷新
+function stopRefresh() {
+	refresherStatus.value = "default";
+	refreshTriggered.value = false;
+}
+
+// 滚动到顶部事件处理函数
+function onScrollToUpper(e: UniScrollToUpperEvent) {
+	emit("scrolltoupper", e);
+	emit("top");
+}
+
+// 滚动到底部事件处理函数
+function onScrollToLower(e: UniScrollToLowerEvent) {
+	emit("scrolltolower", e);
+	emit("bottom");
+}
+
+// 滚动锁定标志,用于防止滚动时触发不必要的计算
+let scrollLock = false;
+
+// 滚动事件处理函数
+function onScroll(e: UniScrollEvent) {
+	// 更新当前滚动位置
+	scrollTop.value = Math.floor(e.detail.scrollTop);
+
+	// 如果滚动被锁定,直接返回
+	if (scrollLock) return;
+
+	// 根据滚动位置自动更新激活的索引
+	tops.value.forEach((top, index) => {
+		if (scrollTop.value >= top) {
+			activeIndex.value = index;
+		}
+	});
+
+	emit("scroll", e);
+}
+
+// 滚动结束事件处理函数
+function onScrollEnd(e: UniScrollEvent) {
+	emit("scrollend", e);
+}
+
+// 行点击事件处理函数
+function onItemTap(item: ClListViewVirtualItem) {
+	emit("item-tap", item.data);
+}
+
+// 索引栏点击事件处理函数
+function onIndexChange(index: number) {
+	// 锁定滚动,防止触发不必要的计算
+	scrollLock = true;
+
+	// 设置目标滚动位置为对应分组头部的位置
+	targetScrollTop.value = tops.value[index];
+
+	// 300ms后解除滚动锁定
+	setTimeout(() => {
+		scrollLock = false;
+	}, 300);
+}
+
+// 下拉刷新事件处理函数
+function onRefresherPulling(e: UniRefresherEvent) {
+	if (e.detail.dy > props.refresherThreshold) {
+		refresherStatus.value = "pulling";
+	}
+	emit("refresher-pulling", e);
+}
+
+// 下拉刷新事件处理函数
+function onRefresherRefresh(e: UniRefresherEvent) {
+	refresherStatus.value = "refreshing";
+	refreshTriggered.value = true;
+	emit("refresher-refresh", e);
+	emit("pull", e);
+}
+
+// 恢复下拉刷新
+function onRefresherRestore(e: UniRefresherEvent) {
+	refresherStatus.value = "default";
+	emit("refresher-restore", e);
+}
+
+// 停止下拉刷新
+function onRefresherAbort(e: UniRefresherEvent) {
+	refresherStatus.value = "default";
+	emit("refresher-abort", e);
+}
+
+// 滚动到顶部
+function scrollToTop() {
+	targetScrollTop.value = 0.01;
+
+	nextTick(() => {
+		targetScrollTop.value = 0;
+	});
+}
+
+// 获取滚动容器的高度
+function getScrollerHeight() {
+	setTimeout(() => {
+		uni.createSelectorQuery()
+			.in(proxy)
+			.select(".cl-list-view__scroller")
+			.boundingClientRect()
+			.exec((res) => {
+				if (isEmpty(res)) {
+					return;
+				}
+
+				// 设置容器高度
+				scrollerHeight.value = (res[0] as NodeInfo).height ?? 0;
+			});
+	}, 100);
+}
+
+// 组件挂载后的初始化逻辑
+onMounted(() => {
+	// 获取容器高度
+	getScrollerHeight();
+
+	// 监听数据变化,重新计算位置信息
+	watch(
+		computed(() => props.data),
+		() => {
+			getTops();
+		},
+		{
+			// 立即执行一次
+			immediate: true
+		}
+	);
+});
+
+defineExpose({
+	data,
+	stopRefresh,
+	scrollToTop
+});
+</script>
+
+<style lang="scss" scoped>
+.cl-list-view {
+	@apply h-full w-full relative;
+
+	&__scroller {
+		@apply h-full w-full;
+	}
+
+	&__virtual-list {
+		@apply relative w-full;
+	}
+
+	&__spacer-top,
+	&__spacer-bottom {
+		@apply w-full;
+	}
+
+	&__index {
+		@apply flex flex-row items-center bg-white;
+		@apply absolute top-0 left-0 w-full px-[10px] z-20;
+
+		&.is-dark {
+			@apply bg-gray-600/10 border-none;
+		}
+	}
+
+	&__virtual-item {
+		@apply w-full;
+	}
+
+	&__header {
+		@apply flex flex-row items-center relative px-[10px] z-10;
+	}
+
+	&__item {
+		&-inner {
+			@apply flex flex-row items-center px-[10px] h-full;
+		}
+	}
+
+	&__refresher {
+		@apply flex flex-row items-center justify-center w-full h-full;
+	}
+}
+</style>

@@ -1,0 +1,161 @@
+---
+title: 2. 安装这个插件并运行
+description: 这样 weapp-tailwindcss 和 weapp-vite 就被安装在你的本地了
+keywords:
+  - 快速开始
+  - 安装
+  - 配置
+  - '2.'
+  - 安装这个插件并运行
+  - quick start
+  - native
+  - 1.install plugin
+  - weapp-tailwindcss
+  - tailwindcss
+  - 小程序
+  - 微信小程序
+  - uni-app
+  - taro
+  - rax
+  - mpx
+---
+# 2. 安装这个插件并运行
+
+## 安装插件
+
+在项目目录下，执行:
+
+```bash npm2yarn
+npm i -D weapp-tailwindcss weapp-vite
+```
+
+这样 `weapp-tailwindcss` 和 `weapp-vite` 就被安装在你的本地了
+
+## 执行初始化命令
+
+在命令行中运行
+
+```sh
+npx weapp-vite init
+```
+
+这个命令会对现有的原生小程序项目，进行 `weapp-vite` 的初始化
+
+执行后，会发现主要有许多文件改动，`CLI` 主要做了 `3` 件事情:
+
+- 创建 `vite.config.ts` 文件，这个是 `weapp-vite` 和 `vite` 的配置文件
+- 修改 `package.json`, 添加 `dev` 和 `build` 开发和构建脚本，还有构建 `npm` 和打开微信开发者工具
+- 修改 `project.config.json` 内容，来适配构建产物
+- 添加适配 vite 的 `dts` 和 `tsconfig.json`
+
+## 安装所有的依赖包
+
+在执行完成 `weapp-vite init` 初始化命令之后，我们需要在项目里执行一下安装命令:
+
+```bash npm2yarn
+npm i
+```
+
+## 注册插件
+
+在你的 `vite.config.ts` 里对插件进行注册:
+
+```ts title="vite.config.ts"
+import { defineConfig } from 'weapp-vite/config'
+import { WeappTailwindcss } from 'weapp-tailwindcss/vite'
+
+export default defineConfig({
+  // highlight-start
+  plugins: [
+    WeappTailwindcss({
+      rem2rpx: true,
+    }),
+  ],
+  // highlight-end
+})
+
+```
+
+Tailwind CSS 3.x 的扫描范围由 `tailwind.config.js` 的 `content` 控制；Tailwind CSS 4.x 的扫描范围写在 CSS 入口的 `@source` 里。生成模式下不要再注册 Tailwind 官方生成插件，也不需要执行 `weapp-tw patch`。
+
+常规 weapp-vite 项目会自动识别被引入的 Tailwind CSS 入口。多入口、入口没有被 Vite 引入、自动识别失败时，再手动配置 `cssEntries`：
+
+```ts title="vite.config.ts"
+import path from 'node:path'
+import { defineConfig } from 'weapp-vite/config'
+import { WeappTailwindcss } from 'weapp-tailwindcss/vite'
+
+export default defineConfig({
+  plugins: [
+    WeappTailwindcss({
+      rem2rpx: true,
+      cssEntries: [
+        path.resolve(__dirname, 'app.css'),
+      ],
+    }),
+  ],
+})
+```
+
+
+## 开始运行
+
+使用 `npm run dev` 进入开发模式, 此模式带有热更新的，主要用于开发
+
+使用 `npm run build` 进行构建
+
+不论是 `npm run dev` 还是 `npm run build`, 他们的构建产物，都在工程目录下的 `dist` 目录
+
+使用微信开发者工具，直接导入工程目录，然后即可预览效果！
+
+> 注意不是导入 `dist` 目录，是你工程的根目录! 通常是 `dist` 的父级目录，不要搞错了！
+
+
+## 配置好的模板
+
+如果配置不成功，可以用下面的模板对比配置文件：
+
+[weapp-vite-tailwindcss-template](https://github.com/weapp-vite/weapp-vite/tree/main/apps/weapp-vite-tailwindcss-template)
+
+或者直接执行命令:
+
+```bash npm2yarn
+npx weapp-vite create my-app
+```
+
+此命令会在当前目录下，创建一个目录名为 `my-app` 的 `weapp-vite` + `weapp-tailwindcss` 集成模板
+
+{/* [vite-native](https://github.com/sonofmagic/weapp-tailwindcss/tree/main/apps/vite-native) */}
+
+{/* [native-weapp-tailwindcss-template](https://github.com/sonofmagic/native-weapp-tailwindcss-template) */}
+
+## 原生组件样式的隔离性
+
+:::tip
+发现很多用户，在使用原生开发的时候，经常会问，为什么 `tailwindcss` 样式对自定义组件不生效。
+
+这可能有以下几个原因:
+
+1. 代码文件不在 `tailwind.config.js` 的 `content` 配置内
+2. 原生小程序组件是默认开启 **组件样式隔离** 的，默认情况下，自定义组件的样式只受到自定义组件 `wxss` 的影响。而 `tailwindcss` 生成的工具类，都在 `app.wxss` 这个全局样式文件里面。不属于组件内部，自然不生效。
+
+这时候可以在你组件的 `json` 文件配置中，设置下面一行 `styleIsolation` 来开启样式共享:
+
+```json title="custom-component.json"
+{
+  "styleIsolation": "apply-shared"
+}
+```
+
+> `apply-shared` 表示页面 `wxss` 样式将影响到自定义组件，但自定义组件 `wxss` 中指定的样式不会影响页面；
+
+来让组件应用到 `app.wxss` 里的样式。
+
+更多的文档详见: [微信小程序相关开发文档](https://developers.weixin.qq.com/miniprogram/dev/framework/custom-component/wxml-wxss.html#%E7%BB%84%E4%BB%B6%E6%A0%B7%E5%BC%8F%E9%9A%94%E7%A6%BB)
+
+:::
+
+
+## 想了解更多 weapp-vite
+
+更多场景和配置，请查看 [weapp-vite 文档网站](https://vite.icebreaker.top/)

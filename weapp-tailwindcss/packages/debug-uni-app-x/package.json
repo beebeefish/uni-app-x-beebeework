@@ -1,0 +1,62 @@
+{
+  "name": "@weapp-tailwindcss/debug-uni-app-x",
+  "version": "1.0.0-next.0",
+  "author": "ice breaker <1324318532@qq.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sonofmagic/weapp-tailwindcss.git",
+    "directory": "packages/debug-uni-app-x"
+  },
+  "bugs": {
+    "url": "https://github.com/sonofmagic/weapp-tailwindcss/issues"
+  },
+  "keywords": [],
+  "_exports": {
+    ".": "./src/index.ts"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "engines": {
+    "node": "^20.19.0 || >=22.12.0"
+  },
+  "scripts": {
+    "dev": "tsdown --watch --sourcemap",
+    "build:watch": "tsdown --watch --sourcemap",
+    "build": "tsdown",
+    "test": "vitest run",
+    "test:dev": "vitest",
+    "tsd": "tsd",
+    "release": "pnpm publish",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
+  },
+  "devDependencies": {
+    "defu": "6.1.7",
+    "fs-extra": "11.3.5",
+    "pathe": "2.0.3",
+    "vite": "7.2.7"
+  },
+  "publishConfig": {
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "import": "./dist/index.mjs",
+        "require": "./dist/index.cjs"
+      }
+    },
+    "main": "./dist/index.cjs",
+    "module": "./dist/index.mjs",
+    "types": "./dist/index.d.ts",
+    "access": "public",
+    "registry": "https://registry.npmjs.org"
+  }
+}

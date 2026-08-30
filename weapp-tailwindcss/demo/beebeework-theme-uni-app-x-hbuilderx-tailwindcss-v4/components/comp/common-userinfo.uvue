@@ -1,0 +1,55 @@
+<template>
+<view class="px-4">
+  <view class="flex flex-col mt-2">
+    <view class="py-2">
+      <view class="flex flex-row items-center gap-x-3">
+        <image :src="userInfo.avatar" class="shrink-0 inline-block size-22 rounded-full bg-gray-200 dark:bg-neutral-800 object-cover border-2 border-gray-500/50" mode="aspectFill" />
+        <view class="flex flex-1 grow flex-col gap-y-1">
+          <text class="text-xl font-bold text-gray-800 dark:text-neutral-200">{{ userInfo.nickname }}</text>
+          <text class="text-sm text-gray-500 dark:text-neutral-400">@{{ userInfo.username }}</text>
+          <view class="flex flex-row flex-wrap gap-1 min-h-4 items-center">
+            <text v-if="userInfo.role && userInfo.role !==''" class="rounded-sm h-4 px-1 flex justify-center items-center orange-btn text-[0.625rem] cursor-default">{{ userInfo.role }}</text>
+            <view class="relative">
+              <view class="rounded-sm flex flex-row justify-center items-center">
+                <view class="rounded-sm text-[0.625rem] border border-gray-300/50 h-4 flex flex-row justify-center items-center relative overflow-hidden">
+                  <text v-if="userInfo.niceid" class="h-[1.125rem] -mt-[0.0625rem] text-[#FFDFBA] bg-neutral-800 flex flex-row items-center px-1 relative z-[2]">靓</text>
+                  <text v-if="userInfo.niceid" class="absolute left-[0.75rem] w-2 h-[140%] bg-neutral-800 [transform:rotate(15deg)] z-[1]"></text>
+                  <text class="text-[0.625rem] text-neutral-500 cursor-default px-1">{{userInfo.level}}</text>
+                </view>
+              </view>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+    <!-- End Header -->
+
+    <!-- 个人描述说明 -->
+    <view class="bg-gray-200/40 dark:bg-neutral-800 rounded-[12px] px-3 py-2 mt-2">
+      <text class="text-gray-600 dark:text-neutral-300">{{ userInfo.description }}</text>
+    </view>
+    <!-- List -->
+    <view class="py-2 px-1 flex flex-col gap-1">
+      <view v-for="(item, index) in userInfo.item" :key="index">
+        <view class="inline-flex flex-row items-center gap-x-3 text-xs text-gray-500 dark:text-neutral-500">
+          <text class="">{{item.title}}</text>
+          <text class="">{{item.value}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>
+</template>
+
+<script setup>
+import { computed } from 'vue'
+
+const props = defineProps({
+  data: {
+    type: Object,
+    default: () => ({})
+  }
+})
+
+const userInfo = computed(() => props.data?.userInfo || {})
+</script>

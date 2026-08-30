@@ -1,0 +1,49 @@
+<template>
+  <view class="flex p-4 flex-col mb-1 -mt-3">
+    <text v-if="title" class="text-base font-bold px-1 mb-2">{{ title }}</text>
+    <view class="dropdown-pop-base rounded-3xl">
+      <view 
+        v-for="(item, index) in data" 
+        :key="index"
+        @click="!isSwiping && $emit('item-click', item)"
+        class="relative flex flex-row items-center justify-between px-4 py-2.5 transition-colors"
+        :class="{ 'pointer-events-none': isSwiping }"
+      >
+        <view class="flex flex-1 flex-row items-center gap-x-3 -ml-1">
+          <view v-if="item.iconImage && item.iconImage.length > 5" class="w-7 h-7 rounded-[9px] flex items-center justify-center bg-transparent overflow-hidden">
+            <image class="w-full h-full" mode="aspectFill" :src="item.iconImage"></image>
+          </view>
+          <view v-else-if="item.icon" class="w-7 h-7 rounded-[9px] flex items-center justify-center bg-gray-400/10 text-gray-800 dark:text-neutral-200 overflow-hidden">
+            <svg-icon :size="20"><text :class="[item.icon,'size-[20px]']"></text></svg-icon>
+          </view>
+          <view v-else class="w-7 h-7 rounded-[9px] flex items-center justify-center bg-gray-400/10 text-gray-800 overflow-hidden">
+            <image class="w-full h-full" mode="aspectFill" src="/static/default-icon.svg"></image>
+          </view>
+          
+          <view class="flex flex-row items-center gap-x-1">
+            <text class="text-[15px]">{{ item.name }}</text>
+            <view v-if="item.mark && item.mark !== ''" class="text-white bg-orange-500 text-[11px] px-2 py-0.5 rounded-full font-bold shrink-0">{{ item.mark }}</view>
+          </view>
+        </view>
+        <view class="shrink-0 flex flex-row items-center gap-1">
+          <text v-if="item.count&&item.count>0" class="text-[13px] bg-red-500 text-white rounded-full w-5.5 h-5.5 flex flex-row items-center justify-center">{{ item.count }}</text>
+          <svg-icon :size="15"><text class="i-[mingcute--right-line] text-gray-400 dark:text-neutral-500 size-[15px]"></text></svg-icon>
+        </view>
+        <view 
+          v-if="index !== data.length - 1" 
+          class="absolute bottom-0 left-[52px] right-4 h-[1px] bg-gray-300/50 dark:bg-white/10"
+        ></view>
+      </view>
+    </view>
+  </view>
+  
+</template>
+
+<script setup>
+defineProps({
+  title: { type: String, default: '' },
+  data: { type: Array, default: () => [] },
+  isSwiping: { type: Boolean, default: false }
+})
+defineEmits(['item-click'])
+</script>

@@ -1,0 +1,165 @@
+---
+id: runtime-api
+title: 运行时 API
+description: shared runtime —— @weapp-tailwindcss/runtime 以及 merge 系列在小程序里的用法。
+keywords:
+  - 社区
+  - 模板
+  - 案例
+  - 运行时
+  - API
+  - community
+  - merge
+  - runtime api
+  - weapp-tailwindcss
+  - tailwindcss
+  - 小程序
+  - 微信小程序
+  - uni-app
+  - taro
+  - rax
+  - mpx
+---
+
+`@weapp-tailwindcss/runtime` 是所有运行时包的公共底座，统一提供 escape/unescape、`clsx`、`weappTwIgnore`、`createRuntimeFactory` 与 `createRpxLengthTransform`。
+
+:::tip 已迁移到 packages-runtime
+更完整的使用方式与多端示例已收录在 packages-runtime 章节：  
+- [packages-runtime 总览](/docs/community/packages-runtime)  
+- [@weapp-tailwindcss/merge](/docs/community/packages-runtime/merge)  
+- [@weapp-tailwindcss/variants](/docs/community/packages-runtime/variants)
+:::
+
+## 安装
+
+```bash npm2yarn
+pnpm add @weapp-tailwindcss/merge
+```
+
+如果项目仍在使用 Tailwind CSS v3，请改用 `@weapp-tailwindcss/merge-v3`；而 `@weapp-tailwindcss/runtime` 通常作为间接依赖被自动安装。
+
+## Runtime 基础导出
+
+```ts
+import {
+  clsx,
+  weappTwIgnore,
+  resolveTransformers,
+  createRuntimeFactory,
+  createRpxLengthTransform,
+} from '@weapp-tailwindcss/runtime'
+```
+
+- `clsx` / `ClassValue`：统一的类名聚合工具，参数类型与 `clsx` 一致。
+- `weappTwIgnore`：`String.raw` 的别名，用于跳过编译期转义。
+- `resolveTransformers(options?)`：返回 `{ escape, unescape }`，并自动合并默认映射表。
+- `createRuntimeFactory(options)`：包装 `tailwind-merge` 等运行时，内置 escape/unescape、短缓存与可插拔的预处理/还原钩子。
+- `createRpxLengthTransform(prefixes?)`：提供 `prepareValue`/`restoreValue`，用于 rpx 长度归一化。
+
+## createRuntimeFactory
+
+`createRuntimeFactory` 会把原始 `twMerge`/`twJoin`/`extendTailwindMerge`/`createTailwindMerge` 包装成小程序运行时，内部流程为：
+
+1. 可选 unescape（仅当输入包含占位符时触发）。
+2. `prepareValue` 预处理（例如 rpx 归一化）。
+3. 原始合并。
+4. `restoreValue` 还原。
+5. escape 输出并缓存结果（256 条）。
+
+`@weapp-tailwindcss/merge` 与 `merge-v3` 默认使用 `createRpxLengthTransform()` 作为预处理/还原钩子。
+
+## createRpxLengthTransform
+
+默认对以下前缀的任意值进行 rpx 归一化：`text`、`border`、`bg`、`outline`、`ring`。
+
+```ts
+import { createRpxLengthTransform, createRuntimeFactory } from '@weapp-tailwindcss/runtime'
+import { twMerge, twJoin, createTailwindMerge, extendTailwindMerge } from 'tailwind-merge'
+
+const rpxTransform = createRpxLengthTransform(['text', 'bg'])
+const create = createRuntimeFactory({
+  version: 3,
+  twMerge,
+  twJoin,
+  createTailwindMerge,
+  extendTailwindMerge,
+  ...rpxTransform,
+})
+```
+
+## merge 运行时的标准导出
+
+```ts
+import {
+  twMerge,
+  twJoin,
+  createTailwindMerge,
+  extendTailwindMerge,
+  getDefaultConfig,
+  mergeConfigs,
+  tailwindMergeVersion,
+  weappTwIgnore,
+  create,
+} from '@weapp-tailwindcss/merge'
+```
+
+- `@weapp-tailwindcss/merge` 适配 `tailwindcss@4`，`tailwindMergeVersion` 为 `3`。
+- `@weapp-tailwindcss/merge-v3` 适配 `tailwindcss@3`，`tailwindMergeVersion` 为 `2`。
+- 两个包均内置 rpx 归一化与 escape/unescape，API 完全一致。
+
+## twMerge(...classValues)
+
+合并 Tailwind 工具类并移除冲突项，返回转义后的字符串。支持 `clsx` 兼容的所有参数类型（布尔、数组、对象等）。
+
+```ts
+twMerge('px-2 py-1', ['px-6', { 'py-5': shouldExpand }])
+// => 'px-6 py-5'
+```
+
+## twJoin(...classValues)
+
+拼接类名，不做冲突判断，但仍会走 unescape/escape 与 rpx 归一化流程。
+
+```ts
+twJoin('text-[#ececec]', condition && 'bg-[#010101]')
+// => 仍会输出转义后的类名
+```
+
+## create(options?)
+
+`create` 会基于 `CreateOptions` 返回一组隔离运行时，常用于多端项目控制转义：
+
+```ts
+const { twMerge } = create({ escape: false, unescape: false })
+```
+
+### CreateOptions
+
+| 选项 | 类型 | 默认值 | 说明 |
+| --- | --- | --- | --- |
+| `escape` | `false` \| `EscapeConfig` | `MappingChars2String` | 控制输出时是否转义；可自定义映射表。 |
+| `unescape` | `false` \| `UnescapeConfig` | `MappingChars2String` | 控制合并前是否还原占位符。 |
+
+- 当 `escape`/`unescape` 提供自定义 `map` 时，会与默认映射自动合并。
+- `resolveTransformers` 会尽量共享同一映射表，避免编译期与运行时不一致。
+
+## weappTwIgnore
+
+模板字符串标签函数，本质是 `String.raw`，与 `ignoreTaggedTemplateExpressionIdentifiers` 配置联动：
+
+```ts
+import { weappTwIgnore } from '@weapp-tailwindcss/merge'
+
+const raw = weappTwIgnore`
+  bg-[#123456]
+  before:content-['>']
+`
+```
+
+## 基于 runtime 的其他包
+
+- `@weapp-tailwindcss/cva`：封装 `class-variance-authority`，详见 [@weapp-tailwindcss/cva](/docs/community/packages-runtime/cva)  
+- `@weapp-tailwindcss/variants`：封装 `tailwind-variants`，详见 [@weapp-tailwindcss/variants](/docs/community/packages-runtime/variants)  
+- `@weapp-tailwindcss/merge-v3`：面向 `tailwindcss@3` 的长期支持分支  
+- `@weapp-tailwindcss/variants-v3`：基于 `tailwind-variant-v3` 的小程序运行时  
+- `tailwind-variant-v3`：上游 v3 runtime（Web 优先）

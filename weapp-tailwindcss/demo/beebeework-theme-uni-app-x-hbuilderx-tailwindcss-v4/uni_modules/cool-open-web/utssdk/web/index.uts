@@ -1,0 +1,37 @@
+/**
+ * 在Web浏览器中打开指定的网页URL
+ * @param url 要打开的网页地址，支持http、https等协议
+ * @returns 返回操作结果，true表示成功，false表示失败
+ */
+export function openWeb(url: string): boolean {
+	// 参数验证：检查URL是否为空或无效
+	if (url == null || url.trim() == "") {
+		console.error("openWeb: URL参数不能为空");
+		return false;
+	}
+
+	try {
+		let trimmedUrl = url.trim();
+		
+		// 基本URL格式验证
+		if (!trimmedUrl.includes(".") || trimmedUrl.length < 4) {
+			console.error("openWeb: 无效的URL格式 -", trimmedUrl);
+			return false;
+		}
+
+		// 如果URL不包含协议，默认添加https://
+		if (!trimmedUrl.startsWith("http://") && !trimmedUrl.startsWith("https://") && !trimmedUrl.startsWith("//")) {
+			trimmedUrl = "https://" + trimmedUrl;
+		}
+
+		// 在当前窗口中打开URL
+		location.href = trimmedUrl;
+		
+		console.log("openWeb: 成功打开URL -", trimmedUrl);
+		return true;
+	} catch (e) {
+		// 捕获可能的异常
+		console.error("openWeb: 打开URL时发生错误 -", e);
+		return false;
+	}
+}

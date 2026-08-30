@@ -1,0 +1,6 @@
+i-[mingcute--board-line]
+i-[mingcute--shopping-bag-3-line]
+i-[mingcute--shopping-bag-1-line]
+i-[mingcute--planet-line]
+i-[mingcute--target-line]
+i-[mingcute--comment-line]

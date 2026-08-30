@@ -1,0 +1,90 @@
+<template>
+  <view class="absolute bottom-0 left-0 right-0 z-50">
+    <view class="p-4 pb-[env(safe-area-inset-bottom)] !pb-5 flex flex-row items-center justify-between gap-x-2">
+      <view class="flex-1 dropdown-pop backdrop-blur-base rounded-full">
+      <cl-tabs
+        :list="formattedTabs"
+        :modelValue="current"
+        :show-slider="true"
+        :show-line="false"
+        :pt="{
+          className: '',
+          inner: {
+            className: 'px-2'
+          },
+          item: {
+            className: '-mx-2'
+          },
+          slider: {
+            className: '!rounded-full !accent-btn-active backdrop-blur-base '
+          }
+        }"
+        :gutter="0"
+        height="60px"
+        :fill="true"
+        @change="handleTabChange"
+      >
+        <template #item="{ item, active }">
+          <template v-for="originItem in [getOriginItem(item.value)]" :key="originItem.viewKey">
+            <view class="relative w-full flex flex-col gap-0 items-center justify-center h-14 rounded-full">
+              <span :class="active ? '!size-6' : '!size-0'" class="text-blue-500 overflow-hidden ">
+                <svg-icon :size="24">
+                  <text :class="originItem.icon" class="size-6"></text>
+                </svg-icon>
+                
+              </span>
+              <span :class="active ? '!size-0' : '!size-6'" class="text-gray-900 dark:text-neutral-100 overflow-hidden ">
+                <svg-icon :size="24">
+                  <text  :class="originItem.icon" class="size-6"></text>
+                </svg-icon>
+              </span>
+              <text :class="active ? 'text-blue-500' : 'text-gray-900 dark:text-neutral-100'" class="text-[10px] ">
+                  {{ originItem.name }}
+                </text>
+            </view>
+          </template>
+        </template>
+      </cl-tabs>
+      </view>
+
+      <view 
+        v-if="aiConfig && aiConfig.enabled"
+        @click="$emit('aiClick')"
+        class="flex flex-col items-center justify-center rounded-full size-15 shrink-0 dropdown-pop backdrop-blur-base"
+      >
+        <svg-icon :size="24"><text class="i-[mingcute--heart-line] size-[24px] text-rose-500"></text></svg-icon>
+        <text class="text-[10px]">心愿单</text>
+      </view>
+
+    </view>
+  </view>
+</template>
+
+<script setup>
+import { computed } from 'vue'
+
+const props = defineProps({
+  list: { type: Array, default: () => [] },
+  current: { type: String, default: 'index' },
+  aiConfig: { type: Object, default: null }
+})
+
+const emit = defineEmits(['change', 'aiClick'])
+
+
+const formattedTabs = computed(() => {
+  return props.list.map(item => ({
+    ...item,
+    label: item.name,    
+    value: item.viewKey   
+  }))
+})
+
+const getOriginItem = (value) => {
+  return props.list.find(item => item.viewKey === value) || {}
+}
+
+const handleTabChange = (value) => {
+  emit('change', value)
+}
+</script>

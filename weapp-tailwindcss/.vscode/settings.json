@@ -1,0 +1,238 @@
+{
+  // Disable the default formatter, use eslint instead
+  "prettier.enable": false,
+  "editor.formatOnSave": false,
+  // Auto fix
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit",
+    "source.organizeImports": "never"
+  },
+  "search.exclude": {
+    "**/submodules/**": true,
+    "**/node_modules/**": true,
+    "**/benchmark/**/node_modules/**": true
+  },
+  "files.exclude": {
+    "**/benchmark/**/node_modules/**": true,
+    "**/submodules/**": true
+  },
+  "files.watcherExclude": {
+    "**/node_modules/**": true,
+    "**/benchmark/**/node_modules/**": true,
+    "**/submodules/**": true,
+    "**/.weapp-vite/**": true,
+    "**/.turbo/**": true,
+    "**/.cache/**": true,
+    "**/dist/**": true,
+    "**/build/**": true
+  },
+  // 避免 TypeScript 通过 benchmark 生成依赖的 symlink 重复打开工作区包。
+  "js/ts.tsserver.watchOptions": {
+    "excludeDirectories": [
+      "**/node_modules",
+      "**/benchmark/**/node_modules",
+      "**/submodules",
+      "**/.weapp-vite",
+      "**/.turbo",
+      "**/.cache",
+      "**/dist",
+      "**/build"
+    ],
+    "excludeFiles": [
+      "**/node_modules/**/tsconfig*.json",
+      "**/benchmark/**/node_modules/**/tsconfig*.json",
+      "**/submodules/**/tsconfig*.json",
+      "**/.weapp-vite/**/tsconfig*.json"
+    ]
+  },
+  // https://github.com/tailwindlabs/tailwindcss/discussions/5258
+  "css.customData": [".vscode/tailwind.json"],
+  "tailwindCSS.experimental.classRegex": [
+    // https://github.com/lukeed/clsx?tab=readme-ov-file#tailwind-support
+    ["clsx\\(([^)]*)\\)", "(?:'|\"|`)([^']*)(?:'|\"|`)"],
+    ["cn\\(([^)]*)\\)", "(?:'|\"|`)([^']*)(?:'|\"|`)"],
+    // https://cva.style/docs/getting-started/installation
+    ["cva\\(([^)]*)\\)", "[\"'`]([^\"'`]*).*?[\"'`]"],
+    ["cx\\(([^)]*)\\)", "(?:'|\"|`)([^']*)(?:'|\"|`)"],
+    ["([\"'`][^\"'`]*.*?[\"'`])", "[\"'`]([^\"'`]*).*?[\"'`]"]
+  ],
+  "tailwindCSS.classAttributes": [
+    "class",
+    "className",
+    "ngClass",
+    "class:list",
+    "tw-class",
+    "tw-hover-class",
+    "hover-class"
+  ],
+  "tailwindCSS.includeLanguages": {
+    "wxml": "html",
+    "mpx": "html"
+  },
+  "tailwindCSS.experimental.configFile": {
+    "demo/taro-vite-tailwindcss-v4/src/tailwind-intellisense.css": "demo/taro-vite-tailwindcss-v4/src/**",
+    "demo/taro-webpack-tailwindcss-v4/src/tailwind-intellisense.css": "demo/taro-webpack-tailwindcss-v4/src/**",
+    "demo/mpx-tailwindcss-v4/src/tailwind-intellisense.css": "demo/mpx-tailwindcss-v4/src/**",
+    "demo/uni-app-webpack-tailwindcss-v4/src/tailwind-intellisense.css": "demo/uni-app-webpack-tailwindcss-v4/src/**",
+    "demo/uni-app-tailwindcss-v4/src/tailwind-intellisense.css": "demo/uni-app-tailwindcss-v4/src/**",
+    "demo/uni-app-x-hbuilderx-tailwindcss4/tailwind-intellisense.css": "demo/uni-app-x-hbuilderx-tailwindcss4/**",
+    "apps/taro-webpack-tailwindcss-v4/src/tailwind-intellisense.css": "apps/taro-webpack-tailwindcss-v4/src/**",
+    "apps/uni-app-x-hbuilderx-tailwindcss4/tailwind-intellisense.css": "apps/uni-app-x-hbuilderx-tailwindcss4/**",
+    "apps/vite-native/tailwind-intellisense.css": "apps/vite-native/**"
+  },
+  // Silent the stylistic rules in you IDE, but still auto fix them
+  "eslint.rules.customizations": [
+    // close "style/* off"
+    // {
+    //   "rule": "style/*",
+    //   "severity": "off"
+    // },
+    {
+      "rule": "format/*",
+      "severity": "off"
+    },
+    {
+      "rule": "*-indent",
+      "severity": "off"
+    },
+    {
+      "rule": "*-spacing",
+      "severity": "off"
+    },
+    {
+      "rule": "*-spaces",
+      "severity": "off"
+    },
+    {
+      "rule": "*-order",
+      "severity": "off"
+    },
+    {
+      "rule": "*-dangle",
+      "severity": "off"
+    },
+    {
+      "rule": "*-newline",
+      "severity": "off"
+    },
+    {
+      "rule": "*quotes",
+      "severity": "off"
+    },
+    {
+      "rule": "*semi",
+      "severity": "off"
+    }
+  ],
+  // Enable eslint for all supported languages
+  "eslint.validate": [
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact",
+    "vue",
+    "html",
+    "markdown",
+    "json",
+    "jsonc",
+    "yaml",
+    "toml",
+    "xml",
+    "gql",
+    "graphql",
+    "astro",
+    "css",
+    "less",
+    "scss",
+    "pcss",
+    "postcss"
+  ],
+  "css.validate": false,
+  "less.validate": false,
+  "scss.validate": false,
+  "stylelint.validate": ["vue", "css", "scss"],
+  "terminal.integrated.env.linux": {
+    "COREPACK_NPM_REGISTRY": "https://registry.npmmirror.com",
+    "EDGEDRIVER_CDNURL": "https://npmmirror.com/mirrors/edgedriver",
+    "NODEJS_ORG_MIRROR": "https://cdn.npmmirror.com/binaries/node",
+    "NVM_NODEJS_ORG_MIRROR": "https://cdn.npmmirror.com/binaries/node",
+    "PHANTOMJS_CDNURL": "https://cdn.npmmirror.com/binaries/phantomjs",
+    "CHROMEDRIVER_CDNURL": "https://cdn.npmmirror.com/binaries/chromedriver",
+    "OPERADRIVER_CDNURL": "https://cdn.npmmirror.com/binaries/operadriver",
+    "CYPRESS_DOWNLOAD_PATH_TEMPLATE": "https://cdn.npmmirror.com/binaries/cypress/${version}/${platform}-${arch}/cypress.zip",
+    "ELECTRON_MIRROR": "https://cdn.npmmirror.com/binaries/electron/",
+    "ELECTRON_BUILDER_BINARIES_MIRROR": "https://cdn.npmmirror.com/binaries/electron-builder-binaries/",
+    "SASS_BINARY_SITE": "https://cdn.npmmirror.com/binaries/node-sass",
+    "SWC_BINARY_SITE": "https://cdn.npmmirror.com/binaries/node-swc",
+    "NWJS_URLBASE": "https://cdn.npmmirror.com/binaries/nwjs/v",
+    "PUPPETEER_DOWNLOAD_HOST": "https://cdn.npmmirror.com/binaries/chrome-for-testing",
+    "PUPPETEER_DOWNLOAD_BASE_URL": "https://cdn.npmmirror.com/binaries/chrome-for-testing",
+    "PLAYWRIGHT_DOWNLOAD_HOST": "https://cdn.npmmirror.com/binaries/playwright",
+    "SENTRYCLI_CDNURL": "https://cdn.npmmirror.com/binaries/sentry-cli",
+    "SAUCECTL_INSTALL_BINARY_MIRROR": "https://cdn.npmmirror.com/binaries/saucectl",
+    "RE2_DOWNLOAD_MIRROR": "https://cdn.npmmirror.com/binaries/node-re2",
+    "RE2_DOWNLOAD_SKIP_PATH": "true",
+    "PRISMA_ENGINES_MIRROR": "https://cdn.npmmirror.com/binaries/prisma",
+    "npm_config_better_sqlite3_binary_host": "https://cdn.npmmirror.com/binaries/better-sqlite3",
+    "npm_config_keytar_binary_host": "https://cdn.npmmirror.com/binaries/keytar",
+    "npm_config_sharp_binary_host": "https://cdn.npmmirror.com/binaries/sharp",
+    "npm_config_sharp_libvips_binary_host": "https://cdn.npmmirror.com/binaries/sharp-libvips",
+    "npm_config_robotjs_binary_host": "https://cdn.npmmirror.com/binaries/robotjs"
+  },
+  "terminal.integrated.env.windows": {
+    "COREPACK_NPM_REGISTRY": "https://registry.npmmirror.com",
+    "EDGEDRIVER_CDNURL": "https://npmmirror.com/mirrors/edgedriver",
+    "NODEJS_ORG_MIRROR": "https://cdn.npmmirror.com/binaries/node",
+    "NVM_NODEJS_ORG_MIRROR": "https://cdn.npmmirror.com/binaries/node",
+    "PHANTOMJS_CDNURL": "https://cdn.npmmirror.com/binaries/phantomjs",
+    "CHROMEDRIVER_CDNURL": "https://cdn.npmmirror.com/binaries/chromedriver",
+    "OPERADRIVER_CDNURL": "https://cdn.npmmirror.com/binaries/operadriver",
+    "CYPRESS_DOWNLOAD_PATH_TEMPLATE": "https://cdn.npmmirror.com/binaries/cypress/${version}/${platform}-${arch}/cypress.zip",
+    "ELECTRON_MIRROR": "https://cdn.npmmirror.com/binaries/electron/",
+    "ELECTRON_BUILDER_BINARIES_MIRROR": "https://cdn.npmmirror.com/binaries/electron-builder-binaries/",
+    "SASS_BINARY_SITE": "https://cdn.npmmirror.com/binaries/node-sass",
+    "SWC_BINARY_SITE": "https://cdn.npmmirror.com/binaries/node-swc",
+    "NWJS_URLBASE": "https://cdn.npmmirror.com/binaries/nwjs/v",
+    "PUPPETEER_DOWNLOAD_HOST": "https://cdn.npmmirror.com/binaries/chrome-for-testing",
+    "PUPPETEER_DOWNLOAD_BASE_URL": "https://cdn.npmmirror.com/binaries/chrome-for-testing",
+    "PLAYWRIGHT_DOWNLOAD_HOST": "https://cdn.npmmirror.com/binaries/playwright",
+    "SENTRYCLI_CDNURL": "https://cdn.npmmirror.com/binaries/sentry-cli",
+    "SAUCECTL_INSTALL_BINARY_MIRROR": "https://cdn.npmmirror.com/binaries/saucectl",
+    "RE2_DOWNLOAD_MIRROR": "https://cdn.npmmirror.com/binaries/node-re2",
+    "RE2_DOWNLOAD_SKIP_PATH": "true",
+    "PRISMA_ENGINES_MIRROR": "https://cdn.npmmirror.com/binaries/prisma",
+    "npm_config_better_sqlite3_binary_host": "https://cdn.npmmirror.com/binaries/better-sqlite3",
+    "npm_config_keytar_binary_host": "https://cdn.npmmirror.com/binaries/keytar",
+    "npm_config_sharp_binary_host": "https://cdn.npmmirror.com/binaries/sharp",
+    "npm_config_sharp_libvips_binary_host": "https://cdn.npmmirror.com/binaries/sharp-libvips",
+    "npm_config_robotjs_binary_host": "https://cdn.npmmirror.com/binaries/robotjs"
+  },
+  "terminal.integrated.env.osx": {
+    "COREPACK_NPM_REGISTRY": "https://registry.npmmirror.com",
+    "EDGEDRIVER_CDNURL": "https://npmmirror.com/mirrors/edgedriver",
+    "NODEJS_ORG_MIRROR": "https://cdn.npmmirror.com/binaries/node",
+    "NVM_NODEJS_ORG_MIRROR": "https://cdn.npmmirror.com/binaries/node",
+    "PHANTOMJS_CDNURL": "https://cdn.npmmirror.com/binaries/phantomjs",
+    "CHROMEDRIVER_CDNURL": "https://cdn.npmmirror.com/binaries/chromedriver",
+    "OPERADRIVER_CDNURL": "https://cdn.npmmirror.com/binaries/operadriver",
+    "CYPRESS_DOWNLOAD_PATH_TEMPLATE": "https://cdn.npmmirror.com/binaries/cypress/${version}/${platform}-${arch}/cypress.zip",
+    "ELECTRON_MIRROR": "https://cdn.npmmirror.com/binaries/electron/",
+    "ELECTRON_BUILDER_BINARIES_MIRROR": "https://cdn.npmmirror.com/binaries/electron-builder-binaries/",
+    "SASS_BINARY_SITE": "https://cdn.npmmirror.com/binaries/node-sass",
+    "SWC_BINARY_SITE": "https://cdn.npmmirror.com/binaries/node-swc",
+    "NWJS_URLBASE": "https://cdn.npmmirror.com/binaries/nwjs/v",
+    "PUPPETEER_DOWNLOAD_HOST": "https://cdn.npmmirror.com/binaries/chrome-for-testing",
+    "PUPPETEER_DOWNLOAD_BASE_URL": "https://cdn.npmmirror.com/binaries/chrome-for-testing",
+    "PLAYWRIGHT_DOWNLOAD_HOST": "https://cdn.npmmirror.com/binaries/playwright",
+    "SENTRYCLI_CDNURL": "https://cdn.npmmirror.com/binaries/sentry-cli",
+    "SAUCECTL_INSTALL_BINARY_MIRROR": "https://cdn.npmmirror.com/binaries/saucectl",
+    "RE2_DOWNLOAD_MIRROR": "https://cdn.npmmirror.com/binaries/node-re2",
+    "RE2_DOWNLOAD_SKIP_PATH": "true",
+    "PRISMA_ENGINES_MIRROR": "https://cdn.npmmirror.com/binaries/prisma",
+    "npm_config_better_sqlite3_binary_host": "https://cdn.npmmirror.com/binaries/better-sqlite3",
+    "npm_config_keytar_binary_host": "https://cdn.npmmirror.com/binaries/keytar",
+    "npm_config_sharp_binary_host": "https://cdn.npmmirror.com/binaries/sharp",
+    "npm_config_sharp_libvips_binary_host": "https://cdn.npmmirror.com/binaries/sharp-libvips",
+    "npm_config_robotjs_binary_host": "https://cdn.npmmirror.com/binaries/robotjs"
+  }
+}

@@ -1,0 +1,221 @@
+<template>
+	<view
+		class="cl-image"
+		:class="[pt.className]"
+		:style="{
+			width: getUnit(width),
+			height: getUnit(height)
+		}"
+	>
+		<view
+			class="cl-image__error"
+			:class="[
+				{
+					'is-dark': isDark
+				},
+				pt.error?.className
+			]"
+			v-if="isError"
+		>
+			<slot name="error">
+				<cl-icon
+					:name="pt.error?.name ?? 'close-line'"
+					:size="pt.error?.size ?? 20"
+					:pt="{
+						className: parseClass(['!text-gray-400/10', pt.error?.className])
+					}"
+				></cl-icon>
+			</slot>
+		</view>
+
+		<view
+			class="cl-image__loading"
+			:class="[
+				{
+					'is-dark': isDark
+				},
+				pt.loading?.className
+			]"
+			v-else-if="isLoading && showLoading"
+		>
+			<slot name="loading">
+				<cl-loading :loading="true"></cl-loading>
+			</slot>
+		</view>
+
+		<image
+			class="cl-image__inner"
+			:class="[pt.inner?.className]"
+			:src="src"
+			:mode="mode"
+			:lazy-load="lazyLoad"
+			:webp="webp"
+			:show-menu-by-longpress="showMenuByLongpress"
+			@load="onLoad"
+			@error="onError"
+			@tap="onTap"
+		/>
+
+		<slot></slot>
+	</view>
+</template>
+
+<script setup lang="ts">
+import { computed, ref, type PropType } from "vue";
+import type { PassThroughProps } from "../../types";
+import { isDark, isEmpty, parseClass, parsePt, getUnit } from "@/.cool";
+import type { ClIconProps } from "../cl-icon/props";
+
+defineOptions({
+	name: "cl-image"
+});
+
+const props = defineProps({
+	// 透传样式
+	pt: {
+		type: Object,
+		default: () => ({})
+	},
+	// 图片源
+	src: {
+		type: String,
+		default: ""
+	},
+	// 图片裁剪、缩放的模式
+	mode: {
+		type: String as PropType<
+			| "scaleToFill"
+			| "aspectFit"
+			| "aspectFill"
+			| "widthFix"
+			| "heightFix"
+			| "top"
+			| "bottom"
+			| "center"
+			| "left"
+			| "right"
+			| "top left"
+			| "top right"
+			| "bottom left"
+			| "bottom right"
+		>,
+		default: "aspectFill"
+	},
+	// 是否显示边框
+	border: {
+		type: Boolean,
+		default: false
+	},
+	// 是否预览
+	preview: {
+		type: Boolean,
+		default: false
+	},
+	// 预览图片列表
+	previewList: {
+		type: Array as PropType<string[]>,
+		default: () => []
+	},
+	// 图片高度
+	height: {
+		type: [String, Number] as PropType<string | number>,
+		default: 60
+	},
+	// 图片宽度
+	width: {
+		type: [String, Number] as PropType<string | number>,
+		default: 60
+	},
+	// 是否显示加载状态
+	showLoading: {
+		type: Boolean,
+		default: true
+	},
+	// 是否懒加载
+	lazyLoad: {
+		type: Boolean,
+		default: false
+	},
+	// 图片显示动画效果
+	fadeShow: {
+		type: Boolean,
+		default: false
+	},
+	// 是否解码webp格式
+	webp: {
+		type: Boolean,
+		default: false
+	},
+	// 是否长按显示菜单
+	showMenuByLongpress: {
+		type: Boolean,
+		default: false
+	}
+});
+
+// 事件定义
+const emit = defineEmits(["load", "error"]);
+
+// 透传样式类型
+type PassThrough = {
+	className?: string;
+	inner?: PassThroughProps;
+	error?: ClIconProps;
+	loading?: PassThroughProps;
+};
+
+// 解析透传样式
+const pt = computed(() => parsePt<PassThrough>(props.pt));
+
+// 加载状态
+const isLoading = ref(true);
+
+// 加载失败状态
+const isError = ref(false);
+
+// 图片加载成功
+function onLoad(e: UniEvent) {
+	isLoading.value = false;
+	isError.value = false;
+	emit("load", e);
+}
+
+// 图片加载失败
+function onError(e: UniEvent) {
+	isLoading.value = false;
+	isError.value = true;
+	emit("error", e);
+}
+
+// 图片点击
+function onTap() {
+	if (props.preview) {
+		const urls = isEmpty(props.previewList) ? [props.src] : props.previewList;
+
+		uni.previewImage({
+			urls,
+			current: props.src
+		});
+	}
+}
+</script>
+
+<style lang="scss" scoped>
+.cl-image {
+	@apply relative flex flex-row items-center justify-center;
+
+	.cl-image__inner {
+		@apply w-full h-full rounded-xl;
+	}
+
+	.cl-image__loading,
+	.cl-image__error {
+		@apply absolute h-full w-full bg-gray-200/10 rounded-xl;
+		@apply flex flex-col items-center justify-center;
+
+		.cl-image.is-dark {
+			@apply bg-zinc-700/10;
+		}
+	}
+}
+</style>

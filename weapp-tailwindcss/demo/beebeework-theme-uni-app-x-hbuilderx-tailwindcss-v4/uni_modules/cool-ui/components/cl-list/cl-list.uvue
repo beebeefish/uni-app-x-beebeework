@@ -1,0 +1,105 @@
+<template>
+	<view
+		class="cl-list"
+		:class="[
+			{
+				'cl-list--border': border,
+				'!border-zinc-700/10': isDark
+			},
+			pt.className
+		]"
+	>
+		<slot name="header"> </slot>
+
+		<view class="cl-list__items">
+			<view v-for="(item, index) in list" :key="index">
+				<cl-list-item
+					:icon="item.icon"
+					:label="item.label"
+					:arrow="item.arrow"
+					:hoverable="item.hoverable"
+					:pt="{
+						className: `bg-white dark:!bg-zinc-700/10 ${pt.item?.className}`,
+						inner: pt.item?.inner,
+						label: pt.item?.label,
+						content: pt.item?.content,
+						icon: pt.item?.icon
+					}"
+				>
+					<slot name="item" :item="item">
+						<cl-text>{{ item.content }}</cl-text>
+					</slot>
+				</cl-list-item>
+
+				<view class="cl-list__line" v-if="index != list.length - 1">
+					<view class="cl-list__line-inner"></view>
+				</view>
+			</view>
+
+			<slot></slot>
+		</view>
+	</view>
+</template>
+
+<script lang="ts" setup>
+import type { ClListItem, PassThroughProps } from "../../types";
+import type { ClListItemPassThrough } from "../cl-list-item/props";
+import { computed, type PropType } from "vue";
+import { isDark, parsePt } from "@/.cool";
+
+defineOptions({
+	name: "cl-list"
+});
+
+defineSlots<{
+	header(): any;
+	item(props: { item: ClListItem }): any;
+}>();
+
+const props = defineProps({
+	pt: {
+		type: Object,
+		default: () => ({})
+	},
+	list: {
+		type: Array as PropType<ClListItem[]>,
+		default: () => []
+	},
+	border: {
+		type: Boolean,
+		default: false
+	}
+});
+
+type PassThrough = {
+	className?: string;
+	list?: PassThroughProps;
+	item?: ClListItemPassThrough;
+};
+
+const pt = computed(() => parsePt<PassThrough>(props.pt));
+</script>
+
+<style lang="scss" scoped>
+.cl-list {
+	@apply duration-200;
+	transition-property: border-color, background-color;
+
+	&__items {
+		@apply rounded-2xl overflow-hidden;
+	}
+
+	&__line {
+		padding: 0 12px;
+
+		&-inner {
+			@apply bg-gray-50/10 w-full;
+			height: 1px;
+		}
+	}
+
+	&--border {
+		@apply border border-solid border-gray-200/10 rounded-2xl;
+	}
+}
+</style>

@@ -1,0 +1,130 @@
+<template>
+	<text class="cl-icon" :class="[ptClassName]" :style="iconStyle" :key="cache.key">
+		{{ icon.text }}
+	</text>
+</template>
+
+<script setup lang="ts">
+import { computed } from "vue";
+import { parsePt, useCache, isDark, ctx, hasTextColor, isNull } from "@/.cool";
+import { useSize } from "../../hooks";
+import { getIcon } from "./utils";
+
+defineOptions({
+	name: "cl-icon"
+});
+
+// 定义组件属性
+const props = defineProps({
+	// 透传样式
+	pt: {
+		type: Object,
+		default: () => ({})
+	},
+	// 图标名称
+	name: {
+		type: String,
+		default: ""
+	},
+	// 图标大小
+	size: {
+		type: Number,
+		default: 16
+	},
+	// 图标高度
+	height: {
+		type: Number,
+		default: null
+	},
+	// 图标宽度
+	width: {
+		type: Number,
+		default: null
+	},
+	// 图标颜色
+	color: {
+		type: String,
+		default: ""
+	}
+});
+
+// 透传样式类型定义
+type PassThrough = {
+	className?: string;
+};
+
+// 解析透传样式
+const pt = computed(() => parsePt<PassThrough>(props.pt));
+
+// 缓存
+const { cache } = useCache(() => [props.color]);
+
+// 字号
+const { toScale, ptClassName } = useSize(() => pt.value.className ?? "");
+
+// 图标信息
+const icon = computed(() => getIcon(props.name));
+
+// 图标颜色
+const color = computed(() => {
+	if (props.color != "" && !isNull(props.color)) {
+		switch (props.color) {
+			case "primary":
+				return "var(--color-teal-500)";
+			case "success":
+				return "#22c55e";
+			case "warn":
+				return "#eab308";
+			case "error":
+				return "#ef4444";
+			case "info":
+				return "var(--color-zinc-500)";
+			case "dark":
+				return '';
+			case "light":
+				return "var(--color-zinc-50)";
+			case "disabled":
+				return "var(--color-zinc-300)";
+			default:
+				return props.color;
+		}
+	}
+
+	return isDark.value ? "white" : "var(--cool-zinc-700)";
+});
+
+// 图标样式
+const iconStyle = computed(() => {
+	const style = {};
+
+	// 判断是不是有颜色样式
+	if (!hasTextColor(ptClassName.value)) {
+		style["color"] = color.value;
+	}
+
+	// 设置字体
+	if (icon.value.font != "") {
+		style["fontFamily"] = icon.value.font;
+	}
+
+	// 设置字体大小
+	style["fontSize"] = toScale(props.size) + "px";
+
+	// #ifdef APP
+	// 设置高度
+	style["height"] = toScale(props.height ?? props.size) + "px";
+	style["lineHeight"] = toScale(props.size) + "px";
+
+	// 手动校准偏移量
+	if (props.size <= 16) {
+		style["position"] = "relative";
+		style["top"] = "-0.5px";
+	}
+
+	// 设置宽度
+	style["width"] = toScale(props.width ?? props.size) + "px";
+	// #endif
+
+	return style;
+});
+</script>

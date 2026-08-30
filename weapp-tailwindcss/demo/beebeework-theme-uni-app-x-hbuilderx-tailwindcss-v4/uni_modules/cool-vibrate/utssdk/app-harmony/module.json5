@@ -1,0 +1,13 @@
+{
+	"module": {
+		"requestPermissions": [
+			{
+				"name": "ohos.permission.VIBRATE",
+				"usedScene": {
+					"when": "inuse"
+				},
+				"reason": "$string:permission_VIBRATE_reason"
+			}
+		]
+	}
+}

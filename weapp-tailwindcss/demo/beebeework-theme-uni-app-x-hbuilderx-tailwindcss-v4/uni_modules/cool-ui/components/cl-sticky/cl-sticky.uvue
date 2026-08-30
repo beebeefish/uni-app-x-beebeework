@@ -1,0 +1,176 @@
+<template>
+	<view
+		class="cl-sticky-wrapper"
+		:style="{
+			height: rect.height == 0 ? 'auto' : rect.height + 'px',
+			zIndex
+		}"
+	>
+		<view
+			class="cl-sticky"
+			:class="[
+				{
+					'is-active': isSticky
+				}
+			]"
+			:style="{
+				width: isSticky ? rect.width + 'px' : '100%',
+				left: isSticky ? rect.left + 'px' : 0,
+				top: stickyTop + 'px'
+			}"
+		>
+			<slot></slot>
+			<slot name="content" :is-sticky="isSticky"></slot>
+		</view>
+	</view>
+</template>
+
+<script lang="ts" setup>
+import { isEmpty, isHarmony, router } from "@/.cool";
+import { computed, getCurrentInstance, onMounted, reactive, ref, watch } from "vue";
+import { usePage } from "../../hooks";
+
+defineOptions({
+	name: "cl-sticky"
+});
+
+defineSlots<{
+	default(): any;
+	content(props: { isSticky: boolean }): any;
+}>();
+
+const props = defineProps({
+	// 吸顶偏移量, 单位px
+	offsetTop: {
+		type: Number,
+		default: 0
+	},
+	// 层级
+	zIndex: {
+		type: Number,
+		default: 100
+	},
+	// 滚动位置
+	scrollTop: {
+		type: Number,
+		default: 0
+	}
+});
+
+const { proxy } = getCurrentInstance()!;
+
+// cl-page 上下文
+const { onScroll } = usePage();
+
+// 表示元素的位置信息
+type Rect = {
+	height: number; // 高度
+	width: number; // 宽度
+	left: number; // 距离页面左侧的距离
+	top: number; // 距离页面顶部的距离
+};
+
+// 存储当前sticky元素的位置信息
+const rect = reactive<Rect>({
+	height: 0,
+	width: 0,
+	left: 0,
+	top: 0
+});
+
+// 当前页面滚动的距离
+const scrollTop = ref(0);
+
+// 计算属性，判断当前是否处于吸顶状态
+const isSticky = computed(() => {
+	if (rect.height == 0) return false;
+
+	return scrollTop.value >= rect.top;
+});
+
+// 计算属性，返回sticky元素的top值（吸顶时的偏移量）
+const stickyTop = computed(() => {
+	if (isSticky.value) {
+		let v = 0;
+
+		// #ifdef H5
+		// H5端默认导航栏高度为44
+		if (!router.isCustomNavbarPage()) {
+			v = 44;
+		}
+		// #endif
+
+		return v + props.offsetTop;
+	} else {
+		return 0;
+	}
+});
+
+// 获取sticky元素的位置信息，并更新rect
+function getRect() {
+	const next = () => {
+		uni.createSelectorQuery()
+			.in(proxy)
+			.select(".cl-sticky")
+			.boundingClientRect()
+			.exec((nodes) => {
+				if (isEmpty(nodes)) {
+					return;
+				}
+
+				const node = nodes[0] as NodeInfo;
+
+				// 赋值时做空值处理，保证类型安全
+				rect.height = node.height ?? 0;
+
+				rect.width = node.width ?? 0;
+				rect.left = node.left ?? 0;
+				// top需要减去offsetTop并加上当前滚动距离，保证吸顶准确
+				rect.top = (node.top ?? 0) - props.offsetTop + scrollTop.value;
+			});
+	};
+
+	if (isHarmony()) {
+		setTimeout(() => {
+			next();
+		}, 300);
+	} else {
+		next();
+	}
+}
+
+onMounted(() => {
+	// 获取元素位置信息
+	getRect();
+
+	// 监听页面滚动事件
+	onScroll((top) => {
+		scrollTop.value = top;
+	});
+
+	// 监听参数变化
+	watch(
+		computed(() => props.scrollTop),
+		(top: number) => {
+			scrollTop.value = top;
+		},
+		{
+			immediate: true
+		}
+	);
+});
+
+defineExpose({
+	getRect
+});
+</script>
+
+<style lang="scss" scoped>
+.cl-sticky {
+	@apply relative w-full;
+
+	&.is-active {
+		@apply fixed w-full;
+	}
+}
+</style>

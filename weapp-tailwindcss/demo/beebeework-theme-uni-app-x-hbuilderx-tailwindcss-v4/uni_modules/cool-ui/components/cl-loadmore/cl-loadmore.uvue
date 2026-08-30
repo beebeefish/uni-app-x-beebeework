@@ -1,0 +1,94 @@
+<template>
+	<view class="cl-loadmore-wrapper">
+		<view class="cl-loadmore">
+			<cl-loading
+				:pt="{
+					className: `mr-2 ${pt.icon?.className}`
+				}"
+				v-if="loading"
+			></cl-loading>
+
+			<cl-text
+				:pt="{
+					className: pt.text?.className
+				}"
+				>{{ message }}</cl-text
+			>
+		</view>
+
+		<cl-safe-area type="bottom" v-if="safeAreaBottom"></cl-safe-area>
+	</view>
+</template>
+
+<script lang="ts" setup>
+import { computed } from "vue";
+import { parsePt, t } from "@/.cool";
+import type { PassThroughProps } from "../../types";
+
+defineOptions({
+	name: "cl-loadmore"
+});
+
+const props = defineProps({
+	pt: {
+		type: Object,
+		default: () => ({})
+	},
+	// 是否加载中
+	loading: {
+		type: Boolean,
+		default: false
+	},
+	// 加载中显示内容
+	loadingText: {
+		type: String,
+		default: () => t("加载中")
+	},
+	// 是否加载完成
+	finish: {
+		type: Boolean,
+		default: false
+	},
+	// 加载完成显示内容
+	finishText: {
+		type: String,
+		default: () => t("没有更多了")
+	},
+	// 是否显示底部安全区
+	safeAreaBottom: {
+		type: Boolean,
+		default: false
+	}
+});
+
+type PassThrough = {
+	className?: string;
+	icon?: PassThroughProps;
+	text?: PassThroughProps;
+};
+
+const pt = computed(() => parsePt<PassThrough>(props.pt));
+
+// 消息内容
+const message = computed(() => {
+	if (props.finish) {
+		return props.finishText;
+	}
+
+	if (props.loading) {
+		return props.loadingText;
+	}
+
+	return "";
+});
+</script>
+
+<style lang="scss" scoped>
+.cl-loadmore-wrapper {
+	@apply flex flex-col items-center justify-center py-2;
+}
+
+.cl-loadmore {
+	@apply flex flex-row items-center justify-center;
+}
+</style>

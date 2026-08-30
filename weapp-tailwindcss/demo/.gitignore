@@ -1,0 +1,4 @@
+.turbo
+!yarn.lock
+.swc
+weapp-tw-dist

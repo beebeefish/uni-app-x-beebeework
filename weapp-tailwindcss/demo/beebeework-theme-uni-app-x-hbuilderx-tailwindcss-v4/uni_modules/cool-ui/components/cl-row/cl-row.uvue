@@ -1,0 +1,58 @@
+<template>
+	<view
+		class="cl-row"
+		:class="[pt.className]"
+		:style="{
+			marginLeft: margin,
+			marginRight: margin
+		}"
+	>
+		<slot></slot>
+	</view>
+</template>
+
+<script setup lang="ts">
+import { computed } from "vue";
+import { getUnit, parsePt } from "@/.cool";
+
+defineOptions({
+	name: "cl-row"
+});
+
+// 组件属性定义
+const props = defineProps({
+	// 透传样式配置
+	pt: {
+		type: Object,
+		default: () => ({})
+	},
+	// 栅格间隔，单位px
+	gutter: {
+		type: Number,
+		default: 0
+	}
+});
+
+// 透传类型定义
+type PassThrough = {
+	// 自定义类名
+	className?: string;
+};
+
+// 解析透传配置
+const pt = computed(() => parsePt<PassThrough>(props.pt));
+
+// 计算栅格间距的负边距,用于抵消列的padding
+const margin = computed(() => `-${getUnit(props.gutter / 2)}`);
+
+// 暴露gutter属性给子组件使用
+defineExpose({
+	gutter: computed(() => props.gutter)
+});
+</script>
+
+<style lang="scss" scoped>
+.cl-row {
+	@apply flex flex-row flex-wrap relative overflow-visible;
+}
+</style>

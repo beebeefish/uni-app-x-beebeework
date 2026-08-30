@@ -1,0 +1,16 @@
+<template>
+  <view class="flex p-4 flex-col gap-3 mb-1">
+    <!-- 模块小标题 -->
+    <text v-if="title" class="text-base font-bold px-1 -mb-1">{{ title }}</text>
+    
+    
+  </view>
+</template>
+
+<script setup>
+defineProps({
+  title: { type: String, default: '' },
+  data: { type: Array, default: () => [] }
+})
+defineEmits(['item-click'])
+</script>

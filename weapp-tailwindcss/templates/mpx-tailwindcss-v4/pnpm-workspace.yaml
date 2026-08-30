@@ -1,0 +1,7 @@
+ignoredBuiltDependencies:
+  - core-js-pure
+  - vue-demi
+
+onlyBuiltDependencies:
+  - weapp-tailwindcss
+  - '@weapp-tailwindcss/merge'

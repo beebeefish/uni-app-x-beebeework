@@ -1,0 +1,108 @@
+<template>
+  <view class="absolute left-4 top-100 z-50 pointer-events-none bg-white">  
+    <view class="relative flex flex-row items-center gap-x-2 shrink-0 px-4">
+      
+      <!-- 返回按钮 -->
+      <scale-card 
+         :class="hasBtn('back') ? '' : '!w-0'"
+        class="w-8 h-8 rounded-full flex items-center justify-center active-click-base dropdown-pop-base pointer-events-auto"
+        @click="emitClick('back')"
+      >
+        <svg-icon :size="16"><text class="i-[mingcute--arrow-left-line] size-[16px] text-gray-700 dark:text-neutral-200"></text></svg-icon>
+      </scale-card>
+      
+      <!-- 抽屉菜单 -->
+      <scale-card 
+         :class="hasBtn('drawer') ? '' : '!w-0'"
+       
+        class="w-8 h-8 rounded-full flex items-center justify-center dropdown-pop-base pointer-events-auto text-gray-700 dark:text-neutral-200 overflow-hidden" 
+        @click="emitClick('drawer')"
+      >
+        <svg-icon :size="14"><text class="i-[mingcute--menu-line] size-[14px]"></text></svg-icon>
+      </scale-card>
+
+      <!-- 搜索 -->
+      <scale-card 
+        :class="hasBtn('search') ? '' : '!w-0'"
+        class="w-8 h-8 rounded-full flex items-center justify-center dropdown-pop-base pointer-events-auto text-gray-700 dark:text-neutral-200 overflow-hidden" 
+        @click="emitClick('search')"
+      >
+        <svg-icon :size="14"><text class="i-[mingcute--search-line] size-[14px]"></text></svg-icon>
+      </scale-card>
+
+      <!-- 设置 -->
+      <scale-card 
+       :class="hasBtn('setting') ? '' : '!w-0'"
+        class="w-8 h-8 rounded-full flex items-center justify-center dropdown-pop-base pointer-events-auto text-gray-700 dark:text-neutral-200 overflow-hidden" 
+        @click="emitClick('setting')"
+      >
+        <svg-icon :size="14"><text class="i-[mingcute--settings-3-line] size-[14px]"></text></svg-icon>
+      </scale-card>
+
+      <!-- 分享 -->
+      <scale-card 
+      :class="hasBtn('share') ? '' : '!w-0'"
+        class="w-8 h-8 rounded-full flex items-center justify-center dropdown-pop-base pointer-events-auto text-gray-700 dark:text-neutral-200 overflow-hidden" 
+        @click="emitClick('share')"
+      >
+        <svg-icon :size="14"><text class="i-[mingcute--share-forward-line] size-[14px]"></text></svg-icon>
+      </scale-card>
+
+    </view>
+  </view>
+</template>
+
+<script setup>
+import { computed } from 'vue'
+
+// 1. 定义 Props（适配 uvue 的 UTS 类型推导）
+const props = defineProps({
+  current: {
+    type: String,
+    required: true
+  },
+  pagesConfig: {
+    type: Array,
+    default: () => []
+  }
+})
+
+// 2. 定义 Emits
+const emit = defineEmits(['back', 'drawer', 'search', 'setting', 'share'])
+
+const emitClick = (event : string) => {
+  emit(event)
+}
+
+// 3. 核心：在 uvue 中安全地从 pagesConfig 提取当前页面的 leftBtns
+const currentLeftBtns = computed(() : string[] => {
+  const list = props.pagesConfig
+  if (list != null && Array.isArray(list)) {
+    for (let i = 0; i < list.length; i++) {
+      const page = list[i] as UTSJSONObject
+      if (page != null) {
+        const bar = page['bar'] as UTSJSONObject
+        if (bar != null && String(bar['viewKey'] ?? '') === props.current) {
+          const navbar = bar['navbar'] as UTSJSONObject
+          if (navbar != null) {
+            const leftBtns = navbar['leftBtns']
+            if (leftBtns != null && Array.isArray(leftBtns)) {
+              return leftBtns as string[]
+            }
+          }
+        }
+      }
+    }
+  }
+  return []
+})
+
+// 4. 判断是否包含指定按钮
+const hasBtn = (name : string) : boolean => {
+  const btns = currentLeftBtns.value
+  if (btns != null) {
+    return btns.includes(name)
+  }
+  return false
+}
+</script>

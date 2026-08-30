@@ -1,0 +1,68 @@
+import { UIView } from "UIKit";
+import { SVGKFastImageView, SVGKImage } from "SVGKit";
+
+/**
+ * CoolSvg iOS 平台 SVG 渲染器
+ * - 本地文件路径
+ */
+export class CoolSvg {
+	/** uni-app x 原生视图元素 */
+	$element: UniNativeViewElement;
+	/** iOS SVGKFastImageView 实例 */
+	imageView: SVGKFastImageView | null = null;
+
+	/**
+	 * 构造函数
+	 * @param element uni-app x 原生视图元素
+	 */
+	constructor(element: UniNativeViewElement) {
+		this.$element = element;
+
+		// 创建占位符 SVG 图像
+		let placeholderImage = SVGKImage((contentsOf = URL((fileURLWithPath = ""))));
+		// 初始化 SVG 图像视图
+		this.imageView = new SVGKFastImageView((svgkImage = placeholderImage));
+		// 将视图绑定到 uni-app x 元素
+		this.$element.bindIOSView(this.imageView!);
+	}
+
+	/**
+	 * 加载并渲染 SVG
+	 * @param src SVG 数据源
+	 * @param color 填充颜色，用于替换 SVG 中 path 元素的 fill 属性
+	 */
+	load(src: string, color: string) {
+		// 空字符串检查
+		if (src == "") {
+			return;
+		}
+
+		try {
+			// 从资源路径加载 SVG 图像
+			let svgImage = SVGKImage(
+				(contentsOf = URL((fileURLWithPath = UTSiOS.getResourcePath(src))))
+			);
+
+			// 加载失败检查
+			if (svgImage == null) {
+				return;
+			}
+
+			// 设置 SVG 图像到视图
+			this.imageView!.image = svgImage;
+
+			// 应用颜色覆盖
+			if (color != "") {
+				// 创建颜色覆盖层视图
+				let colorView = new UIView();
+				colorView.frame = this.imageView!.bounds;
+				colorView.backgroundColor = UTSiOS.colorWithString(color);
+				// 设置合成滤镜为 sourceAtop，实现颜色覆盖效果
+				colorView.layer.compositingFilter = "sourceAtop";
+				this.imageView!.addSubview(colorView);
+			}
+		} catch (e) {
+			// 静默处理异常，避免影响应用运行
+		}
+	}
+}

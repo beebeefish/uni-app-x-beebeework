@@ -1,0 +1,75 @@
+<template>
+  <view class="beebeepage w-full h-full relative overflow-hidden bg-white dark:bg-neutral-900">
+    
+    <!-- 💡 核心：用 v-show 常驻所有 Tab 容器，零延迟、零闪屏、绝对无感切换 -->
+    <block v-for="item in themeState.pagesConfig" :key="item.bar?.viewKey">
+      <generic-page 
+       
+        v-show="item.bar?.viewKey === currentTab"
+        class="w-full h-full absolute inset-0 overflow-hidden"
+        :pageData="item"
+        :isActive="item.bar?.viewKey === currentTab"
+      ></generic-page>
+    </block>
+
+    <block-hidden-icon></block-hidden-icon>
+    
+    <tab-bar 
+      :list="tabList" 
+      :current="currentTab" 
+      :aiConfig="aiConfig"
+      @change="handleTabChange"
+      @aiClick="handleAiClick"
+    ></tab-bar>
+  </view>
+</template>
+
+<script setup>
+import { ref, computed, onMounted } from 'vue'
+import { themeState, loadGlobalThemeConfig } from '@/stores/theme.uts'
+import { getTabList } from '@/api/data.js'
+
+const currentTab = ref('index')
+
+const visitedTabs = reactive(new Set())
+
+const tabList = computed(() => {
+  return getTabList(themeState.pagesConfig)
+})
+
+const aiConfig = computed(() => themeState.aiConfig || { enabled: false })
+
+onMounted(async () => {
+  try {
+    await loadGlobalThemeConfig()
+    const list = tabList.value
+    if (list.length > 0) {
+      const exists = list.some(t => t.viewKey === currentTab.value)
+      const targetKey = exists ? currentTab.value : list[0].viewKey
+      currentTab.value = targetKey
+      
+      // 💡 默认激活的第一个 Tab 标记为已访问，触发 v-if 渲染
+      visitedTabs.add(targetKey)
+    }
+  } catch (err) {
+    console.error('页面加载配置失败:', err)
+  }
+})
+
+const handleTabChange = (viewKey: string) => {
+  if (!viewKey) return
+  currentTab.value = viewKey
+  
+  // 💡 核心联动：用户第一次点到某个 Tab 时，才将它加入 visitedTabs，触发其挂载和接口请求
+  if (!visitedTabs.has(viewKey)) {
+    visitedTabs.add(viewKey)
+  }
+}
+
+const handleAiClick = () => {
+  uni.showToast({
+    title: aiConfig.value?.welcome_tip || '打开 AI 助手',
+    icon: 'none'
+  })
+}
+</script>

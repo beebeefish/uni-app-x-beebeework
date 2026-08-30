@@ -1,0 +1,1349 @@
+<template>
+	<view
+		class="cl-cropper"
+		:class="[pt.className]"
+		@touchstart="onTouchStart"
+		@touchmove.stop.prevent="onTouchMove"
+		@touchend="onTouchEnd"
+		@touchcancel="onTouchEnd"
+		v-if="visible"
+	>
+		<!-- 图片容器 - 可拖拽和缩放的图片区域 -->
+		<view class="cl-cropper__image">
+			<!-- @vue-ignore -->
+			<image
+				class="cl-cropper__image-inner"
+				:class="[
+					{
+						'no-dragging': !touch.isTouching
+					},
+					pt.image?.className
+				]"
+				:src="imageUrl"
+				:style="imageStyle"
+				@load="onImageLoaded"
+			></image>
+		</view>
+
+		<!-- 遮罩层 - 覆盖裁剪框外的区域 -->
+		<view class="cl-cropper__mask" :class="[pt.mask?.className]">
+			<view
+				v-for="(item, index) in ['top', 'right', 'bottom', 'left']"
+				:key="index"
+				:class="`cl-cropper__mask-item cl-cropper__mask-item--${item}`"
+				:style="maskStyle[item]!"
+			></view>
+		</view>
+
+		<!-- 裁剪框 - 可拖拽和调整大小的选择区域 -->
+		<view class="cl-cropper__crop-box" :class="[pt.cropBox?.className]" :style="cropBoxStyle">
+			<!-- 裁剪区域 - 内部可继续拖拽图片 -->
+			<view class="cl-cropper__crop-area" :class="{ 'is-resizing': isResizing }">
+				<!-- 九宫格辅助线 - 在调整大小时显示 -->
+				<view
+					class="cl-cropper__guide-lines"
+					:class="{
+						'is-show': showGuideLines
+					}"
+				>
+					<view class="cl-cropper__guide-line cl-cropper__guide-line--h1"></view>
+					<view class="cl-cropper__guide-line cl-cropper__guide-line--h2"></view>
+					<view class="cl-cropper__guide-line cl-cropper__guide-line--v1"></view>
+					<view class="cl-cropper__guide-line cl-cropper__guide-line--v2"></view>
+
+					<view class="cl-cropper__guide-text">
+						<cl-text :size="18" color="white">
+							{{ cropBox.width }}
+						</cl-text>
+
+						<cl-icon name="close-line" color="white"></cl-icon>
+
+						<cl-text :size="18" color="white">
+							{{ cropBox.height }}
+						</cl-text>
+					</view>
+				</view>
+			</view>
+
+			<template v-if="resizable">
+				<view
+					v-for="item in ['tl', 'tr', 'bl', 'br']"
+					:key="item"
+					class="cl-cropper__drag-point"
+					:class="[`cl-cropper__drag-point--${item}`]"
+					@touchstart.stop="onResizeStart($event as TouchEvent, item)"
+				>
+					<view class="cl-cropper__corner-indicator"></view>
+				</view>
+			</template>
+		</view>
+
+		<!-- 底部按钮组 -->
+		<view class="cl-cropper__op" :class="[pt.op?.className]" :style="opStyle" @touchmove.stop>
+			<!-- 关闭 -->
+			<view class="cl-cropper__op-item" :class="[pt.opItem?.className]">
+				<cl-icon name="close-line" color="white" :size="25" @tap="close"></cl-icon>
+			</view>
+
+			<!-- 旋转 -->
+			<view class="cl-cropper__op-item" :class="[pt.opItem?.className]">
+				<cl-icon
+					name="anticlockwise-line"
+					color="white"
+					:size="20"
+					@tap="rotate90"
+				></cl-icon>
+			</view>
+
+			<!-- 重置 -->
+			<view class="cl-cropper__op-item" :class="[pt.opItem?.className]">
+				<cl-icon name="reset-right-line" color="white" :size="20" @tap="reset"></cl-icon>
+			</view>
+
+			<!-- 重新选择 -->
+			<view class="cl-cropper__op-item" :class="[pt.opItem?.className]">
+				<cl-icon name="image-line" color="white" :size="20" @tap="chooseImage"></cl-icon>
+			</view>
+
+			<!-- 确定 -->
+			<view class="cl-cropper__op-item" :class="[pt.opItem?.className]">
+				<cl-icon name="check-line" color="white" :size="25" @tap="toPng"></cl-icon>
+			</view>
+		</view>
+
+		<!-- 裁剪用 -->
+		<view class="cl-cropper__canvas">
+			<canvas
+				ref="canvasRef"
+				:id="canvasId"
+				:style="{
+					height: `${cropBox.height}px`,
+					width: `${cropBox.width}px`
+				}"
+			></canvas>
+		</view>
+	</view>
+</template>
+
+<script setup lang="ts">
+import { computed, ref, reactive, nextTick, getCurrentInstance } from "vue";
+import type { PassThroughProps } from "../../types";
+import {
+	canvasToPng,
+	getDevicePixelRatio,
+	getSafeAreaHeight,
+	isAppIOS,
+	parsePt,
+	uuid
+} from "@/.cool";
+
+// 定义遮罩层样式类型
+type MaskStyle = {
+	top: UTSJSONObject; // 上方遮罩样式
+	right: UTSJSONObject; // 右侧遮罩样式
+	bottom: UTSJSONObject; // 下方遮罩样式
+	left: UTSJSONObject; // 左侧遮罩样式
+};
+
+// 定义图片信息类型
+type ImageInfo = {
+	width: number; // 图片原始宽度
+	height: number; // 图片原始高度
+	isLoaded: boolean; // 图片是否已加载
+};
+
+// 定义图片变换类型
+type Transform = {
+	translateX: number; // 水平位移
+	translateY: number; // 垂直位移
+};
+
+// 定义尺寸类型
+type Size = {
+	width: number; // 宽度
+	height: number; // 高度
+};
+
+// 定义裁剪框类型
+type CropBox = {
+	x: number; // 裁剪框 x 坐标
+	y: number; // 裁剪框 y 坐标
+	width: number; // 裁剪框宽度
+	height: number; // 裁剪框高度
+};
+
+// 定义触摸状态类型
+type TouchState = {
+	startX: number; // 触摸开始 x 坐标
+	startY: number; // 触摸开始 y 坐标
+	startDistance: number; // 双指触摸开始距离
+	startImageWidth: number; // 触摸开始时图片宽度
+	startImageHeight: number; // 触摸开始时图片高度
+	startTranslateX: number; // 触摸开始时水平位移
+	startTranslateY: number; // 触摸开始时垂直位移
+	startCropBoxWidth: number; // 触摸开始时裁剪框宽度
+	startCropBoxHeight: number; // 触摸开始时裁剪框高度
+	isTouching: boolean; // 是否正在触摸
+	mode: string; // 触摸模式：image/resizing
+	direction: string; // 调整方向：tl/tr/bl/br
+};
+
+// 定义组件选项
+defineOptions({
+	name: "cl-cropper" // 组件名称
+});
+
+// 定义组件属性
+const props = defineProps({
+	// 透传样式配置对象
+	pt: {
+		type: Object,
+		default: () => ({})
+	},
+	// 裁剪框初始宽度（像素）
+	cropWidth: {
+		type: Number,
+		default: 300
+	},
+	// 裁剪框初始高度（像素）
+	cropHeight: {
+		type: Number,
+		default: 300
+	},
+	// 图片最大缩放倍数
+	maxScale: {
+		type: Number,
+		default: 3
+	},
+	// 是否可以自定义裁剪框大小
+	resizable: {
+		type: Boolean,
+		default: false
+	}
+});
+
+// 定义事件发射器
+const emit = defineEmits(["crop", "load", "error"]);
+
+// 获取当前实例
+const { proxy } = getCurrentInstance()!;
+
+// 创建唯一的canvas ID
+const canvasId = `cl-cropper__${uuid()}`;
+
+// 创建canvas实例
+const canvasRef = ref<UniElement | null>(null);
+
+// 像素取整工具函数 - 避免小数点造成的样式兼容问题
+function toPixel(value: number): number {
+	return Math.round(value); // 四舍五入取整
+}
+
+// 定义透传样式配置类型
+type PassThrough = {
+	className?: string; // 组件根元素类名
+	image?: PassThroughProps; // 图片元素透传属性
+	op?: PassThroughProps; // 底部按钮组透传属性
+	opItem?: PassThroughProps; // 按钮透传属性
+	mask?: PassThroughProps; // 遮罩层透传属性
+	cropBox?: PassThroughProps; // 裁剪框透传属性
+};
+
+// 解析透传样式配置
+const pt = computed(() => parsePt<PassThrough>(props.pt));
+
+// 创建容器尺寸响应式对象
+const container = reactive<Size>({
+	height: 0, // 获取视图高度
+	width: 0 // 获取视图宽度
+});
+
+// 创建图片信息响应式对象
+const imageInfo = reactive<ImageInfo>({
+	width: 0, // 初始宽度为 0
+	height: 0, // 初始高度为 0
+	isLoaded: false // 初始加载状态为未加载
+});
+
+// 创建图片变换响应式对象
+const transform = reactive<Transform>({
+	translateX: 0, // 初始水平位移为 0
+	translateY: 0 // 初始垂直位移为 0
+});
+
+// 创建图片尺寸响应式对象
+const imageSize = reactive<Size>({
+	width: 0, // 初始显示宽度为 0
+	height: 0 // 初始显示高度为 0
+});
+
+// 创建裁剪框响应式对象
+const cropBox = reactive<CropBox>({
+	x: 0, // 初始 x 坐标为 0
+	y: 0, // 初始 y 坐标为 0
+	width: props.cropWidth, // 使用传入的裁剪框宽度
+	height: props.cropHeight // 使用传入的裁剪框高度
+});
+
+// 创建触摸状态响应式对象
+const touch = reactive<TouchState>({
+	startX: 0, // 初始触摸 x 坐标为 0
+	startY: 0, // 初始触摸 y 坐标为 0
+	startDistance: 0, // 初始双指距离为 0
+	startImageWidth: 0, // 初始图片宽度为 0
+	startImageHeight: 0, // 初始图片高度为 0
+	startTranslateX: 0, // 初始水平位移为 0
+	startTranslateY: 0, // 初始垂直位移为 0
+	startCropBoxWidth: 0, // 初始裁剪框宽度为 0
+	startCropBoxHeight: 0, // 初始裁剪框高度为 0
+	isTouching: false, // 初始触摸状态为未触摸
+	mode: "", // 初始触摸模式为空
+	direction: "" // 初始调整方向为空
+});
+
+// 是否正在调整裁剪框大小
+const isResizing = ref(false);
+
+// 是否显示九宫格辅助线
+const showGuideLines = ref(false);
+
+// 图片翻转状态
+const flipHorizontal = ref(false); // 水平翻转状态
+const flipVertical = ref(false); // 垂直翻转状态
+
+// 图片旋转状态
+const rotate = ref(0); // 旋转状态
+
+// 计算图片样式
+const imageStyle = computed(() => {
+	// 构建翻转变换
+	const flipX = flipHorizontal.value ? "scaleX(-1)" : "scaleX(1)";
+	const flipY = flipVertical.value ? "scaleY(-1)" : "scaleY(1)";
+
+	let height = toPixel(imageSize.height);
+	let width = toPixel(imageSize.width);
+
+	// 解决 ios 端高和宽为0时不触发 load 事件
+	if (height == 0 && isAppIOS()) {
+		height = 1;
+		width = 1;
+	}
+
+	// 创建基础样式对象
+	const style = {
+		transform: `translate(${toPixel(transform.translateX)}px, ${toPixel(transform.translateY)}px) ${flipX} ${flipY} rotate(${rotate.value}deg)`, // 设置图片位移和翻转变换
+		height: height + "px", // 设置图片显示高度
+		width: width + "px", // 设置图片显示宽度
+		opacity: height == 0 ? 0 : 1 // 设置图片显示透明度
+	};
+
+	// 返回样式对象
+	return style;
+});
+
+// 计算裁剪框样式
+const cropBoxStyle = computed(() => {
+	// 返回裁剪框定位和尺寸样式
+	return {
+		left: `${toPixel(cropBox.x)}px`, // 设置裁剪框左边距
+		top: `${toPixel(cropBox.y)}px`, // 设置裁剪框上边距
+		width: `${toPixel(cropBox.width)}px`, // 设置裁剪框宽度
+		height: `${toPixel(cropBox.height)}px` // 设置裁剪框高度
+	};
+});
+
+// 计算遮罩层样式
+const maskStyle = computed<MaskStyle>(() => {
+	// 返回四个方向的遮罩样式
+	return {
+		// 上方遮罩样式
+		top: {
+			height: `${toPixel(cropBox.y)}px`, // 遮罩高度到裁剪框顶部
+			width: `${toPixel(cropBox.width)}px`, // 遮罩宽度占满容器
+			left: `${toPixel(cropBox.x)}px`
+		},
+		// 右侧遮罩样式
+		right: {
+			width: `${toPixel(container.width - cropBox.x - cropBox.width)}px`, // 遮罩宽度为容器宽度减去裁剪框右边距
+			height: "100%", // 遮罩高度与裁剪框相同
+			top: 0, // 遮罩顶部对齐裁剪框
+			left: `${toPixel(cropBox.x + cropBox.width)}px` // 遮罩贴右边
+		},
+		// 下方遮罩样式
+		bottom: {
+			height: `${toPixel(container.height - cropBox.y - cropBox.height)}px`, // 遮罩高度为容器高度减去裁剪框下边距
+			width: `${toPixel(cropBox.width)}px`, // 遮罩宽度占满容器
+			bottom: 0, // 遮罩贴底部
+			left: `${toPixel(cropBox.x)}px`
+		},
+		// 左侧遮罩样式
+		left: {
+			width: `${toPixel(cropBox.x)}px`, // 遮罩宽度到裁剪框左边
+			height: "100%", // 遮罩高度与裁剪框相同
+			left: 0
+		}
+	};
+});
+
+// 底部按钮组样式
+const opStyle = computed(() => {
+	let bottom = getSafeAreaHeight("bottom");
+
+	if (bottom == 0) {
+		bottom = 10;
+	}
+
+	return {
+		bottom: bottom + "px"
+	};
+});
+
+// 计算旋转后图片的有效尺寸的函数
+function getRotatedImageSize(): Size {
+	// 获取旋转角度（转换为0-360度范围内的正值）
+	const angle = ((rotate.value % 360) + 360) % 360;
+
+	// 如果是90度或270度旋转，宽高需要交换
+	if (angle == 90 || angle == 270) {
+		return {
+			width: imageSize.height,
+			height: imageSize.width
+		};
+	}
+
+	// 0度或180度旋转，宽高保持不变
+	return {
+		width: imageSize.width,
+		height: imageSize.height
+	};
+}
+
+// 计算双指缩放时的最小图片尺寸
+function getMinImageSizeForPinch(): Size {
+	// 如果图片未加载，返回零尺寸
+	if (!imageInfo.isLoaded) {
+		return { width: 0, height: 0 };
+	}
+
+	// 计算图片原始宽高比
+	const originalRatio = imageInfo.width / imageInfo.height;
+
+	// 获取旋转角度
+	const angle = ((rotate.value % 360) + 360) % 360;
+
+	// 获取裁剪框需要的最小覆盖尺寸
+	let requiredW: number; // 旋转后需要覆盖裁剪框宽度的图片实际尺寸
+	let requiredH: number; // 旋转后需要覆盖裁剪框高度的图片实际尺寸
+
+	if (angle == 90 || angle == 270) {
+		// 旋转90度/270度时，图片的宽变成高，高变成宽
+		// 所以图片实际宽度需要覆盖裁剪框高度，实际高度需要覆盖裁剪框宽度
+		requiredW = cropBox.height;
+		requiredH = cropBox.width;
+	} else {
+		// 0度或180度时，正常对应
+		requiredW = cropBox.width;
+		requiredH = cropBox.height;
+	}
+
+	// 根据图片原始比例，计算能满足覆盖要求的最小尺寸
+	let minW: number;
+	let minH: number;
+
+	// 比较哪个约束更严格
+	if (requiredW / originalRatio > requiredH) {
+		// 宽度约束更严格
+		minW = requiredW;
+		minH = requiredW / originalRatio;
+	} else {
+		// 高度约束更严格
+		minH = requiredH;
+		minW = requiredH * originalRatio;
+	}
+
+	return {
+		width: toPixel(minW),
+		height: toPixel(minH)
+	};
+}
+
+// 计算图片最小尺寸的函数
+function getMinImageSize(): Size {
+	// 如果图片未加载或尺寸无效，返回零尺寸
+	if (!imageInfo.isLoaded || imageInfo.width == 0 || imageInfo.height == 0) {
+		return { width: 0, height: 0 }; // 返回空尺寸对象
+	}
+
+	// 获取考虑旋转后的图片有效宽高
+	const angle = ((rotate.value % 360) + 360) % 360;
+	let effectiveWidth = imageInfo.width;
+	let effectiveHeight = imageInfo.height;
+
+	// 如果旋转90度或270度，宽高交换
+	if (angle == 90 || angle == 270) {
+		effectiveWidth = imageInfo.height;
+		effectiveHeight = imageInfo.width;
+	}
+
+	// 计算图片宽高比（使用旋转后的有效尺寸）
+	const ratio = effectiveWidth / effectiveHeight;
+	// 计算容器宽高比
+	const containerRatio = container.width / container.height;
+
+	// 声明基础显示尺寸变量
+	let baseW: number; // 基础显示宽度
+	let baseH: number; // 基础显示高度
+
+	// 根据图片和容器的宽高比决定缩放方式
+	if (ratio > containerRatio) {
+		baseW = container.width; // 宽度占满容器
+		baseH = container.width / ratio; // 高度按比例缩放
+	} else {
+		baseH = container.height; // 高度占满容器
+		baseW = container.height * ratio; // 宽度按比例缩放
+	}
+
+	// 计算覆盖裁剪框所需的最小缩放比例
+	const scaleW = cropBox.width / baseW; // 宽度缩放比例
+	const scaleH = cropBox.height / baseH; // 高度缩放比例
+	const minScale = Math.max(scaleW, scaleH); // 取最大缩放比例确保完全覆盖
+
+	// 增加少量容差确保完全覆盖
+	const finalScale = minScale * 1.01;
+
+	// 返回最终尺寸
+	return {
+		width: toPixel(baseW * finalScale), // 计算最终宽度
+		height: toPixel(baseH * finalScale) // 计算最终高度
+	};
+}
+
+// 初始化裁剪框的函数
+function initCrop() {
+	const { windowHeight, windowWidth } = uni.getWindowInfo();
+
+	// 设置容器尺寸为视口尺寸
+	container.height = windowHeight;
+	container.width = windowWidth;
+
+	// 设置裁剪框尺寸为传入的初始值
+	cropBox.width = props.cropWidth; // 设置裁剪框宽度
+	cropBox.height = props.cropHeight; // 设置裁剪框高度
+
+	// 计算裁剪框居中位置
+	cropBox.x = toPixel((container.width - cropBox.width) / 2); // 水平居中
+	cropBox.y = toPixel((container.height - cropBox.height) / 2); // 垂直居中
+
+	// 如果图片已加载，确保图片尺寸满足最小要求
+	if (imageInfo.isLoaded) {
+		const minSize = getMinImageSize(); // 获取最小尺寸
+		// 如果当前尺寸小于最小尺寸，更新为最小尺寸
+		if (imageSize.width < minSize.width || imageSize.height < minSize.height) {
+			imageSize.width = toPixel(minSize.width); // 更新图片显示宽度
+			imageSize.height = toPixel(minSize.height); // 更新图片显示高度
+		}
+	}
+}
+
+// 设置初始图片尺寸的函数
+function setInitialImageSize() {
+	// 如果图片未加载或尺寸无效，直接返回
+	if (!imageInfo.isLoaded || imageInfo.width == 0 || imageInfo.height == 0) {
+		return; // 提前退出函数
+	}
+
+	// 计算图片宽高比
+	const ratio = imageInfo.width / imageInfo.height;
+	// 计算容器宽高比
+	const containerRatio = container.width / container.height;
+
+	// 声明基础显示尺寸变量
+	let baseW: number; // 基础显示宽度
+	let baseH: number; // 基础显示高度
+
+	// 根据图片和容器的宽高比决定缩放方式
+	if (ratio > containerRatio) {
+		baseW = container.width; // 宽度占满容器
+		baseH = container.width / ratio; // 高度按比例缩放
+	} else {
+		baseH = container.height; // 高度占满容器
+		baseW = container.height * ratio; // 宽度按比例缩放
+	}
+
+	// 计算覆盖裁剪框所需的缩放比例
+	const scaleW = cropBox.width / baseW; // 宽度缩放比例
+	const scaleH = cropBox.height / baseH; // 高度缩放比例
+	const scale = Math.max(scaleW, scaleH); // 取最大缩放比例
+
+	// 设置图片显示尺寸
+	imageSize.width = toPixel(baseW * scale); // 计算最终显示宽度
+	imageSize.height = toPixel(baseH * scale); // 计算最终显示高度
+}
+
+// 调整图片边界的函数，确保图片完全覆盖裁剪框
+function adjustBounds() {
+	// 如果图片未加载，直接返回
+	if (!imageInfo.isLoaded) return;
+
+	// 获取旋转后的图片有效尺寸
+	const rotatedSize = getRotatedImageSize();
+
+	// 计算图片中心点坐标
+	const centerX = container.width / 2 + transform.translateX; // 图片中心 x 坐标
+	const centerY = container.height / 2 + transform.translateY; // 图片中心 y 坐标
+
+	// 计算旋转后图片四个边界坐标
+	const imgLeft = centerX - rotatedSize.width / 2; // 图片左边界
+	const imgRight = centerX + rotatedSize.width / 2; // 图片右边界
+	const imgTop = centerY - rotatedSize.height / 2; // 图片上边界
+	const imgBottom = centerY + rotatedSize.height / 2; // 图片下边界
+
+	// 计算裁剪框四个边界坐标
+	const cropLeft = cropBox.x; // 裁剪框左边界
+	const cropRight = cropBox.x + cropBox.width; // 裁剪框右边界
+	const cropTop = cropBox.y; // 裁剪框上边界
+	const cropBottom = cropBox.y + cropBox.height; // 裁剪框下边界
+
+	// 获取当前位移值
+	let x = transform.translateX; // 当前水平位移
+	let y = transform.translateY; // 当前垂直位移
+
+	// 水平方向边界调整
+	if (imgLeft > cropLeft) {
+		x -= imgLeft - cropLeft; // 如果图片左边界超出裁剪框，向左调整
+	} else if (imgRight < cropRight) {
+		x += cropRight - imgRight; // 如果图片右边界不足，向右调整
+	}
+
+	// 垂直方向边界调整
+	if (imgTop > cropTop) {
+		y -= imgTop - cropTop; // 如果图片上边界超出裁剪框，向上调整
+	} else if (imgBottom < cropBottom) {
+		y += cropBottom - imgBottom; // 如果图片下边界不足，向下调整
+	}
+
+	// 应用调整后的位移值
+	transform.translateX = toPixel(x); // 更新水平位移
+	transform.translateY = toPixel(y); // 更新垂直位移
+}
+
+// 开始调整裁剪框尺寸的函数
+function onResizeStart(e: TouchEvent, direction: string) {
+	// 设置调整状态
+	touch.isTouching = true; // 标记正在触摸
+	touch.mode = "resizing"; // 设置为调整尺寸模式
+	touch.direction = direction; // 记录调整方向（tl/tr/bl/br）
+	isResizing.value = true; // 标记正在调整尺寸
+	showGuideLines.value = true; // 显示九宫格辅助线
+
+	// 如果是单指触摸，记录初始状态
+	if (e.touches.length == 1) {
+		touch.startX = e.touches[0].clientX; // 记录起始 x 坐标
+		touch.startY = e.touches[0].clientY; // 记录起始 y 坐标
+		touch.startCropBoxWidth = cropBox.width; // 记录起始裁剪框宽度
+		touch.startCropBoxHeight = cropBox.height; // 记录起始裁剪框高度
+	}
+}
+
+// 处理调整裁剪框尺寸移动的函数
+function onResizeMove(e: TouchEvent) {
+	// 如果组件不在触摸状态或不是调整模式，直接返回
+	if (!touch.isTouching || touch.mode != "resizing") return;
+
+	// 如果是单指触摸
+	if (e.touches.length == 1) {
+		// 计算位移差
+		const dx = e.touches[0].clientX - touch.startX; // 水平位移差
+		const dy = e.touches[0].clientY - touch.startY; // 垂直位移差
+		const MIN_SIZE = 50; // 最小裁剪框尺寸
+
+		// 保存当前裁剪框的固定锚点坐标
+		let anchorX: number = 0; // 固定不动的锚点坐标
+		let anchorY: number = 0; // 固定不动的锚点坐标
+		let newX = cropBox.x; // 新的 x 坐标
+		let newY = cropBox.y; // 新的 y 坐标
+		let newW = cropBox.width; // 新的宽度
+		let newH = cropBox.height; // 新的高度
+
+		// 根据拖拽方向计算新尺寸，同时确定固定锚点
+		switch (touch.direction) {
+			case "tl": // 左上角拖拽，固定右下角
+				anchorX = cropBox.x + cropBox.width; // 右边界固定
+				anchorY = cropBox.y + cropBox.height; // 下边界固定
+				newW = anchorX - (cropBox.x + dx); // 根据移动距离计算新宽度
+				newH = anchorY - (cropBox.y + dy); // 根据移动距离计算新高度
+				newX = anchorX - newW; // 根据新宽度计算新 x 坐标
+				newY = anchorY - newH; // 根据新高度计算新 y 坐标
+				break;
+			case "tr": // 右上角拖拽，固定左下角
+				anchorX = cropBox.x; // 左边界固定
+				anchorY = cropBox.y + cropBox.height; // 下边界固定
+				newW = cropBox.width + dx; // 宽度增加
+				newH = anchorY - (cropBox.y + dy); // 根据移动距离计算新高度
+				newX = anchorX; // x 坐标不变
+				newY = anchorY - newH; // 根据新高度计算新 y 坐标
+				break;
+			case "bl": // 左下角拖拽，固定右上角
+				anchorX = cropBox.x + cropBox.width; // 右边界固定
+				anchorY = cropBox.y; // 上边界固定
+				newW = anchorX - (cropBox.x + dx); // 根据移动距离计算新宽度
+				newH = cropBox.height + dy; // 高度增加
+				newX = anchorX - newW; // 根据新宽度计算新 x 坐标
+				newY = anchorY; // y 坐标不变
+				break;
+			case "br": // 右下角拖拽，固定左上角
+				anchorX = cropBox.x; // 左边界固定
+				anchorY = cropBox.y; // 上边界固定
+				newW = cropBox.width + dx; // 宽度增加
+				newH = cropBox.height + dy; // 高度增加
+				newX = anchorX; // x 坐标不变
+				newY = anchorY; // y 坐标不变
+				break;
+		}
+
+		// 确保尺寸不小于最小值，并相应调整坐标
+		if (newW < MIN_SIZE) {
+			newW = MIN_SIZE;
+			// 根据拖拽方向调整坐标
+			if (touch.direction == "tl" || touch.direction == "bl") {
+				newX = anchorX - newW; // 左侧拖拽时调整 x 坐标
+			}
+		}
+
+		if (newH < MIN_SIZE) {
+			newH = MIN_SIZE;
+			// 根据拖拽方向调整坐标
+			if (touch.direction == "tl" || touch.direction == "tr") {
+				newY = anchorY - newH; // 上侧拖拽时调整 y 坐标
+			}
+		}
+
+		// 确保裁剪框在容器边界内
+		newX = toPixel(Math.max(0, Math.min(newX, container.width - newW)));
+		newY = toPixel(Math.max(0, Math.min(newY, container.height - newH)));
+
+		// 当位置受限时，调整尺寸以保持锚点位置
+		if (newX == 0 && (touch.direction == "tl" || touch.direction == "bl")) {
+			newW = anchorX; // 左边界贴边时，调整宽度
+		}
+		if (newY == 0 && (touch.direction == "tl" || touch.direction == "tr")) {
+			newH = anchorY; // 上边界贴边时，调整高度
+		}
+		if (
+			newX + newW >= container.width &&
+			(touch.direction == "tr" || touch.direction == "br")
+		) {
+			newW = container.width - newX; // 右边界贴边时，调整宽度
+		}
+		if (
+			newY + newH >= container.height &&
+			(touch.direction == "bl" || touch.direction == "br")
+		) {
+			newH = container.height - newY; // 下边界贴边时，调整高度
+		}
+
+		// 应用计算结果
+		cropBox.x = toPixel(newX);
+		cropBox.y = toPixel(newY);
+		cropBox.width = toPixel(newW);
+		cropBox.height = toPixel(newH);
+
+		// 无论是否达到边界，都更新起始坐标，确保下次计算的连续性
+		touch.startX = e.touches[0].clientX; // 更新起始 x 坐标
+		touch.startY = e.touches[0].clientY; // 更新起始 y 坐标
+	}
+}
+
+// 居中并调整图片和裁剪框的函数
+function centerAndAdjust() {
+	// 如果图片未加载，直接返回
+	if (!imageInfo.isLoaded) return;
+
+	// 获取当前图片尺寸
+	const currentW = imageSize.width; // 当前图片宽度
+	const currentH = imageSize.height; // 当前图片高度
+
+	// 计算裁剪框缩放比例
+	const scaleX = cropBox.width / touch.startCropBoxWidth; // 水平缩放比例
+	const scaleY = cropBox.height / touch.startCropBoxHeight; // 垂直缩放比例
+	const cropScale = Math.max(scaleX, scaleY); // 取最大缩放比例
+
+	// 计算图片反向缩放比例
+	let imgScale = 1 / cropScale; // 图片缩放倍数（与裁剪框缩放相反）
+
+	// 计算调整后的图片尺寸
+	let newW = currentW * imgScale; // 新的图片宽度
+	let newH = currentH * imgScale; // 新的图片高度
+
+	// 获取旋转后的图片有效尺寸，用于正确计算覆盖裁剪框的最小尺寸
+	const getRotatedSize = (w: number, h: number): Size => {
+		const angle = ((rotate.value % 360) + 360) % 360;
+		if (angle == 90 || angle == 270) {
+			return { width: h, height: w }; // 旋转90度/270度时宽高交换
+		}
+		return { width: w, height: h };
+	};
+
+	// 获取调整后图片的旋转有效尺寸
+	const rotatedSize = getRotatedSize(newW, newH);
+
+	// 确保图片能完全覆盖裁剪框（使用旋转后的有效尺寸）
+	const minScaleW = cropBox.width / rotatedSize.width; // 宽度最小缩放比例
+	const minScaleH = cropBox.height / rotatedSize.height; // 高度最小缩放比例
+	const minScale = Math.max(minScaleW, minScaleH); // 取最大值确保完全覆盖
+
+	// 如果需要进一步放大图片
+	if (minScale > 1) {
+		imgScale *= minScale; // 调整缩放倍数
+		newW = currentW * imgScale; // 重新计算宽度
+		newH = currentH * imgScale; // 重新计算高度
+	}
+
+	// 应用 maxScale 限制，保持图片比例
+	const maxW = container.width * props.maxScale; // 最大宽度限制
+	const maxH = container.height * props.maxScale; // 最大高度限制
+
+	// 计算统一的最大缩放约束
+	const maxScaleW = maxW / newW; // 最大宽度缩放比例
+	const maxScaleH = maxH / newH; // 最大高度缩放比例
+	const maxScaleConstraint = Math.min(maxScaleW, maxScaleH, 1); // 最大缩放约束
+
+	// 应用最大缩放约束，保持比例
+	newW = newW * maxScaleConstraint; // 应用最大缩放限制
+	newH = newH * maxScaleConstraint; // 应用最大缩放限制
+
+	// 应用新的图片尺寸
+	imageSize.width = toPixel(newW); // 更新图片显示宽度
+	imageSize.height = toPixel(newH); // 更新图片显示高度
+
+	// 将裁剪框居中显示
+	cropBox.x = toPixel((container.width - cropBox.width) / 2); // 水平居中
+	cropBox.y = toPixel((container.height - cropBox.height) / 2); // 垂直居中
+
+	// 重置图片位移到居中位置
+	transform.translateX = 0; // 重置水平位移
+	transform.translateY = 0; // 重置垂直位移
+
+	// 调整图片边界
+	adjustBounds(); // 确保图片完全覆盖裁剪框
+}
+
+// 处理调整尺寸结束事件的函数
+function onResizeEnd() {
+	// 重置触摸状态
+	touch.isTouching = false; // 标记触摸结束
+	touch.mode = ""; // 清空触摸模式
+	touch.direction = ""; // 清空调整方向
+	isResizing.value = false; // 标记停止调整尺寸
+
+	// 执行居中和调整
+	centerAndAdjust(); // 重新调整图片和裁剪框
+
+	// 延迟隐藏辅助线
+	setTimeout(() => {
+		showGuideLines.value = false; // 隐藏九宫格辅助线
+	}, 200); // 200ms 后隐藏
+}
+
+// 处理图片触摸开始事件的函数
+function onTouchStart(e: TouchEvent) {
+	// 如果组件图片未加载，直接返回
+	if (!imageInfo.isLoaded) return;
+
+	// 设置触摸状态
+	touch.isTouching = true; // 标记正在触摸
+	touch.mode = "image"; // 设置触摸模式为图片操作
+
+	// 根据触摸点数量判断操作类型
+	if (e.touches.length == 1) {
+		// 单指拖拽模式
+		touch.startX = e.touches[0].clientX; // 记录起始 x 坐标
+		touch.startY = e.touches[0].clientY; // 记录起始 y 坐标
+		touch.startTranslateX = transform.translateX; // 记录起始水平位移
+		touch.startTranslateY = transform.translateY; // 记录起始垂直位移
+	} else if (e.touches.length == 2) {
+		// 双指缩放模式
+		const t1 = e.touches[0]; // 第一个触摸点
+		const t2 = e.touches[1]; // 第二个触摸点
+
+		// 计算两个触摸点之间的初始距离
+		touch.startDistance = Math.sqrt(
+			Math.pow(t2.clientX - t1.clientX, 2) + Math.pow(t2.clientY - t1.clientY, 2)
+		);
+
+		// 记录触摸开始时的图片尺寸
+		touch.startImageWidth = imageSize.width; // 起始图片宽度
+		touch.startImageHeight = imageSize.height; // 起始图片高度
+
+		// 计算并记录缩放中心点（两个触摸点的中点）
+		touch.startX = (t1.clientX + t2.clientX) / 2; // 缩放中心 x 坐标
+		touch.startY = (t1.clientY + t2.clientY) / 2; // 缩放中心 y 坐标
+		// 记录触摸开始时的位移状态
+		touch.startTranslateX = transform.translateX; // 起始水平位移
+		touch.startTranslateY = transform.translateY; // 起始垂直位移
+	}
+}
+
+// 处理图片触摸移动事件的函数
+function onTouchMove(e: TouchEvent) {
+	if (!touch.isTouching) return;
+
+	if (touch.mode == "resizing") {
+		onResizeMove(e);
+		return;
+	}
+
+	// 根据触摸点数量判断操作类型
+	if (e.touches.length == 1) {
+		// 单指拖拽模式
+		const dx = e.touches[0].clientX - touch.startX; // 计算水平位移差
+		const dy = e.touches[0].clientY - touch.startY; // 计算垂直位移差
+
+		// 更新图片位移
+		transform.translateX = toPixel(touch.startTranslateX + dx); // 应用水平位移
+		transform.translateY = toPixel(touch.startTranslateY + dy); // 应用垂直位移
+	} else if (e.touches.length == 2) {
+		// 双指缩放模式
+		const t1 = e.touches[0]; // 第一个触摸点
+		const t2 = e.touches[1]; // 第二个触摸点
+
+		// 计算当前两个触摸点之间的距离
+		const distance = Math.sqrt(
+			Math.pow(t2.clientX - t1.clientX, 2) + Math.pow(t2.clientY - t1.clientY, 2)
+		);
+
+		// 计算缩放倍数（当前距离 / 初始距离）
+		const scale = distance / touch.startDistance;
+
+		// 计算缩放后的新尺寸
+		const newW = touch.startImageWidth * scale; // 新宽度
+		const newH = touch.startImageHeight * scale; // 新高度
+
+		// 获取尺寸约束条件
+		const minSize = getMinImageSizeForPinch(); // 最小尺寸限制（专门用于双指缩放）
+		const maxW = container.width * props.maxScale; // 最大宽度限制
+		const maxH = container.height * props.maxScale; // 最大高度限制
+
+		// 计算统一的缩放约束，保持图片比例
+		const minScaleW = minSize.width / newW; // 最小宽度缩放比例
+		const minScaleH = minSize.height / newH; // 最小高度缩放比例
+		const maxScaleW = maxW / newW; // 最大宽度缩放比例
+		const maxScaleH = maxH / newH; // 最大高度缩放比例
+
+		// 取最严格的约束条件，确保图片不变形
+		const minScale = Math.max(minScaleW, minScaleH); // 最小缩放约束
+		const maxScale = Math.min(maxScaleW, maxScaleH); // 最大缩放约束
+		const finalScale = Math.max(minScale, Math.min(maxScale, 1)); // 最终统一缩放比例
+
+		// 应用统一的缩放比例，保持图片原始比例
+		const finalW = newW * finalScale; // 最终宽度
+		const finalH = newH * finalScale; // 最终高度
+
+		// 计算当前缩放中心点
+		const centerX = (t1.clientX + t2.clientX) / 2; // 缩放中心 x 坐标
+		const centerY = (t1.clientY + t2.clientY) / 2; // 缩放中心 y 坐标
+
+		// 计算尺寸变化量
+		const dw = finalW - touch.startImageWidth; // 宽度变化量
+		const dh = finalH - touch.startImageHeight; // 高度变化量
+
+		// 计算位移补偿，使缩放围绕触摸中心进行
+		const offsetX = ((centerX - container.width / 2) * dw) / (2 * touch.startImageWidth); // 水平位移补偿
+		const offsetY = ((centerY - container.height / 2) * dh) / (2 * touch.startImageHeight); // 垂直位移补偿
+
+		// 更新图片尺寸和位移
+		imageSize.width = toPixel(finalW); // 应用新宽度
+		imageSize.height = toPixel(finalH); // 应用新高度
+		transform.translateX = toPixel(touch.startTranslateX - offsetX); // 应用补偿后的水平位移
+		transform.translateY = toPixel(touch.startTranslateY - offsetY); // 应用补偿后的垂直位移
+	}
+}
+
+// 处理图片触摸结束事件的函数
+function onTouchEnd() {
+	if (touch.mode == "resizing") {
+		onResizeEnd();
+		return;
+	}
+
+	// 重置触摸状态
+	touch.isTouching = false; // 标记触摸结束
+	touch.mode = ""; // 清空触摸模式
+	// 调整图片边界确保完全覆盖裁剪框
+	adjustBounds(); // 执行边界调整
+}
+
+// 重置裁剪器到初始状态的函数
+function reset() {
+	// 重新初始化裁剪框
+	initCrop(); // 恢复裁剪框到初始位置和尺寸
+
+	// 重置翻转状态
+	flipHorizontal.value = false; // 重置水平翻转状态
+	flipVertical.value = false; // 重置垂直翻转状态
+	rotate.value = 0; // 重置旋转角度
+
+	// 重置图片位移
+	transform.translateX = 0;
+	transform.translateY = 0;
+
+	// 根据图片加载状态进行不同处理
+	if (imageInfo.isLoaded) {
+		setInitialImageSize(); // 重新设置图片初始尺寸
+		adjustBounds(); // 调整图片边界
+	} else {
+		// 如果图片未加载，重置所有状态
+		imageSize.width = toPixel(0); // 重置图片显示宽度
+		imageSize.height = toPixel(0); // 重置图片显示高度
+		transform.translateX = toPixel(0); // 重置水平位移
+		transform.translateY = toPixel(0); // 重置垂直位移
+	}
+}
+
+// 是否显示
+const visible = ref(false);
+
+// 图片地址
+const imageUrl = ref("");
+
+// 打开裁剪器
+function open(url: string) {
+	visible.value = true;
+
+	nextTick(() => {
+		imageUrl.value = url;
+	});
+}
+
+// 关闭裁剪器
+function close() {
+	visible.value = false;
+}
+
+// 重新选择图片
+function chooseImage() {
+	uni.chooseImage({
+		count: 1,
+		sizeType: ["original", "compressed"],
+		sourceType: ["album", "camera"],
+		success: (res) => {
+			if (res.tempFilePaths.length > 0) {
+				open(res.tempFilePaths[0]);
+			}
+		}
+	});
+}
+
+// 处理图片加载完成事件的函数
+function onImageLoaded(e: UniImageLoadEvent) {
+	// 更新图片原始尺寸信息
+	imageInfo.width = e.detail.width; // 保存图片原始宽度
+	imageInfo.height = e.detail.height; // 保存图片原始高度
+	imageInfo.isLoaded = true; // 标记图片已加载
+
+	reset(); // 重置裁剪框
+
+	// 触发加载完成事件
+	emit("load", e); // 向父组件发送加载事件
+}
+
+// 切换水平翻转状态的函数
+function toggleHorizontalFlip() {
+	flipHorizontal.value = !flipHorizontal.value; // 切换水平翻转状态
+}
+
+// 切换垂直翻转状态的函数
+function toggleVerticalFlip() {
+	flipVertical.value = !flipVertical.value; // 切换垂直翻转状态
+}
+
+// 90度旋转
+function rotate90() {
+	rotate.value -= 90; // 旋转90度（逆时针）
+
+	// 如果图片已加载，检查旋转后是否还能覆盖裁剪框
+	if (imageInfo.isLoaded) {
+		// 获取旋转后的有效尺寸
+		const rotatedSize = getRotatedImageSize();
+
+		// 检查旋转后的有效尺寸是否能完全覆盖裁剪框
+		const scaleW = cropBox.width / rotatedSize.width; // 宽度需要的缩放比例
+		const scaleH = cropBox.height / rotatedSize.height; // 高度需要的缩放比例
+		const requiredScale = Math.max(scaleW, scaleH); // 取最大比例确保完全覆盖
+
+		// 如果需要放大图片（旋转后尺寸不够覆盖裁剪框）
+		if (requiredScale > 1) {
+			// 同比例放大图片尺寸
+			imageSize.width = toPixel(imageSize.width * requiredScale);
+			imageSize.height = toPixel(imageSize.height * requiredScale);
+		}
+
+		// 调整边界确保图片完全覆盖裁剪框
+		adjustBounds();
+	}
+}
+
+// 执行裁剪转图片
+async function toPng(): Promise<string> {
+	return new Promise((resolve) => {
+		uni.createCanvasContextAsync({
+			id: canvasId,
+			component: proxy,
+			success: (context: CanvasContext) => {
+				// 获取设备像素比
+				const dpr = getDevicePixelRatio();
+
+				// 获取绘图上下文
+				const ctx = context.getContext("2d")!;
+
+				// 设置宽高
+				ctx!.canvas.width = cropBox.width * dpr;
+				ctx!.canvas.height = cropBox.height * dpr;
+
+				// #ifdef APP
+				ctx!.reset();
+				// #endif
+
+				// #ifndef APP
+				ctx!.clearRect(0, 0, cropBox.width * dpr, cropBox.height * dpr);
+				// #endif
+
+				// 创建图片
+				let img: Image;
+
+				// 微信小程序环境创建图片
+				// #ifdef MP-WEIXIN || APP-HARMONY
+				img = context.createImage();
+				// #endif
+
+				// 其他环境创建图片
+				// #ifndef MP-WEIXIN || APP-HARMONY
+				img = new Image();
+				// #endif
+
+				// 设置图片源并在加载完成后绘制
+				img.src = imageUrl.value;
+				img.onload = () => {
+					let x: number;
+					let y: number;
+
+					// 根据旋转角度计算裁剪位置
+					switch (Math.abs(rotate.value) % 360) {
+						case 270:
+							// 旋转270度时的位置计算
+							x = (imageSize.width - cropBox.height) / 2 - transform.translateY;
+							y = (imageSize.height + cropBox.width) / 2 + transform.translateX;
+							break;
+
+						case 180:
+							// 旋转180度时的位置计算
+							x = (imageSize.width + cropBox.width) / 2 + transform.translateX;
+							y = (imageSize.height + cropBox.height) / 2 + transform.translateY;
+							break;
+
+						case 90:
+							// 旋转90度时的位置计算
+							x = (imageSize.width + cropBox.height) / 2 + transform.translateY;
+							y = (imageSize.height - cropBox.width) / 2 - transform.translateX;
+							break;
+
+						default:
+							// 不旋转时的位置计算
+							x = (imageSize.width - cropBox.width) / 2 - transform.translateX;
+							y = (imageSize.height - cropBox.height) / 2 - transform.translateY;
+							break;
+					}
+
+					if (x < 0) {
+						x = 0;
+					}
+
+					if (y < 0) {
+						y = 0;
+					}
+
+					// 图片旋转
+					ctx!.rotate((rotate.value * Math.PI) / 180);
+
+					// 绘制图片
+					ctx!.drawImage(
+						img,
+						-x * dpr,
+						-y * dpr,
+						imageSize.width * dpr,
+						imageSize.height * dpr
+					);
+
+					setTimeout(() => {
+						canvasToPng(canvasRef.value!).then((url) => {
+							emit("crop", url);
+							resolve(url);
+						});
+					}, 10);
+				};
+			}
+		});
+	});
+}
+
+defineExpose({
+	open,
+	close,
+	chooseImage,
+	toPng
+});
+</script>
+
+<style lang="scss" scoped>
+.cl-cropper {
+	@apply bg-black absolute left-0 top-0 w-full h-full;
+	z-index: 510;
+
+	&__image {
+		@apply absolute top-0 left-0 flex items-center justify-center w-full h-full;
+		@apply pointer-events-none;
+
+		&-inner {
+			@apply transition-none;
+
+			.no-dragging {
+				@apply duration-300;
+				transition-property: transform;
+			}
+		}
+	}
+
+	&__mask {
+		@apply absolute top-0 left-0 w-full h-full z-10 pointer-events-none;
+
+		&-item {
+			@apply absolute;
+			background-color: rgba(0, 0, 0, 0.4);
+		}
+	}
+
+	&__crop-box {
+		@apply absolute overflow-visible;
+		z-index: 10;
+	}
+
+	&__crop-area {
+		@apply relative w-full h-full overflow-visible duration-200 pointer-events-none;
+		@apply border border-solid;
+		border-color: rgba(255, 255, 255, 0.5);
+
+		&.is-resizing {
+			@apply border-teal-500/10;
+		}
+	}
+
+	&__guide-lines {
+		@apply flex justify-center items-center;
+		@apply absolute top-0 left-0 w-full h-full pointer-events-none opacity-0 duration-200;
+
+		&.is-show {
+			@apply opacity-100;
+		}
+	}
+
+	&__guide-line {
+		@apply absolute bg-white opacity-70;
+
+		&--h1 {
+			@apply top-1/3 left-0 w-full;
+			height: 1px;
+		}
+
+		&--h2 {
+			@apply top-2/3 left-0 w-full;
+			height: 1px;
+		}
+
+		&--v1 {
+			@apply left-1/3 top-0 h-full;
+			width: 1px;
+		}
+
+		&--v2 {
+			@apply left-2/3 top-0 h-full;
+			width: 1px;
+		}
+	}
+
+	&__guide-text {
+		@apply absolute flex flex-row items-center justify-center;
+	}
+
+	&__corner-indicator {
+		@apply border-white border-solid border-b-transparent border-l-transparent absolute duration-200;
+		width: 20px;
+		height: 20px;
+		border-width: 1px;
+	}
+
+	&__drag-point {
+		@apply absolute duration-200 flex items-center justify-center overflow-visible;
+		width: 40px;
+		height: 40px;
+
+		&--tl {
+			top: 0;
+			left: 0;
+
+			.cl-cropper__corner-indicator {
+				transform: rotate(-90deg);
+				left: -1px;
+				top: -1px;
+			}
+		}
+
+		&--tr {
+			top: 0;
+			right: 0;
+
+			.cl-cropper__corner-indicator {
+				transform: rotate(0deg);
+				right: -1px;
+				top: -1px;
+			}
+		}
+
+		&--bl {
+			bottom: 0;
+			left: 0;
+
+			.cl-cropper__corner-indicator {
+				transform: rotate(180deg);
+				bottom: -1px;
+				left: -1px;
+			}
+		}
+
+		&--br {
+			bottom: 0;
+			right: 0;
+
+			.cl-cropper__corner-indicator {
+				transform: rotate(90deg);
+				bottom: -1px;
+				right: 0-1px;
+			}
+		}
+	}
+
+	&__op {
+		@apply absolute left-0 bottom-0 w-full flex flex-row justify-between;
+		z-index: 30;
+		height: 40px;
+
+		&-item {
+			@apply flex flex-row justify-center items-center flex-1 h-full;
+		}
+	}
+
+	&__canvas {
+		@apply absolute top-0;
+		left: -10000px;
+	}
+}
+</style>

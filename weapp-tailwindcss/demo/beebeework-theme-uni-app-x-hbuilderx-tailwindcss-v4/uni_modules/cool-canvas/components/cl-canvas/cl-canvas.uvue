@@ -1,0 +1,99 @@
+<template>
+	<view class="cl-canvas">
+		<canvas
+			ref="canvasRef"
+			:id="canvasId"
+			:style="{ width: width + 'px', height: height + 'px' }"
+		></canvas>
+	</view>
+</template>
+
+<script setup lang="ts">
+import { onMounted, ref } from "vue";
+import { Canvas, useCanvas } from "../../hooks";
+import { canvasToPng, t } from "@/.cool";
+import { useUi } from "@/uni_modules/cool-ui";
+
+const props = defineProps({
+	canvasId: {
+		type: String,
+		default: ""
+	},
+	height: {
+		type: Number,
+		default: 300
+	},
+	width: {
+		type: Number,
+		default: 300
+	}
+});
+
+const emit = defineEmits<{
+	(e: "load", canvas: Canvas): void;
+}>();
+
+const ui = useUi();
+
+// 画布操作实例
+const canvas = useCanvas(props.canvasId);
+
+// 画布组件
+const canvasRef = ref<UniElement | null>(null);
+
+// 加载画布
+function load() {
+	canvas.create().then(() => {
+		canvas.height(props.height);
+		canvas.width(props.width);
+
+		emit("load", canvas);
+	});
+}
+
+// 创建图片
+async function createImage() {
+	return canvasToPng(canvasRef.value!);
+}
+
+// 预览图片
+async function previewImage() {
+	const url = await createImage();
+
+	uni.previewImage({
+		urls: [url]
+	});
+}
+
+// 保存图片
+async function saveImage() {
+	const url = await createImage();
+
+	uni.saveImageToPhotosAlbum({
+		filePath: url,
+		success: () => {
+			ui.showToast({
+				message: t("保存图片成功"),
+				type: "success"
+			});
+		},
+		fail: (err) => {
+			console.error("[cl-canvas]", err);
+			ui.showToast({
+				message: t("保存图片失败"),
+				type: "error"
+			});
+		}
+	});
+}
+
+onMounted(() => {
+	load();
+});
+
+defineExpose({
+	createImage,
+	saveImage,
+	previewImage
+});
+</script>

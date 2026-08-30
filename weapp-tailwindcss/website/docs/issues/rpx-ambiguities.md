@@ -1,0 +1,134 @@
+---
+title: rpx 任意值颜色或长度单位二义性与解决方案
+description: 在不使用 weapp-tailwindcss 的情况下，你直接写这样的 rpx 写法：
+keywords:
+  - 常见问题
+  - 故障排查
+  - 兼容性
+  - rpx
+  - 任意值颜色或长度单位二义性与解决方案
+  - issues
+  - rpx ambiguities
+  - weapp-tailwindcss
+  - tailwindcss
+  - 小程序
+  - 微信小程序
+  - uni-app
+  - taro
+  - rax
+  - mpx
+---
+# rpx 任意值颜色或长度单位二义性与解决方案
+
+## 这是一个什么问题？
+
+在不使用 `weapp-tailwindcss` 的情况下，你直接写这样的 `rpx` 写法：
+
+```html
+<div class="text-[32rpx]"></div>
+```
+
+最终它会生成这样的 `css`：
+
+```css
+.text-\[32rpx\] {
+  color: 32rpx;
+}
+```
+
+为什么 `rpx` 这个好端端的长度单位，会变成颜色呢？
+
+原因在于 `rpx` 不是一个标准的 `W3C` 规定的 `CSS` 长度单位，这是微信小程序自己定的 `WXSS` 单位。
+
+## 什么是 **二义性**?
+
+`tailwindcss` 中有些原子类具有 **二义性**，比如:
+
+- `text-[]`
+- `border-[]`
+- `bg-[]`
+- `outline-[]`
+- `ring-[]`
+
+其中 `text-[]` 中的 `text-[16.16px]` 生成的 css 是 `font-size: 16.16px;`, 而 `text-[#123456]` 生成的 css 是 `color: #123456;`;
+
+这就是原子类的 **二义性**
+
+---
+
+而 `tailwindcss` 在针对具有**二义性**的任意值写法:
+
+这些会去**校验括号**内的任意值，是否为有效的 `CSS` 长度单位！
+
+如果为 `true`，则生成出长度单位的 `css` 节点，反之则生成出颜色单位的 `css` 节点:
+
+```css
+/* text-[16px] */
+.text-\[16px\] {
+    font-size: 16px
+}
+/* text-[#fafafa] */
+.text-\[\#fafafa\] {
+    --tw-text-opacity: 1;
+    color: rgb(250 250 250 / var(--tw-text-opacity))
+}
+```
+
+那么问题来了，`rpx` 在单位校验的时候，由于不认识这个单位，导致单位无效所有被分到了颜色组。
+
+```css
+/* text-[32rpx] */
+.text-\[32rpx\] {
+    --tw-text-opacity: 1;
+    color: 32rpx;
+}
+```
+
+所以造成了这个问题！那么如何解决呢？
+
+## 目前插件的解决方案
+
+目前 `weapp-tailwindcss@5` 的生成模式会在构建运行时处理 Tailwind CSS 3.x / 4.x 的候选类名与小程序单位兼容，不需要再执行 `weapp-tw patch`。
+
+如果你仍然在旧项目里看到 `postinstall: "weapp-tw patch"`，可以直接删除。当前 `weapp-tw patch` 只是兼容旧脚本的提示命令。
+
+<!-- 然而，以后 `tailwindcss` 将会使用由 `rust` 编写的新引擎。
+
+这时候这种 `hack` 方式将会失效，毕竟那种情况下都是二进制文件了！
+
+那么为了预防这种可能出现的危机，我们应该怎么做呢？ -->
+
+## 强制CSS单位的解决方案
+
+我们可以在使用这些带有**二义性**的单位的时候，可以通过 `length` 或 `color` 这种的前缀来指定它应该是什么，例如：
+
+```html
+<div class="text-[22rpx]">...</div>
+<div class="text-[#bada55]">...</div>
+<!-- 变成下列的写法 -->
+<div class="text-[length:22rpx]">...</div>
+<div class="text-[color:#bada55]">...</div>
+```
+
+这样就通过指定的方式，直接跳过了长度单位校验，生成出长度单位的 `css` 了！
+
+```css
+.text-\[length\:22rpx\] {
+    font-size: 22rpx
+}
+```
+
+同样你可以使用这 2 个前缀来指定 `css` 变量的生成形式：
+
+```html
+<!-- 生成 font-size  -->
+<div class="text-[length:var(--my-var)]">...</div>
+
+<!-- 生成 color -->
+<div class="text-[color:var(--my-var)]">...</div>
+```
+
+## 参见
+
+- `tailwindcss` 中的[添加自定义样式](https://tailwindcss.com/docs/adding-custom-styles#resolving-ambiguities)
+- 相关 Issue：[#110](https://github.com/sonofmagic/weapp-tailwindcss/issues/110)、[#110](https://github.com/sonofmagic/weapp-tailwindcss/issues/109)

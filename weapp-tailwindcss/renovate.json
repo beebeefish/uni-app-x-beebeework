@@ -1,0 +1,24 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended"
+  ],
+  // https://docs.renovatebot.com/configuration-options/#ignoredeps
+  // Currently it supports only "exact match" dependency names and not any patterns.
+  // "ignoreDeps": [
+  //   "@dcloudio/*",
+  //   "@mpxjs/*"
+  // ],
+  "packageRules": [
+    {
+      // https://docs.renovatebot.com/string-pattern-matching/#use-regex101-to-test-your-patterns
+      "matchPackageNames": [
+        "@dcloudio/*",
+        "@mpxjs/*",
+        "@tarojs/*"
+      ],
+      "enabled": false
+    }
+  ],
+  "commitBody": "[skip netlify]"
+}

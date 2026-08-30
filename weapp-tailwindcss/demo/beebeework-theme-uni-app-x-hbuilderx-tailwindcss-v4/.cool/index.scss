@@ -1,0 +1,20 @@
+/* @tailwind base; */
+@tailwind components;
+@tailwind utilities;
+
+@import "./icons/index.scss";
+
+.uni-tabbar {
+	// #ifdef H5
+	display: none;
+	// #endif
+
+	.uni-tabbar__icon {
+		margin-top: 0;
+	}
+}
+
+.uni-toast {
+	border-radius: 32rpx;
+	background-color: rgba(0, 0, 0, 0.8) !important;
+}

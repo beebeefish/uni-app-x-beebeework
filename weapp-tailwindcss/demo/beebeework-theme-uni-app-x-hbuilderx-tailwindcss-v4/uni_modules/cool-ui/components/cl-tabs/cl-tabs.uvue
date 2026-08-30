@@ -1,0 +1,458 @@
+<template>
+	<view
+		class="cl-tabs w-full"
+		:class="[
+			{
+				'cl-tabs--line': showLine,
+				'cl-tabs--slider': showSlider,
+				'cl-tabs--fill': fill,
+				'cl-tabs--disabled': disabled,
+				'is-dark': isDark
+			},
+			pt.className
+		]"
+		:style="{
+			height: getUnit(height)
+		}"
+	>
+		<view
+			class="cl-tabs__scrollbar w-full"
+			direction="horizontal"
+			:scroll-left="scrollLeft"
+			:show-scrollbar="false"
+		>
+			<view class="cl-tabs__inner w-full flex flex-row items-center justify-center" :class="[pt.inner?.className]">
+				<view
+					class="cl-tabs__item"
+					v-for="(item, index) in list"
+					:key="index"
+					:class="[pt.item?.className]"
+					:style="{
+						padding: `0 ${getUnit(gutter)}`
+					}"
+					@tap="change(index)"
+				>
+					<slot name="item" :item="item" :active="item.isActive">
+						<cl-text
+							:pt="{
+								className: parseClass([ 
+									[
+										item.isActive && color == '' && unColor == '',
+										showSlider ? 'text-white' : 'text-teal-500/10'
+									],
+									[item.disabled, 'opacity-30'],
+									pt.text?.className
+								])
+							}"
+							:style="getTextStyle(item)"
+							>{{ item.label }}</cl-text
+						>
+					</slot>
+				</view>
+
+				<template v-if="lineLeft > 0">
+					<view
+						class="cl-tabs__line"
+						:class="[pt.line?.className]"
+						:style="lineStyle"
+						v-if="showLine"
+					></view>
+					<view
+						class="cl-tabs__slider"
+						:class="[pt.slider?.className]"
+						:style="sliderStyle"
+						v-if="showSlider"
+					></view>
+				</template>
+			</view>
+		</view>
+	</view>
+</template>
+
+<script lang="ts" setup>
+import { type PropType, computed, getCurrentInstance, nextTick, onMounted, ref, watch } from "vue";
+import { getUnit, isDark, isEmpty, isNull, parseClass, parsePt } from "@/.cool";
+import type { ClTabsItem, PassThroughProps } from "../../types";
+
+// 定义标签类型
+type Item = {
+	label: string;
+	value: string | number;
+	disabled: boolean;
+	isActive: boolean;
+};
+
+defineOptions({
+	name: "cl-tabs"
+});
+
+defineSlots<{
+	item(props: { item: Item; active: boolean }): any;
+}>();
+
+const props = defineProps({
+	// 透传属性对象，允许外部自定义样式和属性
+	pt: {
+		type: Object,
+		default: () => ({})
+	},
+	// v-model绑定值，表示当前选中的tab
+	modelValue: {
+		type: [String, Number] as PropType<string | number>,
+		default: ""
+	},
+	// 标签高度
+	height: {
+		type: [String, Number] as PropType<string | number>,
+		default: 40
+	},
+	// 标签列表
+	list: {
+		type: Array as PropType<ClTabsItem[]>,
+		default: () => []
+	},
+	// 是否填充标签
+	fill: {
+		type: Boolean,
+		default: false
+	},
+	// 标签间隔
+	gutter: {
+		type: Number,
+		default: 14
+	},
+	// 选中标签的颜色
+	color: {
+		type: String,
+		default: ""
+	},
+	// 未选中标签的颜色
+	unColor: {
+		type: String,
+		default: ""
+	},
+	// 是否显示下划线
+	showLine: {
+		type: Boolean,
+		default: true
+	},
+	// 是否显示滑块
+	showSlider: {
+		type: Boolean,
+		default: false
+	},
+	// 是否禁用
+	disabled: {
+		type: Boolean,
+		default: false
+	}
+});
+
+// 定义事件发射器
+const emit = defineEmits(["update:modelValue", "change"]);
+
+// 获取当前组件实例的proxy对象
+const { proxy } = getCurrentInstance()!;
+
+// 定义透传类型，便于类型推断和扩展
+type PassThrough = {
+	// 额外类名
+	className?: string;
+	// 文本的透传属性
+	text?: PassThroughProps;
+	// 单个item的透传属性
+	item?: PassThroughProps;
+	// 下划线的透传属性
+	line?: PassThroughProps;
+	// 滑块的透传属性
+	slider?: PassThroughProps;
+};
+
+// 计算透传属性，便于样式和属性扩展
+const pt = computed(() => parsePt<PassThrough>(props.pt));
+
+// 当前选中的标签值
+const active = ref(props.modelValue);
+
+// 计算标签列表，增加isActive和disabled属性，便于渲染和状态判断
+const list = computed(() =>
+	props.list.map((e) => {
+		return {
+			label: e.label,
+			value: e.value,
+			// 如果未传disabled则默认为false
+			disabled: e.disabled ?? false,
+			// 判断当前标签是否为激活状态
+			isActive: e.value == active.value
+		} as Item;
+	})
+);
+
+// 切换标签时触发，参数为索引
+async function change(index: number) {
+	// 如果整个Tabs被禁用，则不响应点击
+	if (props.disabled) {
+		return false;
+	}
+
+	// 获取当前点击标签的值
+	const { value, disabled } = list.value[index];
+
+	// 如果标签被禁用，则不响应点击
+	if (disabled) {
+		return false;
+	}
+
+	// 触发v-model的更新
+	emit("update:modelValue", value);
+	// 触发change事件
+	emit("change", value);
+}
+
+// 获取当前选中标签的下标，未找到则返回0
+function getIndex() {
+	const index = list.value.findIndex((e) => e.isActive);
+	return index == -1 ? 0 : index;
+}
+
+// 根据激活状态获取标签颜色
+function getColor(isActive: boolean) {
+	let color: string;
+	// 选中时取props.color，否则取props.unColor
+	if (isActive) {
+		color = props.color;
+	} else {
+		color = props.unColor;
+	}
+
+	return isEmpty(color) ? null : color;
+}
+
+// tab区域宽度
+const tabWidth = ref(0);
+// tab区域左侧偏移
+const tabLeft = ref(0);
+// 下划线左侧偏移
+const lineLeft = ref(0);
+// 滑块左侧偏移
+const sliderLeft = ref(0);
+// 滑块宽度
+const sliderWidth = ref(0);
+// 滚动条左侧偏移
+const scrollLeft = ref(0);
+
+// 单个标签的位置信息类型，包含left和width
+type ItemRect = {
+	left: number;
+	width: number;
+};
+
+// 所有标签的位置信息，响应式数组
+const itemRects = ref<ItemRect[]>([]);
+
+// 计算下划线样式
+const lineStyle = computed(() => {
+	const style = {};
+
+	style["transform"] = `translateX(${lineLeft.value}px)`;
+
+	// 获取选中颜色
+	const bgColor = getColor(true);
+	if (bgColor != null) {
+		style["backgroundColor"] = bgColor;
+	}
+
+	return style;
+});
+
+// 计算滑块样式
+const sliderStyle = computed(() => {
+	const style = {};
+
+	style["transform"] = `translateX(${sliderLeft.value}px)`;
+	style["width"] = sliderWidth.value + "px";
+
+	// 获取选中颜色
+	const bgColor = getColor(true);
+	if (bgColor != null) {
+		style["backgroundColor"] = bgColor;
+	}
+
+	return style;
+});
+
+// 获取文本样式
+function getTextStyle(item: Item) {
+	const style = {};
+
+	// 获取选中颜色
+	const color = getColor(item.isActive);
+	if (color != null) {
+		style["color"] = color;
+	}
+
+	return style;
+}
+
+// 更新下划线、滑块、滚动条等位置
+function updatePosition() {
+	nextTick(() => {
+		if (!isEmpty(itemRects.value)) {
+			// 获取当前选中标签的位置信息
+			const item = itemRects.value[getIndex()];
+			// 如果标签存在
+			if (!isNull(item)) {
+				// 计算滚动条偏移，使选中项居中
+				let x = item.left - (tabWidth.value - item.width) / 2 - tabLeft.value;
+				// 防止滚动条偏移为负
+				if (x < 0) {
+					x = 0;
+				}
+				// 设置滚动条偏移
+				scrollLeft.value = x;
+				// 设置下划线偏移，使下划线居中于选中项
+				lineLeft.value = item.left + item.width / 2 - 16 / 2 - tabLeft.value;
+				// 设置滑块左侧偏移
+				sliderLeft.value = item.left - tabLeft.value;
+				// 设置滑块宽度
+				sliderWidth.value = item.width - 5;
+			}
+		}
+	});
+}
+
+// 获取所有标签的位置信息，便于后续计算
+function getRects() {
+	// 创建选择器查询
+	uni.createSelectorQuery()
+		// 作用域限定为当前组件
+		.in(proxy)
+		// 选择所有标签元素
+		.selectAll(".cl-tabs__item")
+		// 获取rect和size信息
+		.fields({ rect: true, size: true }, () => {})
+		// 执行查询
+		.exec((nodes) => {
+			// 解析查询结果，生成ItemRect数组
+			itemRects.value = (nodes[0] as NodeInfo[]).map((e) => {
+				return {
+					left: e.left ?? 0,
+					width: e.width ?? 0
+				} as ItemRect;
+			});
+
+			// 更新下划线、滑块等位置
+			updatePosition();
+		});
+}
+
+// 刷新tab区域的宽度和位置信息
+function refresh() {
+	nextTick(() => {
+		// 创建选择器查询
+		uni.createSelectorQuery()
+			// 作用域限定为当前组件
+			.in(proxy)
+			// 选择tab容器
+			.select(".cl-tabs")
+			// 获取容器的left和width
+			.boundingClientRect((node) => {
+				// 设置tab左侧偏移
+				tabLeft.value = (node as NodeInfo).left ?? 0;
+				// 设置tab宽度
+				tabWidth.value = (node as NodeInfo).width ?? 0;
+
+				// 获取所有标签的位置信息
+				getRects();
+			})
+			.exec();
+	});
+}
+
+onMounted(() => {
+	// 监听modelValue变化，更新active和位置
+	watch(
+		computed(() => props.modelValue!),
+		(val: string | number) => {
+			// 更新当前选中标签
+			active.value = val;
+			// 更新下划线、滑块等位置
+			updatePosition();
+		},
+		{
+			// 立即执行一次
+			immediate: true
+		}
+	);
+
+	// 监听标签列表变化，刷新布局
+	watch(
+		computed(() => props.list),
+		() => {
+			refresh();
+		},
+		{
+			immediate: true
+		}
+	);
+});
+</script>
+
+<style lang="scss" scoped>
+
+
+	.cl-tabs__scrollbar {
+		@apply flex flex-row w-full h-full;
+	}
+
+
+	.cl-tabs__inner {
+		@apply flex flex-row relative;
+	}
+
+	.cl-tabs__item {
+		@apply text-sm;
+		@apply flex flex-row items-center justify-center h-full relative z-10;
+	}
+
+	.cl-tabs__line {
+		@apply bg-teal-500/10 rounded-md absolute;
+		height: 2px;
+		width: 16px;
+		bottom: 1px;
+		left: 0;
+		transition-property: transform;
+		transition-duration: 0.3s;
+	}
+
+	.cl-tabs__slider {
+		@apply bg-teal-500/10 rounded-full absolute ;
+		top: 2px;
+		bottom: 2px;
+		left:2px;
+		right:2px;
+		transition-property: transform;
+		transition-duration: 0.3s;
+		&.is-dark {
+			@apply bg-zinc-700/10;
+		}
+	}
+	.cl-tabs--fill {
+		.cl-tabs__inner {
+			@apply w-full;
+		}
+
+		.cl-tabs__item {
+			flex: 1;
+		}
+
+		.cl-tabs__item-label {
+			@apply text-center;
+		}
+	}
+
+	.cl-tabs--disabled {
+		@apply opacity-50;
+	}
+
+</style>

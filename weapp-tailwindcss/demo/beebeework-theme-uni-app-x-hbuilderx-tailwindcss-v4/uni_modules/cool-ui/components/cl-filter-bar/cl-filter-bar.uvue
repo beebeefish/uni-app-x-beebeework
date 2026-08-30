@@ -1,0 +1,17 @@
+<template>
+	<view class="cl-filter-bar">
+		<slot></slot>
+	</view>
+</template>
+
+<script lang="ts" setup>
+defineOptions({
+	name: "cl-filter-bar"
+});
+</script>
+
+<style lang="scss" scoped>
+.cl-filter-bar {
+	@apply flex flex-row;
+}
+</style>

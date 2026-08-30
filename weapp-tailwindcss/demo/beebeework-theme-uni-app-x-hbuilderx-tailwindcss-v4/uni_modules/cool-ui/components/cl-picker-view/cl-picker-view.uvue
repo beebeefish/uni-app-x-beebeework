@@ -1,0 +1,300 @@
+<template>
+	<view class="cl-picker-view">
+		<view class="cl-picker-view__header" v-if="headers.length > 0">
+			<cl-text
+				:pt="{
+					className: 'flex-1 text-center'
+				}"
+				v-for="(label, index) in headers"
+				:key="index"
+				>{{ label }}</cl-text
+			>
+		</view>
+
+		<view
+			class="px-1"
+			:style="{
+				height: getUnit(height)
+			}"
+		>
+			<picker-view
+				class="h-full"
+				:value="value"
+				:mask-style="maskStyle"
+				:mask-top-style="maskStyle"
+				:mask-bottom-style="maskStyle"
+				:immediate-change="true"
+				:indicator-style="indicatorStyle"
+				@change="onChange"
+			>
+				<picker-view-column
+					class="cl-select-popup__column"
+					v-for="(column, columnIndex) in columns"
+					:key="columnIndex"
+				>
+					<!-- #ifdef APP-ANDROID -->
+					<view
+						ref="columnItemRef"
+						:style="{
+							height: `${itemHeight * column.length}px`
+						}"
+					></view>
+					<!-- #endif -->
+
+					<!-- #ifndef APP-ANDROID -->
+					<view
+						class="cl-picker-view__item"
+						:style="{
+							height: `${itemHeight}px`
+						}"
+						v-for="(item, index) in column"
+						:key="index"
+					>
+						<cl-text
+							:pt="{
+								className: parseClass([
+									[isDark, 'text-gray-500/10'],
+									[isDark && index == value[columnIndex], 'text-white']
+								])
+							}"
+							>{{ item.label }}</cl-text
+						>
+					</view>
+					<!-- #endif -->
+				</picker-view-column>
+			</picker-view>
+		</view>
+	</view>
+</template>
+
+<script setup lang="ts">
+import {
+	forInObject,
+	getColor,
+	isAppIOS,
+	isDark,
+	isEqual,
+	isNull,
+	parseClass,
+	getUnit,
+	isAppAndroid
+} from "@/.cool";
+import type { ClSelectOption } from "../../types";
+import { computed, nextTick, onMounted, ref, shallowRef, watch } from "vue";
+import type { PropType } from "vue";
+import { useSize } from "../../hooks";
+
+defineOptions({
+	name: "cl-select-picker-view"
+});
+
+const props = defineProps({
+	// 选择器表头
+	headers: {
+		type: Array as PropType<string[]>,
+		default: () => []
+	},
+	// 选择器值
+	value: {
+		type: Array as PropType<number[]>,
+		default: () => []
+	},
+	// 选择器选项
+	columns: {
+		type: Array as PropType<ClSelectOption[][]>,
+		default: () => []
+	},
+	// 选择器选项高度
+	itemHeight: {
+		type: Number,
+		default: isAppIOS() ? 50 : 42
+	},
+	// 选择器高度
+	height: {
+		type: Number,
+		default: 300
+	}
+});
+
+const emit = defineEmits(["change-value", "change-index"]);
+
+const { getScale } = useSize();
+
+// 获取窗口宽度,用于计算选择器列宽
+const { windowWidth } = uni.getWindowInfo();
+
+// 顶部显示表头
+const headers = computed(() => {
+	return props.headers.slice(0, props.columns.length);
+});
+
+// 监听选择器值改变事件
+function onChange(e: UniPickerViewChangeEvent) {
+	// 获取选择器当前选中值数组
+	const indexs = e.detail.value;
+
+	// 处理因快速滑动导致下级数据未及时渲染而产生的索引越界问题
+	indexs.forEach((v, i, arr) => {
+		if (i < props.columns.length) {
+			const n = props.columns[i].length;
+
+			if (v >= n) {
+				arr[i] = n - 1;
+			}
+		}
+	});
+
+	// 相同值不触发事件
+	if (isEqual(indexs, props.value)) {
+		return;
+	}
+
+	// 获取所有列的值
+	const values = props.columns.map((c, i) => {
+		return isNull(c[indexs[i]]) ? 0 : c[indexs[i]].value;
+	});
+
+	// 返回所有列的值或下标
+	emit("change-value", values);
+	emit("change-index", indexs);
+}
+
+// 列项ref引用
+const columnItemRef = shallowRef<UniElement[]>([]);
+
+// 渲染列项内容
+const renderColumnItem = () => {
+	// 当前全局或默认字体大小
+	const fontSize = getScale() * 14;
+
+	// 根据主题切换字体颜色（深色/浅色）
+	const color = isDark.value ? "white" : getColor("zinc-700/10");
+
+	// 遍历所有 picker-view-column 的ref，与每列数据一一对应
+	for (let i = 0; i < columnItemRef.value.length; i++) {
+		const column = props.columns[i]; // 当前列的数据
+		const dom = columnItemRef.value[i]; // 当前列对应的DOM节点
+		// 获取节点尺寸，用于文本居中计算
+		const rect = dom!.getBoundingClientRect();
+		// 获取原生画布上下文
+		const ctx = dom!.getDrawableContext()!;
+
+		ctx.reset(); // 每次重绘前需先重置画布
+		ctx.textAlign = "center";
+
+		// 计算文本水平方向的中点位置
+		const x = rect.width / 2;
+
+		// 循环绘制本列的每一个选项
+		for (let j = 0; j < column.length; j++) {
+			ctx.fillStyle = color; // 设置文本颜色
+			ctx.font = `${fontSize}px`;
+			// 计算每行文本的垂直位置，使其垂直居中于item元素内
+			const y = 12 + (props.itemHeight - fontSize) / 2 + props.itemHeight * j;
+			ctx.fillText(column[j].label, x, y); // 绘制文本
+		}
+		ctx.update(); // 完成当前列绘制，刷到视图
+	}
+};
+
+// 遮罩层样式
+const maskStyle = ref("");
+const renderMaskStyle = () => {
+	if (isDark.value) {
+		maskStyle.value = `background-image: linear-gradient(180deg, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0))`;
+	}
+};
+
+// 计算选择器列样式
+const indicatorStyle = ref("");
+const renderIndicatorStyle = () => {
+	// 计算选择器列样式
+	let str = "";
+
+	// 计算每列的宽
+	const width = Math.ceil((windowWidth - 8) / props.columns.length - 10);
+
+	// 选择器列样式配置
+	const style = {
+		height: `${props.itemHeight}px`,
+		width: `${width}px`,
+		left: "4px",
+		backgroundColor: "rgba(10, 10, 10, 0.04)",
+		borderRadius: "10px",
+		border: "1px solid rgba(10, 10, 10, 0.2)"
+	};
+
+	// 深色模式
+	if (isDark.value) {
+		style.backgroundColor = "rgba(0, 0, 0, 0.01)";
+		style.border = "1px solid rgba(255, 255, 255, 0.3)";
+	}
+
+	// ios 端样式
+	if (isAppIOS()) {
+		style.backgroundColor = isDark.value ? "rgba(0, 0, 0, 0.2)" : "rgba(0, 0, 0, 0.1)";
+
+		if (isDark.value) {
+			style.border = "none";
+			style.width = `${width - 3}px`;
+		} else {
+			style.width = `${width + 2}px`;
+		}
+	}
+
+	// android 端样式
+	if (isAppAndroid()) {
+		style.width = `${width + 1}px`;
+	}
+
+	// 构建样式字符串
+	forInObject(style, (value, key) => {
+		str += `${key}: ${value};`;
+	});
+
+	indicatorStyle.value = str;
+};
+
+// 渲染列和样式
+const render = () => {
+	renderColumnItem();
+	renderMaskStyle();
+	renderIndicatorStyle();
+};
+
+onMounted(() => {
+	nextTick(() => {
+		render();
+	});
+
+	watch(
+		computed(() => [isDark.value, props.columns, props.itemHeight]),
+		() => {
+			render();
+		}
+	);
+});
+</script>
+
+<style lang="scss" scoped>
+.cl-picker-view {
+	@apply w-full h-full;
+
+	&__header {
+		@apply flex flex-row items-center py-4;
+	}
+
+	&__item {
+		@apply flex flex-row items-center justify-center;
+	}
+
+	.uni-picker-view-indicator {
+		// #ifdef H5
+		&::after,
+		&::before {
+			display: none;
+		}
+		// #endif
+	}
+}
+</style>

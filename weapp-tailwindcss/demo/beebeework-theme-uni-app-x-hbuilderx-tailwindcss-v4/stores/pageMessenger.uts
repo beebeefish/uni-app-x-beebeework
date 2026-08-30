@@ -1,0 +1,92 @@
+// utils/pageMessenger.uts
+
+/**
+ * 页面间临时数据信使（跨端兼容版）
+ * 支持：小程序（主包）、App（Vue）、H5（SPA）
+ * 不支持：小程序分包间、App nvue 混用（需 storage 兜底）
+ */
+class PageMessenger {
+  /**
+   * 获取全局存储容器（跨端兼容）
+   */
+  private static getStore(): Record<string, any> {
+    // 优先使用 getApp().globalData（所有端官方支持）
+    try {
+      const app = getApp()
+      if (app && app.globalData) {
+        if (!app.globalData.__pageMessenger) {
+          app.globalData.__pageMessenger = {}
+        }
+        return app.globalData.__pageMessenger
+      }
+    } catch (e) {
+      // 某些端 getApp() 可能获取不到，兜底到 uni
+    }
+    
+    // 兜底方案（和你之前的写法一致，但封装了）
+    if (!(uni as any).__pageMessenger) {
+      (uni as any).__pageMessenger = {}
+    }
+    return (uni as any).__pageMessenger
+  }
+
+  /**
+   * 发送数据（跳转前调用）
+   * @param key 建议用 `topic_${id}`
+   * @param data 要传递的完整对象
+   * @param ttl 过期时间（秒），默认 30 秒
+   */
+  static send(key: string, data: any, ttl: number = 30): void {
+    const store = this.getStore()
+    store[key] = {
+      data: data,
+      expireAt: Date.now() + ttl * 1000
+    }
+    console.log(`[PageMessenger] 发送: ${key}`)
+  }
+
+  /**
+   * 接收数据（详情页 onLoad 调用）
+   * @returns 数据，已自动删除；不存在或过期返回 null
+   */
+  static receive(key: string): any | null {
+    const store = this.getStore()
+    const entry = store[key]
+    
+    if (!entry) {
+      console.log(`[PageMessenger] 未命中: ${key}`)
+      return null
+    }
+    
+    // 检查过期
+    if (Date.now() > entry.expireAt) {
+      delete store[key]
+      console.log(`[PageMessenger] 已过期: ${key}`)
+      return null
+    }
+    
+    // 用完即删
+    const data = entry.data
+    delete store[key]
+    console.log(`[PageMessenger] 命中并删除: ${key}`)
+    return data
+  }
+
+  /**
+   * 强制清理所有过期数据
+   */
+  static cleanup(): void {
+    const store = this.getStore()
+    const now = Date.now()
+    let count = 0
+    for (const key in store) {
+      if (store[key].expireAt && now > store[key].expireAt) {
+        delete store[key]
+        count++
+      }
+    }
+    if (count > 0) console.log(`[PageMessenger] 清理过期: ${count} 条`)
+  }
+}
+
+export { PageMessenger }

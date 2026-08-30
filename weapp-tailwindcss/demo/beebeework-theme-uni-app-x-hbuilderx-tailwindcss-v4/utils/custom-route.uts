@@ -1,0 +1,11 @@
+// @ts-nocheck
+declare var wx: any;
+
+export enum CustomRouteType {
+    Cupertino = "Cupertino",
+    ScaleTransition = "ScaleTransition",
+    HalfScreenDialog = "HalfScreenDialog",
+    OpacityTransition = "OpacityTransition",
+    PopupTransition = "PopupTransition",
+    PopupSTransition = "PopupSTransition"
+}
